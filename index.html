@@ -162,6 +162,9 @@ input,select{width:100%;font-size:16px;padding:10px 12px;border-radius:10px;bord
 .dlg{background:var(--card);border-radius:18px;padding:18px;width:100%;max-width:520px;max-height:74vh;overflow:auto}
 .dueseg button small{display:block;font-size:11px;color:var(--mute);font-weight:400}
 .dueseg button.on small{color:var(--acc)}
+.dnrow{align-items:center;justify-content:center;gap:18px;margin-top:10px}
+.dnrow .btn{width:52px;padding:8px 0;font-size:20px;flex:none}
+.dnrow span{font-size:15px;min-width:70px;text-align:center}
 .dlg h3{margin:0 0 8px;font-size:18px}
 .dlg p{margin:0 0 14px;color:var(--mute);font-size:14px}
 .dlg ul{margin:0 0 14px;padding-left:20px}
@@ -660,21 +663,26 @@ function pageAdd(arg){
 var TODO_MS=5*60000;
 function todoById(id){ return S.todos.filter(function(x){return x.id===id;})[0]; }
 function dueOpts(){ var d=today(), ws=wkStart(d); return [['今天',d],['本周内',addDays(ws,6)],['下周内',addDays(ws,13)]]; }
+function dnDate(n){ return addDays(today(),n); }
+function dnSmall(n){ var ds=dnDate(n); return '周'+'日一二三四五六'[new Date(+ds.slice(0,4),+ds.slice(5,7)-1,+ds.slice(8)).getDay()]+' '+md(ds); }
 function md(ds){ return (+ds.slice(5,7))+'/'+(+ds.slice(8)); }
 function todoForm(pre,msg){
-  pre=pre||{}; var o=dueOpts(), sel=pre.sel!=null?pre.sel:1;
+  pre=pre||{}; var o=dueOpts(), sel=pre.sel!=null?pre.sel:1, dn=pre.n||3;
   modal('<h3>'+(pre.id?'改期':'新待办')+'</h3>'+(msg?'<p style="color:var(--bad)">'+msg+'</p>':'')
     +(pre.id?'':'<label>要做的事</label><input id="tn" placeholder="例如：报销邮费" value="'+esc(pre.name||'')+'"><label>第一步（5 分钟内能做完的一个动作）</label><input id="ts" placeholder="例如：把邮费小票拍照" value="'+esc(pre.step||'')+'">')
-    +'<label>什么时候之前做完</label><div class="seg dueseg" style="margin:0">'+o.map(function(x,i){return '<button class="'+(i===sel?'on':'')+'" data-a="sel:'+i+'">'+x[0]+'<small>'+(i===0?md(x[1]):'周日 '+md(x[1]))+'</small></button>';}).join('')+'</div>'
-    +'<input type="hidden" id="tdue" value="'+sel+'">'
+    +'<label>什么时候之前做完</label><div class="seg dueseg" style="margin:0">'+o.map(function(x,i){return '<button class="'+(i===sel?'on':'')+'" data-a="sel:'+i+'">'+x[0]+'<small>'+(i===0?md(x[1]):'周日 '+md(x[1]))+'</small></button>';}).join('')
+    +'<button class="'+(sel===3?'on':'')+'" data-a="sel:3">几天内<small id="dnsm">'+dnSmall(dn)+'</small></button></div>'
+    +'<div id="dnrow" class="dnrow" style="display:'+(sel===3?'flex':'none')+'"><button class="btn ghost" data-a="dn:-1">−</button><span><b id="dnv">'+dn+'</b> 天内</span><button class="btn ghost" data-a="dn:1">＋</button></div>'
+    +'<input type="hidden" id="tdue" value="'+sel+'"><input type="hidden" id="tdn" value="'+dn+'">'
     +'<div class="row"><button class="btn ghost" data-a="close">取消</button><button class="btn pri" data-a="save">保存</button></div>',
     function(a,v){
       if(a!=='save') return;
-      var k=+v.tdue, due=o[k][1];
-      if(pre.id){ var t=todoById(pre.id); if(t){ t.due=due; t.moved=(t.moved||0)+1; save(); render(); toast('改到 '+o[k][0]+'（'+md(due)+'）'); } return; }
+      var k=+v.tdue, n=Math.max(1,+v.tdn||3), lab, due;
+      if(k===3){ due=dnDate(n); lab=n+' 天内'; } else { due=o[k][1]; lab=o[k][0]; }
+      if(pre.id){ var t=todoById(pre.id); if(t){ t.due=due; t.moved=(t.moved||0)+1; save(); render(); toast('改到 '+lab+'（'+md(due)+'）'); } return; }
       var nm=(v.tn||'').trim(), stp=(v.ts||'').trim();
-      if(!nm||!stp) return todoForm({name:nm,step:stp,sel:k},'两项都要填。第一步越小越好。');
-      S.todos.push({id:'t'+Date.now().toString(36),name:nm,step:stp,due:due,added:today(),moved:0}); save(); render(); toast('已加入 · '+o[k][0]+'（'+md(due)+' 前）');
+      if(!nm||!stp) return todoForm({name:nm,step:stp,sel:k,n:n},'两项都要填。第一步越小越好。');
+      S.todos.push({id:'t'+Date.now().toString(36),name:nm,step:stp,due:due,added:today(),moved:0}); save(); render(); toast('已加入 · '+lab+'（'+md(due)+' 前）');
     });
 }
 function todoComplete(id){
@@ -1267,7 +1275,8 @@ document.addEventListener('click',function(ev){
   var t=ev.target.closest('[data-a]'); if(!t){ if(ev.target.id==='mask') closeModal(); return; }
   ev.preventDefault();
   var a=t.getAttribute('data-a');
-  if(t.closest('#mask') && a.indexOf('sel:')===0){ Array.prototype.forEach.call(t.parentNode.children,function(b){ b.classList.remove('on'); }); t.classList.add('on'); var hd=document.getElementById('tdue'); if(hd) hd.value=a.slice(4); return; }
+  if(t.closest('#mask') && a.indexOf('sel:')===0){ Array.prototype.forEach.call(t.parentNode.children,function(b){ b.classList.remove('on'); }); t.classList.add('on'); var hd=document.getElementById('tdue'); if(hd) hd.value=a.slice(4); var dr=document.getElementById('dnrow'); if(dr) dr.style.display=a==='sel:3'?'flex':'none'; return; }
+  if(t.closest('#mask') && a.indexOf('dn:')===0){ var hn=document.getElementById('tdn'), nv=Math.min(60,Math.max(1,(+hn.value||3)+(+a.slice(3)))); hn.value=nv; document.getElementById('dnv').textContent=nv; document.getElementById('dnsm').textContent=dnSmall(nv); return; }
   if(t.closest('#mask') && (a.indexOf('cx:')===0||a.indexOf('cp:')===0)){
     Array.prototype.forEach.call(t.parentNode.children,function(b){ b.classList.remove('on'); }); t.classList.add('on');
     if(a.indexOf('cx:')===0){ document.getElementById('cpk').innerHTML=pickChips(a.slice(3)); return; }
