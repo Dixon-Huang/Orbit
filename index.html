@@ -21,7 +21,8 @@ body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 -apple-system,
 #scroller{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 .wrap{max-width:560px;margin:0 auto;padding:calc(var(--st) + 14px) 16px calc(var(--sb) + 96px)}
 h1{font-size:28px;margin:0}
-.hdr{display:flex;align-items:center;gap:8px;margin:4px 0 2px}
+.hdr{display:flex;align-items:center;gap:8px;margin:4px 0 14px}
+.hdr+.sub{margin-top:-12px}
 .hdr h1{flex:1}
 .sub{color:var(--mute);font-size:14px;margin-bottom:14px}
 .iconbtn{border:none;background:var(--acc2);color:var(--acc);height:34px;min-width:34px;padding:0 12px;border-radius:17px;font-size:15px;font-weight:600;cursor:pointer}
@@ -265,7 +266,8 @@ if(!S.seats){
 if(!S.todos){ S.todos=[]; S.todoDone=[]; S.todoRun=null; }
 if(!S.reserve) S.reserve={perMonth:2};
 delete S.reserve.startBy;
-S.nodes.forEach(function(n){ if(n.autoStart && /前在计时座位坐下一次/.test(n.criterion||'')) n.criterion='在计时座位坐下一次（坐下时自动打勾）'; });
+S.nodes.forEach(function(n){ if(n.autoStart && /前在计时座位坐下一次/.test(n.criterion||'')) n.criterion='在计时座位坐下一次'; });
+S.nodes.forEach(function(n){ if((n.autoStart||n.autoTodo||n.autoGym) && n.criterion) n.criterion=n.criterion.replace(/（[^（）]*自动打勾）$/,''); });
 if(!S.pomo){ S.pomo={s:5,l:15,every:4,done:0,doneDate:null}; S.pomoLog=[]; }
 // Forest 与番茄钟合并：番茄记录并入 Forest，计时统一由神圣座位负责
 if(!S.merged){
@@ -379,9 +381,9 @@ function askFail(id, date, wk){
   if(isWeekly(n)) return askFailWeek(n, wk||wkStart(dt));
   var list = ids.map(function(x){ return '<li>'+esc(byId(x).name)+'</li>'; }).join('');
   var h='<h3>「'+esc(n.name)+'」没做到</h3><p>'+dt+(dt===today()?'（今天）':'')+'</p>';
-  if(left>0) h+='<button class="btn sec" style="margin-bottom:10px" data-a="rsv">用一次应急（本月还剩 '+left+' 次）</button><p>用掉应急这一天不打勾也不删除，连续天数照常保留。</p>';
+  if(left>0) h+='<button class="btn sec" style="margin-bottom:10px" data-a="rsv">用一次应急（本月还剩 '+left+' 次）</button>';
   else h+='<p>本月的应急次数已经用完。</p>';
-  h+='<p>'+(left>0?'或者':'按规则，')+'把它和下面所有子节点一起删除：</p><ul>'+list+'</ul><div class="row"><button class="btn ghost" data-a="close">取消</button><button class="btn danger" data-a="dofail">删除</button></div>';
+  h+='<p>'+(left>0?'或者删除：':'删除：')+'</p><ul>'+list+'</ul><div class="row"><button class="btn ghost" data-a="close">取消</button><button class="btn danger" data-a="dofail">删除</button></div>';
   modal(h, function(a){
     if(a==='rsv'){ S.log[dt]=S.log[dt]||{}; S.log[dt][id]='r'; hist('「'+n.name+'」用掉一次应急（本月还剩 '+(left-1)+' 次）','reserve'); save(); render(); }
     if(a==='dofail') doFail(id, dt);
@@ -391,9 +393,9 @@ function askFailWeek(n, ws){
   var ids=subtree(n.id), left=reserveLeft(n.id), we=addDays(ws,6);
   var list = ids.map(function(x){ return '<li>'+esc(byId(x).name)+'</li>'; }).join('');
   var h='<h3>「'+esc(n.name)+'」这周没达成</h3><p>'+ws.slice(5)+' 到 '+we.slice(5)+' · 做了 '+weekCount(n,ws)+' / '+n.perWeek+' 次</p>';
-  if(left>0) h+='<button class="btn sec" style="margin-bottom:10px" data-a="rsv">用一次应急（本月还剩 '+left+' 次）</button><p>这周不算失败也不删除，连续周数照常保留。</p>';
+  if(left>0) h+='<button class="btn sec" style="margin-bottom:10px" data-a="rsv">用一次应急（本月还剩 '+left+' 次）</button>';
   else h+='<p>本月的应急次数已经用完。</p>';
-  h+='<p>'+(left>0?'或者':'按规则，')+'把它和下面所有子节点一起删除：</p><ul>'+list+'</ul><div class="row"><button class="btn ghost" data-a="close">取消</button><button class="btn danger" data-a="dofail">删除</button></div>';
+  h+='<p>'+(left>0?'或者删除：':'删除：')+'</p><ul>'+list+'</ul><div class="row"><button class="btn ghost" data-a="close">取消</button><button class="btn danger" data-a="dofail">删除</button></div>';
   modal(h,function(a){
     if(a==='rsv'){ S.wres=S.wres||{}; S.wres[ws]=S.wres[ws]||{}; S.wres[ws][n.id]=today(); hist('「'+n.name+'」'+ws.slice(5)+' 那周用掉一次应急','reserve'); save(); render(); }
     if(a==='dofail') doFail(n.id, today());
@@ -413,10 +415,10 @@ function doFail(id, date){
 function markPast(date,id){ S.log[date]=S.log[date]||{}; S.log[date][id]=1; save(); render(); }
 function pauseToday(){
   var d=today(), opts=S.exceptions.map(function(e,i){ return '<button data-a="sel:'+i+'">'+esc(e)+'</button>'; }).join('');
-  if(!S.exceptions.length){ modal('<h3>今天是例外吗？</h3><p>还没有写例外情形，去"更多 › 定式树例外情形"添加。</p><button class="btn ghost" data-a="close">好</button>'); return; }
+  if(!S.exceptions.length){ modal('<h3>今天是例外吗？</h3><p>还没有例外情形。</p><button class="btn ghost" data-a="close">好</button>'); return; }
   var list=S.nodes.map(function(n){ var p=paused(d,n.id); return '<label class="ck"><input type="checkbox" id="px_'+n.id+'"'+(p?' disabled checked':' checked')+'> '+esc(n.name)+(p?' <span class="cr">（已暂停）</span>':'')+'</label>'; }).join('');
-  modal('<h3>今天是例外吗？</h3><p>只能选事先写好的情形。选中的定式今天暂停，不打勾也不算失败。</p><label>哪种情形</label><div class="chips" style="margin-bottom:6px">'+opts+'</div><input type="hidden" id="tdue" value="">'
-    +'<label>对哪些定式生效</label>'+list+'<div class="row"><button class="btn ghost" data-a="close">取消</button><button class="btn pri" data-a="ok">确定</button></div>',
+  modal('<h3>今天是例外吗？</h3><div class="chips" style="margin-bottom:6px">'+opts+'</div><input type="hidden" id="tdue" value="">'
+    +'<div style="height:8px"></div>'+list+'<div class="row"><button class="btn ghost" data-a="close">取消</button><button class="btn pri" data-a="ok">确定</button></div>',
     function(a,v){
       if(a!=='ok') return;
       if(v.tdue===''){ toast('先选一种情形'); return pauseToday(); }
@@ -511,7 +513,7 @@ function startSeat(id){
   if(busy()) return;
   var st=seatById(id);
   var exs=st.exceptions.length?'<p>已判定允许：'+st.exceptions.map(function(e){return esc(e.text);}).join('、')+'</p>':'';
-  modal('<h3>坐上「'+esc(st.name)+'」？</h3><p>坐上去就要用最好的状态专注满 '+st.timerMin+' 分钟。没有把握就别坐。</p>'+exs
+  modal('<h3>坐上「'+esc(st.name)+'」· '+st.timerMin+' 分钟</h3>'+exs
     +'<label>这次做什么</label><input id="mtag" value="'+esc(S.lastTag||'')+'">'
     +'<div class="row"><button class="btn ghost" data-a="close">不坐</button><button class="btn pri" data-a="go">坐下，开始</button></div>',
     function(a,v){ if(a==='go') beginSeat(id,(v.mtag||'').trim()); });
@@ -519,9 +521,9 @@ function startSeat(id){
 function violation(kind,id){
   var isAppt=kind==='appt', st=isAppt?null:seatById(id);
   var name=isAppt?'预约链':st.name, cnt=isAppt?S.appt.count:st.count;
-  modal('<h3>下必为例：'+esc(name)+'</h3><p>只能二选一。</p>'
-    +'<button class="btn danger" style="margin-bottom:10px" data-a="reset">判定违规：当前纪录 #'+cnt+' 清零，下次从 #1 开始</button>'+(isAppt?'':'<p>累计 '+seatTotal(st.id)+' 次不会清零，旅程卡片照常保留。</p>')
-    +'<label>或者判定允许：写下这个行为（以后同样情况永远允许）</label><input id="mex" placeholder="例如：等 AI 回复时看手机">'
+  modal('<h3>下必为例：'+esc(name)+'</h3>'
+    +'<button class="btn danger" style="margin-bottom:10px" data-a="reset">判定违规 · #'+cnt+' 清零</button>'
+    +'<label>或判定允许（以后永远允许）</label><input id="mex" placeholder="例如：等 AI 回复时看手机">'
     +'<div class="row"><button class="btn ghost" data-a="close">取消</button><button class="btn sec" data-a="allow">判定允许</button></div>',
     function(a,v){
       if(a==='reset'){
@@ -543,11 +545,11 @@ function apptGo(){
   else { S.appt.count++; S.appt.pending=null; hist('即时启动'+(st?'（'+st.name+'）':'')+'，预约链 #'+S.appt.count); save(); render(); toast('预约兑现，预约链 #'+S.appt.count+(st&&!st.timerMin?' · 做到后点「成功一次」':'')); }
 }
 function clearQuarter(){
-  modal('<h3>本季度清空例外？</h3><p>所有座位和预约链的例外都会删除，规则恢复全部约束力。每季度（1.1，4.1，7.1，11.1）起可用一次。</p><div class="row"><button class="btn ghost" data-a="close">取消</button><button class="btn danger" data-a="clr">清空</button></div>',
+  modal('<h3>本季度清空例外？</h3><p>所有座位和预约链的例外都会删除。</p><div class="row"><button class="btn ghost" data-a="close">取消</button><button class="btn danger" data-a="clr">清空</button></div>',
     function(a){ if(a==='clr'){ S.seats.forEach(function(x){x.exceptions=[];}); S.appt.exceptions=[]; S.exClear=quarterStart(); hist('季度清空例外'); save(); render(); } });
 }
 function addSeat(){
-  modal('<h3>新增神圣座位</h3><label>名字</label><input id="sn" placeholder="例如：图书馆三楼靠窗"><label>每次专注多少分钟（不计时填 0）</label><input id="sm" inputmode="numeric" value="60"><div class="row"><button class="btn ghost" data-a="close">取消</button><button class="btn pri" data-a="ok">添加</button></div>',
+  modal('<h3>新增神圣座位</h3><label>名字</label><input id="sn" placeholder="例如：图书馆三楼靠窗"><label>每次专注分钟数（0 = 不计时）</label><input id="sm" inputmode="numeric" value="60"><div class="row"><button class="btn ghost" data-a="close">取消</button><button class="btn pri" data-a="ok">添加</button></div>',
     function(a,v){ if(a==='ok' && (v.sn||'').trim()){ S.seats.push({id:'s'+Date.now().toString(36),name:v.sn.trim(),count:0,timerMin:Math.max(0,parseInt(v.sm,10)||0),exceptions:[]}); save(); render(); } });
 }
 
@@ -565,7 +567,7 @@ function monthAdd(ym,k){ var y=+ym.slice(0,4), m=+ym.slice(5)-1+k; y+=Math.floor
 // ---------- 页面：习惯 ----------
 function treeSvg(){
   var d=today();
-  if(!S.nodes.length) return '<div class="empty">树是空的。点右上角"＋ 定式"种下第一个。</div>';
+  if(!S.nodes.length) return '<div class="empty">树是空的</div>';
   var pos={}, leafI=0, maxD=0;
   function lay(pid,depth){ var xs=[]; kids(pid).forEach(function(n){ var cx=lay(n.id,depth+1), x;
     if(cx.length){ x=cx.reduce(function(a,b){return a+b;},0)/cx.length; } else x=leafI++;
@@ -599,6 +601,7 @@ function renderTree(){
       var on=done(d,n.id), st=streak(n), wk=isWeekly(n), pz=paused(d,n.id);
       var badge = wk ? ' <span class="freq">每周 '+n.perWeek+' 次</span>'+(st>=2?' <span class="fire">🔥'+st+' 周</span>':'')
                      : (st>=3?' <span class="fire">🔥'+st+'</span>':'');
+      if(n.autoStart||n.autoTodo||n.autoGym) badge=' <span class="freq">自动</span>'+badge;
       var meta = wk ? weekLine(n)
                     : weekDots(n)+' 连续 '+st+' 天 · 应急 '+reserveLeft(n.id)+'/'+S.reserve.perMonth+(reserved(d,n.id)?' · 今天已用应急':'');
       h+='<div class="node" style="padding-left:'+(depth*22)+'px">'
@@ -616,45 +619,45 @@ function renderTree(){
 function pageHabit(){
   var d=today(), act=S.nodes.filter(function(n){return !paused(d,n.id);}), total=act.length, dn=act.filter(function(n){return doneToday(n);}).length;
   var h='<div class="hdr"><h1>今天</h1><button class="iconbtn" data-a="push:add">＋ 定式</button></div>'
-    +'<div class="sub">'+d+' · '+(S.pauses[d]||(S.nodes.length&&!total)?'例外暂停':(total?'完成 '+dn+' / '+total+(dn===total?' 🎉':''):'还没有定式'))+'</div>';
+    +'<div class="sub">'+d+(S.pauses[d]||(S.nodes.length&&!total)?' · 例外暂停':(total&&dn===total?' 🎉':''))+'</div>';
   var lb=S.lastBackup?daysBetween(S.lastBackup,today()):null;
-  if(S.history.length>5 && (lb==null||lb>=14)) h+='<div class="banner warn">'+(lb==null?'还没有备份过。':'已经 '+lb+' 天没备份了。')+'数据只存在这台手机上，<a href="#" data-a="push:backup" style="color:inherit">去备份</a>。</div>';
+  if(S.history.length>5 && (lb==null||lb>=14)) h+='<div class="banner warn">'+(lb==null?'还没有备份':lb+' 天没备份')+' · <a href="#" data-a="push:backup" style="color:inherit">去备份</a></div>';
   var pr=pendingReview();
   if(pr.length){
-    h+='<div class="banner warn"><b>前几天有没打勾的定式</b>，确认一下：';
+    h+='<div class="banner warn"><b>前几天没打勾</b>';
     pr.forEach(function(p){ var n=byId(p.id); if(!n) return;
       h+='<div class="rev"><span>'+p.date.slice(5)+' '+esc(n.name)+'</span><button class="ok" data-a="p:'+p.date+':'+p.id+'">做到了</button><button class="no" data-a="x:'+p.date+':'+p.id+'">没做到</button></div>'; });
     h+='</div>';
   }
   var pw=pendingWeeks();
   if(pw.length){
-    h+='<div class="banner warn"><b>上周有没达成的每周定式</b>：';
+    h+='<div class="banner warn"><b>上周没达成</b>';
     pw.forEach(function(p){ var n=byId(p.id); if(!n) return;
       h+='<div class="rev"><span>'+p.ws.slice(5)+' 那周 '+esc(n.name)+' '+weekCount(n,p.ws)+'/'+n.perWeek+'</span><button class="ok" data-a="bw:'+p.ws+':'+p.id+'">忘了打，补一次</button><button class="no" data-a="xw:'+p.ws+':'+p.id+'">没做到</button></div>'; });
     h+='</div>';
   }
-  if(S.pauses[d]) h+='<div class="banner pause">今天按例外暂停：'+esc(S.pauses[d])+'。 <a href="#" data-a="unpause" style="color:inherit">撤销</a></div>';
-  if(!total) return h+'<div class="card"><div class="empty">树是空的。点右上角"＋ 定式"种下第一个。</div></div>';
+  if(S.pauses[d]) h+='<div class="banner pause">今天例外：'+esc(S.pauses[d])+' · <a href="#" data-a="unpause" style="color:inherit">撤销</a></div>';
+  if(!total) return h+'<div class="card"><div class="empty">树是空的</div></div>';
   h+='<div class="card">'+renderTree()+'</div>';
   var best=0, first=d; S.nodes.forEach(function(n){ var s=isWeekly(n)?0:streak(n); if(s>best) best=s; if(n.added<first) first=n.added; });
   var c=2*Math.PI*38, frac=dn/total;
   h+='<div class="card"><div class="hero"><div class="hring"><svg width="96" height="96" viewBox="0 0 96 96"><circle cx="48" cy="48" r="38" fill="none" stroke="var(--line)" stroke-width="9"/><circle cx="48" cy="48" r="38" fill="none" stroke="var(--acc)" stroke-width="9" stroke-linecap="round" stroke-dasharray="'+c.toFixed(1)+'" stroke-dashoffset="'+(c*(1-frac)).toFixed(1)+'" transform="rotate(-90 48 48)"/></svg><div><b>'+dn+'/'+total+'</b><span>今天</span></div></div>'
     +'<div class="hstats"><div><b>'+total+'</b><span>个定式</span></div><div><b>'+best+'</b><span>最长连续</span></div><div><b>'+(daysBetween(first,d)+1)+'</b><span>树龄（天）</span></div></div></div>'
-    +treeSvg()+'<div class="note">点叶子也能打勾 · 连续越久叶子越大</div></div>';
+    +treeSvg()+'</div>';
   if(act.length) h+='<button class="btn ghost" data-a="pause">今天是例外情形</button>';
   return h;
 }
 function pageAdd(arg){
   var d=today(), h='';
-  if(S.lastAdd===d) return h+'<div class="card"><div class="empty">今天已经加过一个定式了，明天再来。</div></div>';
+  if(S.lastAdd===d) return h+'<div class="card"><div class="empty">今天已经加过一个，明天再来</div></div>';
   var pre=arg||{};
   var opts='<option value="">新分支（不挂在任何定式下）</option>';
   (function walk(pid,depth){ kids(pid).forEach(function(n){ opts+='<option value="'+n.id+'"'+(pre.parentId===n.id?' selected':'')+'>'+'　'.repeat(depth)+esc(n.name)+' 之后</option>'; walk(n.id,depth+1); }); })(null,0);
-  return '<div class="sub">每天最多加一个。</div><div class="card"><label style="margin-top:0">定式</label><input id="fn" placeholder="例如：洗完澡手机放客厅" value="'+esc(pre.name||'')+'">'
-    +'<label>怎样算完成（越具体越好）</label><input id="fc" placeholder="例如：23:30 前手机不在卧室" value="'+esc(pre.criterion||'')+'">'
+  return '<div class="card"><label style="margin-top:0">定式</label><input id="fn" placeholder="例如：洗完澡手机放客厅" value="'+esc(pre.name||'')+'">'
+    +'<label>怎样算完成</label><input id="fc" placeholder="例如：23:30 前手机不在卧室" value="'+esc(pre.criterion||'')+'">'
     +'<label>频率</label><div class="seg" style="margin:0"><button class="'+(pre.freq==='week'?'':'on')+'" data-a="fq:day">每天</button><button class="'+(pre.freq==='week'?'on':'')+'" data-a="fq:week">每周几次</button></div>'
     +'<div id="wkopt" style="display:'+(pre.freq==='week'?'block':'none')+'"><label>每周几次</label><input id="fw" inputmode="numeric" value="'+(pre.perWeek||3)+'">'
-    +'<label>计划在哪几天（可不选，只用来提醒，按每周次数结算）</label><div class="days">'+WD.map(function(w,i){ return '<button class="'+((pre.plan||[]).indexOf(i)>=0?'on':'')+'" data-a="pd:'+i+'">'+w+'</button>'; }).join('')+'</div></div>'
+    +'<label>计划日（可选）</label><div class="days">'+WD.map(function(w,i){ return '<button class="'+((pre.plan||[]).indexOf(i)>=0?'on':'')+'" data-a="pd:'+i+'">'+w+'</button>'; }).join('')+'</div></div>'
     +'<label>挂在哪里</label><select id="fp">'+opts+'</select>'
     +'<div style="height:14px"></div><button class="btn pri" data-a="add">加入定式树</button></div>';
 }
@@ -669,7 +672,7 @@ function md(ds){ return (+ds.slice(5,7))+'/'+(+ds.slice(8)); }
 function todoForm(pre,msg){
   pre=pre||{}; var o=dueOpts(), sel=pre.sel!=null?pre.sel:1, dn=pre.n||3;
   modal('<h3>'+(pre.id?'改期':'新待办')+'</h3>'+(msg?'<p style="color:var(--bad)">'+msg+'</p>':'')
-    +(pre.id?'':'<label>要做的事</label><input id="tn" placeholder="例如：报销邮费" value="'+esc(pre.name||'')+'"><label>第一步（5 分钟内能做完的一个动作）</label><input id="ts" placeholder="例如：把邮费小票拍照" value="'+esc(pre.step||'')+'">')
+    +(pre.id?'':'<label>要做的事</label><input id="tn" placeholder="例如：报销邮费" value="'+esc(pre.name||'')+'"><label>第一步</label><input id="ts" placeholder="例如：把邮费小票拍照" value="'+esc(pre.step||'')+'">')
     +'<label>什么时候之前做完</label><div class="seg dueseg" style="margin:0">'+o.map(function(x,i){return '<button class="'+(i===sel?'on':'')+'" data-a="sel:'+i+'">'+x[0]+'<small>'+(i===0?md(x[1]):'周日 '+md(x[1]))+'</small></button>';}).join('')
     +'<button class="'+(sel===3?'on':'')+'" data-a="sel:3">几天内<small id="dnsm">'+dnSmall(dn)+'</small></button></div>'
     +'<div id="dnrow" class="dnrow" style="display:'+(sel===3?'flex':'none')+'"><button class="btn ghost" data-a="dn:-1">−</button><span><b id="dnv">'+dn+'</b> 天内</span><button class="btn ghost" data-a="dn:1">＋</button></div>'
@@ -681,7 +684,7 @@ function todoForm(pre,msg){
       if(k===3){ due=dnDate(n); lab=n+' 天内'; } else { due=o[k][1]; lab=o[k][0]; }
       if(pre.id){ var t=todoById(pre.id); if(t){ t.due=due; t.moved=(t.moved||0)+1; save(); render(); toast('改到 '+lab+'（'+md(due)+'）'); } return; }
       var nm=(v.tn||'').trim(), stp=(v.ts||'').trim();
-      if(!nm||!stp) return todoForm({name:nm,step:stp,sel:k,n:n},'两项都要填。第一步越小越好。');
+      if(!nm||!stp) return todoForm({name:nm,step:stp,sel:k,n:n},'两项都要填');
       S.todos.push({id:'t'+Date.now().toString(36),name:nm,step:stp,due:due,added:today(),moved:0}); save(); render(); toast('已加入 · '+lab+'（'+md(due)+' 前）');
     });
 }
@@ -698,7 +701,7 @@ function todoComplete(id){
 function todoStart(id){ unlockAudio(); S.todoRun={id:id,start:Date.now()}; save(); render(); toTop(); }
 function todoStop(){
   var r=S.todoRun; if(!r) return; var t=todoById(r.id); S.todoRun=null; save(); render();
-  if(t) modal('<h3>先到这</h3><p>下次从哪一步接着做？写下来，回来时不用再想。</p><input id="tx" value="'+esc(t.step)+'"><div class="row"><button class="btn pri" data-a="ok">保存</button></div>',
+  if(t) modal('<h3>先到这</h3><label>下一步</label><input id="tx" value="'+esc(t.step)+'"><div class="row"><button class="btn pri" data-a="ok">保存</button></div>',
     function(a,v){ var x=(v.tx||'').trim(); if(x){ t.step=x; save(); render(); } });
 }
 function todoMore(id){
@@ -728,23 +731,22 @@ function todoCal(list){
 function pageTodo(){
   var d=today(), ws=wkStart(d), wk=S.todoDone.filter(function(x){return x.date>=ws;}).length;
   var over=S.todos.filter(function(t){return t.due<d;}).length;
-  var h='<div class="hdr"><h1>待办</h1><button class="iconbtn" data-a="tdadd">＋ 待办</button></div><div class="sub">零碎小事 · 每件都写好第一步</div>';
+  var h='<div class="hdr"><h1>待办</h1><button class="iconbtn" data-a="tdadd">＋ 待办</button></div>';
   var r=S.todoRun, rt=r&&todoById(r.id);
   if(rt){
     var left=TODO_MS-(Date.now()-r.start);
     h+='<div class="card"><h2>'+(left>0?'只做 5 分钟':'5 分钟到了')+' · '+esc(rt.name)+'</h2><div class="nm">'+esc(rt.step)+'</div><div class="timer" id="ttimer">'+mmss(left)+'</div>'
-      +(left>0?'':'<div class="note" style="margin-bottom:10px">头已经开了。顺手做完，或者到此为止，都算进展。</div>')
-      +'<div class="row"><button class="btn ghost" data-a="tdstop">先到这</button><button class="btn pri" data-a="tdok:'+rt.id+'">整件做完了</button></div></div>';
+            +'<div class="row"><button class="btn ghost" data-a="tdstop">先到这</button><button class="btn pri" data-a="tdok:'+rt.id+'">整件做完了</button></div></div>';
   }
-  if(over) h+='<div class="banner warn">'+over+' 件已过期。每件三选一：现在做 5 分钟、改期，或者决定不做（点事情的名字）。</div>';
+  if(over) h+='<div class="banner warn">'+over+' 件已过期</div>';
   var list=S.todos.slice().sort(function(a,b){return a.due<b.due?-1:a.due>b.due?1:(a.added<b.added?-1:1);});
   if(list.length) h+=todoCal(list);
   h+='<div class="card">';
-  if(!list.length) h+='<div class="empty">没有待办。想到零碎小事就丢进来，比如报销邮费。</div>';
+  if(!list.length) h+='<div class="empty">没有待办</div>';
   list.forEach(function(t){
     var od=daysBetween(t.due,d), age=daysBetween(t.added,d);
-    var dl= od>0?'<b class="late">过期 '+od+' 天</b>': od===0?'<b class="plan">今天到期</b>':md(t.due)+' 前 · 还有 '+(-od)+' 天';
-    h+='<div class="node"><button class="chk" style="border-color:'+todoColor(t)+';border-width:3px" data-a="tdok:'+t.id+'"></button><div class="nb" data-a="tdmore:'+t.id+'"><div class="nm">'+esc(t.name)+'</div><div class="cr">第一步：'+esc(t.step)+'</div><div class="meta">'+dl+(age>=3?' · 已放 '+age+' 天':'')+(t.moved?' · 改期 '+t.moved+' 次':'')+'</div></div><button class="btn sec small" style="flex:none" data-a="tdgo:'+t.id+'"'+(rt?' disabled':'')+'>做 5 分钟</button></div>';
+    var dl= od>0?'<b class="late">过期 '+od+' 天</b>': od===0?'<b class="plan">今天到期</b>':md(t.due)+' · 还有 '+(-od)+' 天';
+    h+='<div class="node"><button class="chk" style="border-color:'+todoColor(t)+';border-width:3px" data-a="tdok:'+t.id+'"></button><div class="nb" data-a="tdmore:'+t.id+'"><div class="nm">'+esc(t.name)+'</div><div class="cr">→ '+esc(t.step)+'</div><div class="meta">'+dl+(age>=3?' · 已放 '+age+' 天':'')+(t.moved?' · 改期 '+t.moved+' 次':'')+'</div></div><button class="btn sec small" style="flex:none" data-a="tdgo:'+t.id+'"'+(rt?' disabled':'')+'>做 5 分钟</button></div>';
   });
   h+='</div>';
   h+='<div class="sum"><div><b>'+S.todos.length+'</b><span>待办</span></div><div><b>'+wk+'</b><span>本周清掉</span></div><div><b>'+S.todoDone.length+'</b><span>累计清掉</span></div></div>';
@@ -753,7 +755,7 @@ function pageTodo(){
     S.todoDone.slice(-5).reverse().forEach(function(x){ h+='<div class="hist"><span class="d">'+x.date+'</span><span class="t">✓ '+esc(x.name)+'</span></div>'; });
     h+='</div>';
   }
-  if(!S.nodes.some(function(n){return n.autoTodo;})) h+='<button class="btn ghost" data-a="todohabit">把"清杂事"设成每周定式</button><div class="note">设了之后，哪天清掉一件待办，那天就自动打勾。</div>';
+  if(!S.nodes.some(function(n){return n.autoTodo;})) h+='<button class="btn ghost" data-a="todohabit">把"清杂事"设成每周定式</button>';
   return h;
 }
 
@@ -789,7 +791,7 @@ var COMMON={
 function pickChips(cat){ return COMMON[cat].map(function(c,i){ return '<button data-a="cp:'+cat+':'+i+'">'+c[0]+'</button>'; }).join(''); }
 function exPicker(dayId){
   var cat={push:'推',pull:'拉',leg:'腿'}[dayId]||'推';
-  return '<label>常用动作（点一下填好，也可以自己写）</label><div class="seg" style="margin:0 0 8px">'+Object.keys(COMMON).map(function(k){return '<button class="'+(k===cat?'on':'')+'" data-a="cx:'+k+'">'+k+'</button>';}).join('')+'</div><div class="chips" id="cpk">'+pickChips(cat)+'</div>';
+  return '<label>常用动作</label><div class="seg" style="margin:0 0 8px">'+Object.keys(COMMON).map(function(k){return '<button class="'+(k===cat?'on':'')+'" data-a="cx:'+k+'">'+k+'</button>';}).join('')+'</div><div class="chips" id="cpk">'+pickChips(cat)+'</div>';
 }
 function kcalOf(L){ if(L.kcal) return L.kcal; var bw=S.gym.bw; return (bw&&L.min)?[Math.round(3.5*bw*L.min/60),Math.round(6*bw*L.min/60)]:null; }
 function gymHist(name){ var out=[]; S.gym.log.forEach(function(L){ L.items.forEach(function(it){ if(it.n===name) out.push({date:L.date,w:it.w,reps:it.reps,tr:it.reps.reduce(function(a,b){return a+b;},0)}); }); }); return out; }
@@ -811,7 +813,7 @@ function bigChart(vals,labels,unit,bars){
 }
 function gymProgress(name){
   var hs=gymHist(name), h='<h3>'+esc(name)+'</h3>';
-  if(!hs.length){ modal(h+'<p>还没有记录。练过一次之后这里会出现曲线。</p><div class="row"><button class="btn ghost" data-a="close">关闭</button></div>'); return; }
+  if(!hs.length){ modal(h+'<p>还没有记录</p><div class="row"><button class="btn ghost" data-a="close">关闭</button></div>'); return; }
   var rc=hs.slice(-8), lb=rc.map(function(x){return (+x.date.slice(5,7))+'/'+(+x.date.slice(8));}), best=gymBest(name), f=hs[0], l=hs[hs.length-1];
   var hasW=rc.every(function(x){return x.w!=null;});
   if(hasW && f.w!=null) h+='<p>'+hs.length+' 次记录 · 重量 '+f.w+' → '+l.w+' kg'+(l.w!==f.w?'（'+(l.w>f.w?'+':'')+(Math.round((l.w-f.w)*10)/10)+'）':'')+(best&&best.w!=null?' · 最好 '+best.w+' kg × '+best.tr+' 次':'')+'</p>';
@@ -850,7 +852,7 @@ function gymFinish(){
   S.nodes.forEach(function(n){ if(n.autoGym && !done(td,n.id)){ S.log[td]=S.log[td]||{}; S.log[td][n.id]=1; } });
   hist('健身：'+(dy?dy.name:'')+' · '+items.length+' 个动作 '+sets+' 组','gym'); save(); render(); toTop();
   var h='<h3>练完了 · '+esc(dy?dy.name:'')+' 💪</h3><div class="sum" style="margin-bottom:10px"><div><b>'+min+'</b><span>分钟'+(capped?'（按上限算）':'')+'</span></div><div><b>'+sets+'</b><span>组</span></div><div><b>'+Math.round(tv)+'</b><span>训练量 kg</span></div></div>'
-    +'<p>估算消耗：'+(kc?'<b style="color:var(--ink)">'+kc[0]+'–'+kc[1]+' 千卡</b>（按时长和体重粗估）':'填了体重才能估算，在健身页底部填')+'</p>';
+    +'<p>估算消耗：'+(kc?'<b style="color:var(--ink)">'+kc[0]+'–'+kc[1]+' 千卡</b>':'填体重后显示')+'</p>';
   items.forEach(function(it,i){ var p=cmp[i], t;
     if(!p) t='首次记录';
     else{ var a=vol(it), b=vol(p), ra=it.reps.reduce(function(x,y){return x+y;},0), rb=p.reps.reduce(function(x,y){return x+y;},0);
@@ -874,7 +876,7 @@ function planMove(dayId,i,dl){ var dy=gymDay(dayId); if(!dy) return; var j=i+dl;
 function gymRunAdd(){
   modal('<h3>加一个动作</h3>'+exPicker(S.gym.run?S.gym.run.day:'')+'<label>动作</label><input id="en">'
     +'<div class="row"><div style="flex:1"><label>组数</label><input id="es" inputmode="numeric" value="4"></div><div style="flex:1"><label>最少次数</label><input id="el" inputmode="numeric" value="8"></div><div style="flex:1"><label>最多次数</label><input id="eh" inputmode="numeric" value="12"></div></div>'
-    +'<label>重量（kg，可不填）</label><input id="ew" inputmode="decimal">'+grpSelect('其他')
+    +'<label>重量（kg）</label><input id="ew" inputmode="decimal">'+grpSelect('其他')
     +'<div class="row"><button class="btn ghost" data-a="close">取消</button><button class="btn pri" data-a="ok">加入</button></div>',
     function(a,v){
       if(a!=='ok') return; var r=S.gym.run; if(!r) return;
@@ -886,26 +888,26 @@ function gymRunAdd(){
     });
 }
 function gymBw(){
-  modal('<h3>体重</h3><p>只用来估算训练消耗。</p><input id="bw" inputmode="decimal" value="'+(S.gym.bw||'')+'" placeholder="kg"><div class="row"><button class="btn ghost" data-a="close">取消</button><button class="btn pri" data-a="ok">保存</button></div>',
+  modal('<h3>体重</h3><input id="bw" inputmode="decimal" value="'+(S.gym.bw||'')+'" placeholder="kg"><div class="row"><button class="btn ghost" data-a="close">取消</button><button class="btn pri" data-a="ok">保存</button></div>',
     function(a,v){ if(a!=='ok') return; var w=parseFloat(String(v.bw).replace(',','.')); S.gym.bw=(w>=30&&w<=250)?w:null; save(); render(); });
 }
 function gymMuscle(){
   var from=addDays(today(),-6), c={}; S.gym.log.forEach(function(L){ if(L.date>=from) L.items.forEach(function(it){ var g=grpOf(it); c[g]=(c[g]||0)+it.reps.length; }); });
-  var h='<div class="card"><h2>增肌指标 · 最近 7 天每个部位的组数</h2>';
+  var h='<div class="card"><h2>近 7 天组数 · 竖线 = 10</h2>';
   GRPS.forEach(function(g){ var n=c[g]||0; if(g==='其他'&&!n) return;
-    var tag=n>=10?'<b class="okw">10 组以上</b>':n>=5?'5–9 组':n?'<span class="late">不到 5 组</span>':'<span class="cr">没练</span>';
-    h+='<div class="hrow"><div class="top"><span class="nm">'+g+'</span><span class="cr">'+n+' 组 · '+tag+'</span></div><div class="bar mk10"><i style="width:'+Math.min(100,n/20*100)+'%"></i></div></div>'; });
-  return h+'<div class="note" style="text-align:left">竖线是每周 10 组。只数直接练到的部位，填了次数的组才算。</div></div>';
+    var cls=n>=10?'okw':n>=5?'':n?'late':'';
+    h+='<div class="hrow"><div class="top"><span class="nm">'+g+'</span><span class="cr"><b class="'+cls+'">'+n+'</b></span></div><div class="bar mk10"><i style="width:'+Math.min(100,n/20*100)+'%"></i></div></div>'; });
+  return h+'</div>';
 }
 function gymAbort(){
-  modal('<h3>放弃这次训练？</h3><p>已经填的次数不会保存。</p><div class="row"><button class="btn ghost" data-a="close">继续练</button><button class="btn danger" data-a="ab">放弃</button></div>',
+  modal('<h3>放弃这次训练？</h3><div class="row"><button class="btn ghost" data-a="close">继续练</button><button class="btn danger" data-a="ab">放弃</button></div>',
     function(a){ if(a==='ab'){ S.gym.run=null; saveLocal(); render(); } });
 }
 function gymExForm(dayId,i){
   var dy=gymDay(dayId), e=i>=0?dy.ex[i]:{n:'',s:4,lo:8,hi:12,w:null};
   modal('<h3>'+(i>=0?'修改动作':'新动作')+'</h3>'+(i>=0?'':exPicker(dayId))+'<label>动作</label><input id="en" value="'+esc(e.n)+'">'
     +'<div class="row"><div style="flex:1"><label>组数</label><input id="es" inputmode="numeric" value="'+e.s+'"></div><div style="flex:1"><label>最少次数</label><input id="el" inputmode="numeric" value="'+e.lo+'"></div><div style="flex:1"><label>最多次数</label><input id="eh" inputmode="numeric" value="'+e.hi+'"></div></div>'
-    +'<label>重量（kg，可不填）</label><input id="ew" inputmode="decimal" value="'+(e.w==null?'':e.w)+'">'+grpSelect(grpOf(e))
+    +'<label>重量（kg）</label><input id="ew" inputmode="decimal" value="'+(e.w==null?'':e.w)+'">'+grpSelect(grpOf(e))
     +'<div class="row">'+(i>=0?'<button class="btn ghost" data-a="del">删除</button>':'<button class="btn ghost" data-a="close">取消</button>')+'<button class="btn pri" data-a="ok">保存</button></div>',
     function(a,v){
       if(a==='del'){ dy.ex.splice(i,1); save(); render(); return; }
@@ -917,7 +919,7 @@ function gymExForm(dayId,i){
     });
 }
 function pageGym(){
-  var G=S.gym, d=today(), h='<div class="hdr"><h1>健身</h1></div><div class="sub">隔天训练 · '+G.days.map(function(x){return x.name.replace(/日$/,'');}).join(' → ')+'</div>';
+  var G=S.gym, d=today(), h='<div class="hdr"><h1>健身</h1></div>';
   if(G.run){
     var r=G.run, dy=gymDay(r.day), filled=0, total=0;
     r.items.forEach(function(it){ total+=it.s; it.reps.forEach(function(x){ if(x!=null&&x!=='') filled++; }); });
@@ -931,27 +933,27 @@ function pageGym(){
         +it.reps.map(function(x,j){ return '<input class="gr" data-g="r:'+i+':'+j+'" inputmode="numeric" value="'+(x==null?'':x)+'" placeholder="'+(l&&l.reps[j]!=null?l.reps[j]:it.lo)+'">'; }).join('')+'</div>'
         +'<div class="slinks"><button class="lk" data-a="gset:'+i+':1">＋ 一组</button><button class="lk" data-a="gset:'+i+':-1"'+(it.s<=1?' disabled':'')+'>− 一组</button><span class="mv"><button class="lk" data-a="gmv:'+i+':-1"'+(i===0?' disabled':'')+'>↑</button><button class="lk" data-a="gmv:'+i+':1"'+(i===r.items.length-1?' disabled':'')+'>↓</button></span><button class="lk" data-a="gdel:'+i+'">删除</button></div></div>';
     });
-    h+='<div style="height:6px"></div><button class="btn sec" data-a="gadd">＋ 加一个动作</button><div style="height:10px"></div><button class="btn pri" data-a="gfin">完成训练</button><div style="height:8px"></div><button class="btn ghost" data-a="gab">放弃这次</button><div class="note">每组做了几次就填几次；没练的动作留空。增减动作、组数、调整顺序和重量，都会自动存成下次这一天的默认。</div></div>';
+    h+='<div style="height:6px"></div><button class="btn sec" data-a="gadd">＋ 加一个动作</button><div style="height:10px"></div><button class="btn pri" data-a="gfin">完成训练</button><div style="height:8px"></div><button class="btn ghost" data-a="gab">放弃这次</button></div>';
     return h;
   }
   var last=G.log[G.log.length-1], st, sel=(seg.gym&&gymDay(seg.gym))?seg.gym:G.days[G.next%G.days.length].id, nx=G.days[G.next%G.days.length];
   if(!last) st='还没有记录，从'+nx.name+'开始';
   else{ var df=daysBetween(last.date,d); st = df===0?'今天已经练过（'+last.name+'）': df===1?'昨天练了'+last.name+'，今天休息': '今天该练了'+(df>2?' · 已经隔了 '+df+' 天':''); }
   var sd=gymDay(sel);
-  h+='<div class="card"><h2>'+st+'</h2><div class="nm" style="font-size:20px;margin-bottom:10px">'+(sel===nx.id?'下一次：':'这次练：')+esc(sd.name)+'</div>'
+  h+='<div class="card"><h2>'+st+'</h2>'
     +'<button class="btn pri" data-a="gstart:'+sel+'"'+(sd.ex.length?'':' disabled')+'>开始 '+esc(sd.name)+'</button></div>';
   h+=segHtml('gym',G.days.map(function(x){return [x.id,x.name.replace(/日$/,'')];})).replace('<button class="" data-a="seg:gym:'+sel+'"','<button class="on" data-a="seg:gym:'+sel+'"');
-  h+='<div class="card"><h2>'+esc(sd.name)+' · 点动作修改，点曲线看进步</h2>';
+  h+='<div class="card">';
   sd.ex.forEach(function(e,i){ var l=gymLast(e.n);
     h+='<div class="gex pl"><div style="flex:1;min-width:0;cursor:pointer" data-a="gex:'+sel+':'+i+'"><div class="nm">'+esc(e.n)+'</div><div class="cr">'+e.s+' 组 × '+e.lo+'–'+e.hi+' 次</div>'+(l?'<div class="cr">上次 '+l.reps.join(', ')+'</div>':'')+'</div><span class="pw" data-a="gex:'+sel+':'+i+'">'+wtxt(e.w)+'</span><button class="spk" data-a="gpr:'+sel+':'+i+'">'+(function(){ var hh=gymHist(e.n).slice(-8), v=hh.every(function(x){return x.w!=null;})?hh.map(function(x){return x.w;}):hh.map(function(x){return x.tr;}); return spark(v,56,24)||'<span class="cr">曲线</span>'; })()+'</button><span class="mv v"><button class="lk" data-a="pmv:'+sel+':'+i+':-1"'+(i===0?' disabled':'')+'>↑</button><button class="lk" data-a="pmv:'+sel+':'+i+':1"'+(i===sd.ex.length-1?' disabled':'')+'>↓</button></span></div>'; });
   if(!sd.ex.length) h+='<div class="empty">这一天还没有动作。</div>';
   h+='<div style="height:10px"></div><button class="btn sec" data-a="gex:'+sel+':-1">＋ 动作</button></div>';
   var ll=G.log[G.log.length-1];
-  if(ll) h+='<div class="card"><h2>上一次 · '+ll.date.slice(5)+' '+esc(ll.name)+'</h2><div class="sum" style="margin:0"><div><b>'+(ll.min||'—')+'</b><span>分钟</span></div><div><b>'+(ll.sets||ll.items.reduce(function(a,x){return a+x.reps.length;},0))+'</b><span>组</span></div><div><b>'+(kcalOf(ll)?kcalOf(ll)[0]+'–'+kcalOf(ll)[1]:'—')+'</b><span>千卡（粗估）</span></div></div></div>';
+  if(ll) h+='<div class="card"><h2>上一次 · '+ll.date.slice(5)+' '+esc(ll.name)+'</h2><div class="sum" style="margin:0"><div><b>'+(ll.min||'—')+'</b><span>分钟</span></div><div><b>'+(ll.sets||ll.items.reduce(function(a,x){return a+x.reps.length;},0))+'</b><span>组</span></div><div><b>'+(kcalOf(ll)?kcalOf(ll)[0]+'–'+kcalOf(ll)[1]:'—')+'</b><span>千卡</span></div></div></div>';
   h+=gymVolCard(sel);
   h+=gymMuscle();
-  h+='<div class="list"><button class="lrow" data-a="gbw"><span>体重（估算消耗用）</span><span class="v">'+(G.bw?G.bw+' kg':'未填')+'</span></button></div><div style="height:10px"></div>';
-  if(!S.nodes.some(function(n){return n.autoGym;})) h+='<button class="btn ghost" data-a="gymhabit">把"去健身房"设成每周定式</button><div class="note">设了之后，哪天完成一次训练记录，那天就自动打勾。</div>';
+  h+='<div class="list"><button class="lrow" data-a="gbw"><span>体重</span><span class="v">'+(G.bw?G.bw+' kg':'未填')+'</span></button></div><div style="height:10px"></div>';
+  if(!S.nodes.some(function(n){return n.autoGym;})) h+='<button class="btn ghost" data-a="gymhabit">把"去健身房"设成每周定式</button>';
   return h;
 }
 document.addEventListener('input',function(ev){
@@ -977,7 +979,7 @@ function journeyCard(){
   var td=today(), ws=weekStart(td), weeks=[0,0,0,0,0,0,0,0], last28=0;
   S.seatLog.forEach(function(l){ var idx=l.date>=ws?0:Math.ceil(daysBetween(l.date,ws)/7); if(idx>=0&&idx<8) weeks[idx]+=l.n; if(daysBetween(l.date,td)<28&&daysBetween(l.date,td)>=0) last28+=l.n; });
   var mx=Math.max.apply(null,weeks.concat([1]));
-  var h='<div class="card journey"><div class="jtop"><div><div class="jbig">'+tot+'<small> 次</small></div><div class="cr">所有神圣座位 · 累计成功</div></div><div class="fleet">'+(veh(tot)||'🚶')+'</div></div>';
+  var h='<div class="card journey"><div class="jtop"><div><div class="jbig">'+tot+'<small> 次</small></div><div class="cr">累计</div></div><div class="fleet">'+(veh(tot)||'🚶')+'</div></div>';
   h+='<div class="jlab"><span>这一程 '+base+' → '+n10+'</span><span>'+(filled===0&&tot>0?'刚到站 🎉':'还差 <b>'+(n10-tot)+'</b> 次')+'</span></div><div class="cells">';
   for(var i=0;i<10;i++) h+='<i class="'+(i<filled?'on':'')+(i===filled-1?' last':'')+'"></i>';
   h+='</div>';
@@ -986,7 +988,7 @@ function journeyCard(){
   h+='<div class="jlab"><span>最近 8 周</span><span>本周 <b>'+weeks[0]+'</b> · 上周 '+weeks[1]+'</span></div><div class="wk">';
   var anyW=weeks.some(function(x){return x>0;});
   for(var w=7;w>=0;w--) h+='<span class="'+(w===0?'now':'')+'"><i style="height:'+Math.max(3,Math.round(weeks[w]/mx*36))+'px"></i>'+(weeks[w]||'')+'</span>';
-  h+='</div>'+(anyW?'':'<div class="note">这 8 周还是空的，成功一次就立起第一根柱子</div>')+'<div class="jweek">'+S.seats.map(function(x){ return '<span>'+esc(x.name.replace(/番茄钟|睡眠记录/,''))+' <b>#'+x.count+'</b></span>'; }).join('')+'<span>预约链 <b>#'+S.appt.count+'</b></span></div></div>';
+  h+='</div>'+'<div class="jweek">'+S.seats.map(function(x){ return '<span>'+esc(x.name.replace(/番茄钟|睡眠记录/,''))+' <b>#'+x.count+'</b></span>'; }).join('')+'<span>预约链 <b>#'+S.appt.count+'</b></span></div></div>';
   return h;
 }
 function linkBtn(st){ return ''; }
@@ -1013,11 +1015,11 @@ function segHtml(key,items){ return '<div class="seg">'+items.map(function(it){ 
 function apptCard(){
   var pd=S.appt.pending; if(!pd) return '';
   var st=seatById(S.appt.seat)||mainSeat(), left=APPT_MS-(Date.now()-pd);
-  if(left>0) return '<div class="card"><h2>已预约 · '+esc(st?st.name:'')+'</h2><div class="timer" id="appt">'+mmss(left)+'</div><button class="btn pri" data-a="apgo">即时启动（三次响指）</button><div class="note">倒计时结束前必须即时启动，然后马上开始</div></div>';
+  if(left>0) return '<div class="card"><h2>已预约 · '+esc(st?st.name:'')+'</h2><div class="timer" id="appt">'+mmss(left)+'</div><button class="btn pri" data-a="apgo">即时启动</button></div>';
   return '<div class="card"><div class="banner warn" style="margin-bottom:10px">预约超时：14 分 30 秒内没有即时启动。</div><button class="btn danger" data-a="v:appt">按下必为例处理</button></div>';
 }
 function pageFocus(){
-  var h='<div class="hdr"><h1>专注</h1></div><div class="sub">'+today()+' · 累计 '+allTotal()+' 次</div>';
+  var h='<div class="hdr"><h1>专注</h1></div>';
   h+=apptCard()+activeCard();
   h+='<div class="card">';
   S.seats.forEach(function(st){
@@ -1029,7 +1031,7 @@ function pageFocus(){
       +'</div><div class="slinks">'+linkBtn(st)+'<button class="lk" data-a="v:'+st.id+'">违规</button>'
       +(st.exceptions.length?'<span>已判定允许 '+st.exceptions.length+' 条</span>':'')+'</div></div>';
   });
-  if(!S.seats.length) h+='<div class="empty">还没有座位。去"更多 › 神圣座位管理"新增。</div>';
+  if(!S.seats.length) h+='<div class="empty">还没有座位</div>';
   h+='</div>'+journeyCard();
   return h;
 }
@@ -1037,8 +1039,8 @@ function pageSeat(id){
   var st=seatById(id); if(!st) return '<div class="empty">座位不存在。</div>';
   var h='<div class="card"><div class="seat"><div class="top"><span class="nm" style="flex:1">当前纪录</span><span class="num">#'+st.count+'</span></div><div class="veh">'+(veh(st.count)||'—')+'</div>'
     +(st.timerMin>0?'<div class="cr">累计专注 '+seatTotal(st.id)+' 小时</div>':'')+'</div></div>';
-  h+='<div class="sect">已判定允许的行为</div><div class="card">'+(st.exceptions.length?st.exceptions.map(function(e){return '<div class="drow"><span style="flex:1">'+esc(e.text)+'</span><span class="cr">'+esc(e.date)+'</span></div>';}).join(''):'<div class="empty">没有例外，规则保持全部约束力。</div>')+'</div>';
-  h+='<div class="sect">设置</div><div class="card"><label style="margin-top:0">名字</label><input id="sen" value="'+esc(st.name)+'"><label>每次专注多少分钟（不计时填 0）</label><input id="sem" inputmode="numeric" value="'+st.timerMin+'">'
+  h+='<div class="sect">已判定允许的行为</div><div class="card">'+(st.exceptions.length?st.exceptions.map(function(e){return '<div class="drow"><span style="flex:1">'+esc(e.text)+'</span><span class="cr">'+esc(e.date)+'</span></div>';}).join(''):'<div class="empty">没有例外</div>')+'</div>';
+  h+='<div class="sect">设置</div><div class="card"><label style="margin-top:0">名字</label><input id="sen" value="'+esc(st.name)+'"><label>每次专注分钟数（0 = 不计时）</label><input id="sem" inputmode="numeric" value="'+st.timerMin+'">'
     +'<div style="height:12px"></div><button class="btn sec" data-a="seatsave:'+st.id+'">保存</button></div>';
   return h;
 }
@@ -1084,7 +1086,7 @@ function pageStats(){
   var kind=seg.stats, dm=statData(kind);
   if(!cal.month) cal.month=today().slice(0,7);
   var ym=cal.month, y=ym.slice(0,4), unit=kind==='focus'?'小时':kind==='todo'?'件':kind==='gym'?'组':'次';
-  var h='<div class="hdr"><h1>统计</h1></div><div class="sub">点某一天看详情</div>';
+  var h='<div class="hdr"><h1>统计</h1></div>';
   h+=segHtml('stats',[['focus','专注'],['habit','习惯'],['todo','待办'],['gym','健身']]);
   if(kind==='focus'){
     var srcs=statSources();
@@ -1161,7 +1163,7 @@ function lrow(a,text,v,noarrow){ return '<button class="lrow'+(noarrow?' noarrow
 function pageMore(){
   var anyEx=S.appt.exceptions.length||S.seats.some(function(x){return x.exceptions.length;});
   var can=S.exClear!==quarterStart();
-  var h='<div class="hdr"><h1>更多</h1></div><div class="sub">规则、设置和记录</div>';
+  var h='<div class="hdr"><h1>更多</h1></div>';
   h+='<div class="sect">规则</div><div class="list">'+lrow('push:rule:tree','定式树')+lrow('push:rule:seat','神圣座位')+lrow('push:rule:xb','下必为例')+lrow('push:rule:appt','线性时延')+lrow('push:rule:pomo','专注计时与休息')+lrow('push:rule:todo','待办清单')+'</div>';
   h+='<div class="sect">设置</div><div class="list">'+lrow('push:exc','定式树例外情形',S.exceptions.length+' 种')+lrow('push:rsv','应急次数','每月 '+S.reserve.perMonth+' 次')+lrow('push:seats','神圣座位管理',S.seats.length+' 个')+lrow('push:pomoset','休息时长',S.pomo.s+' / '+S.pomo.l+' 分钟')
     +lrow(can&&anyEx?'qclr':'noop','季度清空例外',can?(anyEx?'本季度可用 1 次':'暂无例外'):'本季度已用',true)+'</div>';
@@ -1186,7 +1188,7 @@ function pageRule(k){
   return h;
 }
 function pageExc(){
-  var h='<div class="sub">事先写好，不临时加。当天发生时整棵树暂停。</div><div class="card">';
+  var h='<div class="card">';
   S.exceptions.forEach(function(e,i){ h+='<span class="tag">'+esc(e)+'<button data-a="rmex:'+i+'">×</button></span>'; });
   if(!S.exceptions.length) h+='<div class="empty">还没有例外情形。</div>';
   return h+'<label>新增一种例外</label><div class="row"><input id="fe" placeholder="例如：生病发烧"><button class="btn sec small" data-a="addex">添加</button></div></div>';
@@ -1206,12 +1208,12 @@ function pageRsv(){
 }
 function backupText(){ return JSON.stringify({app:'orbit',v:1,at:new Date().toISOString(),data:S}); }
 function pageBackup(){
-  return '<div class="sub">所有记录只存在这台手机上。删掉主屏幕图标或换手机前，先导出。</div>'
+  return '<div class="sub">记录只存在这台手机上</div>'
     +'<div class="card"><h2>导出</h2><button class="btn pri" data-a="bkfile">导出备份文件</button><div style="height:8px"></div><button class="btn sec" data-a="bkcopy">复制备份文本</button>'
-    +'<div class="note" style="text-align:left">文件可以存到"文件"app 或发给自己。复制的文本可以贴进备忘录。</div></div>'
+    +'</div>'
     +'<div class="card"><h2>恢复</h2><button class="btn sec" data-a="bkpick">从备份文件恢复</button><input type="file" id="bkf" accept=".json,application/json,text/plain" style="display:none">'
-    +'<label>或者粘贴备份文本</label><textarea id="bkt" rows="4" style="width:100%;font-size:13px;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)"></textarea><div style="height:8px"></div><button class="btn ghost" data-a="bkpaste">用粘贴的文本恢复</button>'
-    +'<div class="note" style="text-align:left">恢复会替换掉现在所有记录。</div></div>';
+    +'<label>粘贴备份文本</label><textarea id="bkt" rows="4" style="width:100%;font-size:13px;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)"></textarea><div style="height:8px"></div><button class="btn ghost" data-a="bkpaste">用粘贴的文本恢复</button>'
+    +'</div>';
 }
 function doRestore(txt){
   var o; try{ o=JSON.parse(txt); }catch(e){ toast('读不出来：不是有效的备份'); return; }
@@ -1220,7 +1222,7 @@ function doRestore(txt){
     function(a){ if(a!=='ok') return; S=d; S.lastBackup=S.lastBackup||today(); save(); location.reload(); });
 }
 function pageHistory(){
-  var h='<div class="sub">删掉的定式可以重新加入，也可以先改小再加。</div><div class="card">';
+  var h='<div class="card">';
   if(!S.history.length) h+='<div class="empty">还没有记录。</div>';
   S.history.slice(0,200).forEach(function(e,i){
     h+='<div class="hist"><span class="d">'+e.date+'</span><span class="t">'+esc(e.text)+'</span>'+(e.type==='delete'&&e.snap?'<button data-a="re:'+i+'">重新加入</button>':'')+'</div>';
@@ -1327,7 +1329,7 @@ document.addEventListener('click',function(ev){
         if(navigator.canShare && navigator.canShare({files:[file]})){ navigator.share({files:[file],title:fn}).then(function(){ S.lastBackup=today(); save(); render(); toast('已导出'); }).catch(function(){}); }
         else{ var u=URL.createObjectURL(blob), aa=document.createElement('a'); aa.href=u; aa.download=fn; document.body.appendChild(aa); aa.click(); aa.remove(); S.lastBackup=today(); save(); render(); toast('已下载 '+fn); } }catch(e){ toast('导出失败，改用"复制备份文本"'); }
       return;
-    case 'bkcopy': try{ navigator.clipboard.writeText(backupText()).then(function(){ S.lastBackup=today(); save(); render(); toast('已复制，贴到备忘录里存好'); },function(){ toast('复制失败'); }); }catch(e){ toast('复制失败'); } return;
+    case 'bkcopy': try{ navigator.clipboard.writeText(backupText()).then(function(){ S.lastBackup=today(); save(); render(); toast('已复制'); },function(){ toast('复制失败'); }); }catch(e){ toast('复制失败'); } return;
     case 'bkpick': var fi=document.getElementById('bkf'); fi.onchange=function(){ var f=fi.files[0]; if(!f) return; var rd=new FileReader(); rd.onload=function(){ doRestore(rd.result); }; rd.readAsText(f); }; fi.click(); return;
     case 'bkpaste': var tv=document.getElementById('bkt').value.trim(); if(tv) doRestore(tv); return;
     case 'gbw': return gymBw();
@@ -1336,13 +1338,13 @@ document.addEventListener('click',function(ev){
     case 'gfin': return gymFinish();
     case 'gab': return gymAbort();
     case 'gex': return gymExForm(arg[1],+arg[2]);
-    case 'gymhabit': nav.stack.push({page:'add',arg:{name:'去健身房',criterion:'完成一次训练记录（自动打勾）',freq:'week',perWeek:3,autoGym:true}}); render(); toTop(); return;
+    case 'gymhabit': nav.stack.push({page:'add',arg:{name:'去健身房',criterion:'完成一次训练记录',freq:'week',perWeek:3,autoGym:true}}); render(); toTop(); return;
     case 'tdadd': return todoForm();
     case 'tdok': return todoComplete(arg[1]);
     case 'tdgo': return todoStart(arg[1]);
     case 'tdstop': return todoStop();
     case 'tdmore': return todoMore(arg[1]);
-    case 'todohabit': nav.stack.push({page:'add',arg:{name:'清杂事',criterion:'清掉至少一件待办（完成时自动打勾）',freq:'week',perWeek:2,autoTodo:true}}); render(); toTop(); return;
+    case 'todohabit': nav.stack.push({page:'add',arg:{name:'清杂事',criterion:'清掉至少一件待办',freq:'week',perWeek:2,autoTodo:true}}); render(); toTop(); return;
     case 'bw': return backfillWeek(arg[2],arg[1]);
     case 'xw': return askFail(arg[2],null,arg[1]);
     case 're':
