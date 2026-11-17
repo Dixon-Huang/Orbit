@@ -872,8 +872,8 @@ function pageHabit(){
     h+='</div>';
   }
   if(S.pauses[d]) h+='<div class="banner pause">今天例外：'+esc(S.pauses[d])+' · <a href="#" data-a="unpause" style="color:inherit">撤销</a></div>';
-  if(!total) return h+'<div class="card"><div class="empty">树是空的</div></div>'+starCard();
-  h+='<div class="card">'+renderTree()+'</div>'+starCard();
+  if(!total) return h+'<div class="card"><div class="empty">树是空的</div></div>';
+  h+='<div class="card">'+renderTree()+'</div>';
   var best=0, first=d; S.nodes.forEach(function(n){ var s=isWeekly(n)?0:streak(n); if(s>best) best=s; if(n.added<first) first=n.added; });
   var c=2*Math.PI*38, frac=dn/total;
   h+='<div class="card"><div class="hero"><div class="hring"><svg width="96" height="96" viewBox="0 0 96 96"><circle cx="48" cy="48" r="38" fill="none" stroke="var(--line)" stroke-width="9"/><circle cx="48" cy="48" r="38" fill="none" stroke="var(--acc)" stroke-width="9" stroke-linecap="round" stroke-dasharray="'+c.toFixed(1)+'" stroke-dashoffset="'+(c*(1-frac)).toFixed(1)+'" transform="rotate(-90 48 48)"/></svg><div><b>'+dn+'/'+total+'</b><span>今天</span></div></div>'
@@ -1319,7 +1319,7 @@ function pageStats(){
   var kind=seg.stats, dm=statData(kind);
   if(!cal.month) cal.month=today().slice(0,7);
   var ym=cal.month, y=ym.slice(0,4), unit=kind==='focus'?'小时':kind==='todo'?'件':kind==='gym'?'组':'次';
-  var h='<div class="hdr"><h1>统计</h1></div>';
+  var h='<div class="hdr"><h1>统计</h1></div>'+starCard();
   h+=segHtml('stats',[['focus','专注'],['habit','习惯'],['todo','待办'],['gym','健身']]);
   if(kind==='focus'){
     var srcs=statSources();
