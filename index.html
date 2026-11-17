@@ -881,7 +881,7 @@ function tchk(a,num,on){ return '<button class="chk'+(on?' on':' num')+'"'+(a?' 
 function tbody(a,name,meta){ return '<div class="nb" data-a="'+a+'"><div class="nm">'+name+'</div>'+(meta?'<div class="meta">'+meta+'</div>':'')+'</div>'; }
 function tbtn(a,txt,pri){ return '<button class="btn '+(pri?'pri':'sec')+' small" style="flex:none" data-a="'+a+'">'+txt+'</button>'; }
 function todayRows(){
-  var d=today(), h='', rt=S.todoRun&&todoById(S.todoRun.id);
+  var d=today(), g={habit:'',focus:'',gym:'',todo:''}, rt=S.todoRun&&todoById(S.todoRun.id);
   var seat=S.seats.filter(function(x){return x.timerMin>0;})[0], G=S.gym, gnx=G.days.length?G.days[G.next%G.days.length]:null, gdone=G.log.some(function(L){return L.date===d;});
   var seatAct=seat?(S.active?['tab:focus','计时中',0]:['go:'+seat.id,'坐下',1]):null;
   var gymAct=G.run?['tab:gym','训练中',0]:(gnx&&gnx.ex.length&&!gdone?['tgym:'+gnx.id,'开始',1]:null);
@@ -889,19 +889,20 @@ function todayRows(){
     if(!n.autoTodo){
       var on=done(d,n.id), pz=paused(d,n.id), wk=isWeekly(n), meta=pz?'暂停：'+esc(pauseReason(d,n.id)):(n.criterion?esc(n.criterion):'');
       if(wk && !pz) meta=(meta?meta+' · ':'')+'本周 '+weekCount(n,wkStart(d))+'/'+n.perWeek;
-      if(n.autoStart && seatAct) h+=trow(tchk(on||pz?null:seatAct[0],sitThrust(),on),tbody('hd:'+n.id,esc(n.name),meta),on||pz?'':tbtn(seatAct[0],seatAct[1],seatAct[2]),pz);
-      else if(n.autoGym) h+=trow(tchk(on||pz||!gymAct?null:gymAct[0],40,on),tbody('hd:'+n.id,esc(n.name),(gnx&&!on?esc(gnx.name)+(meta?' · ':''):'')+meta),on||pz||!gymAct?'':tbtn(gymAct[0],gymAct[1],gymAct[2]),pz);
-      else h+=trow(tchk(pz?null:'t:'+n.id,10,on),tbody('hd:'+n.id,esc(n.name),meta),'',pz);
+      if(n.autoStart && seatAct) g.focus+=trow(tchk(on||pz?null:seatAct[0],sitThrust(),on),tbody('hd:'+n.id,esc(n.name),meta),on||pz?'':tbtn(seatAct[0],seatAct[1],seatAct[2]),pz);
+      else if(n.autoGym) g.gym+=trow(tchk(on||pz||!gymAct?null:gymAct[0],40,on),tbody('hd:'+n.id,esc(n.name),(gnx&&!on?esc(gnx.name)+(meta?' · ':''):'')+meta),on||pz||!gymAct?'':tbtn(gymAct[0],gymAct[1],gymAct[2]),pz);
+      else g.habit+=trow(tchk(pz?null:'t:'+n.id,10,on),tbody('hd:'+n.id,esc(n.name),meta),'',pz);
     }
     walk(n.id);
   }); })(null);
-  if(seat && !S.nodes.some(function(n){return n.autoStart;})) h+=trow(tchk(seatAct[0],sitThrust(),false),tbody('tab:focus',esc(seat.name),'#'+seat.count),tbtn(seatAct[0],seatAct[1],seatAct[2]));
-  if(gymAct && !S.nodes.some(function(n){return n.autoGym;})) h+=trow(tchk(gymAct[0],40,false),tbody('tab:gym','健身',gnx?esc(gnx.name):''),tbtn(gymAct[0],gymAct[1],gymAct[2]));
+  if(seat && !S.nodes.some(function(n){return n.autoStart;})) g.focus+=trow(tchk(seatAct[0],sitThrust(),false),tbody('tab:focus',esc(seat.name),'#'+seat.count),tbtn(seatAct[0],seatAct[1],seatAct[2]));
+  if(gymAct && !S.nodes.some(function(n){return n.autoGym;})) g.gym+=trow(tchk(gymAct[0],40,false),tbody('tab:gym','健身',gnx?esc(gnx.name):''),tbtn(gymAct[0],gymAct[1],gymAct[2]));
   var tl=todoSorted(), pick=tl.filter(function(t){return t.due<=d;}); tl.forEach(function(t){ if(pick.length<3 && pick.indexOf(t)<0) pick.push(t); });
   pick.forEach(function(t){ var od=daysBetween(t.due,d), base=TDR[t.dr||0], left=t.sg?base-Math.round(base*0.3):base;
     var due= od>0?'<b class="late">过期 '+od+' 天</b>': od===0?'<b class="plan">今天</b>':md(t.due);
-    h+=trow(tchk('tdok:'+t.id,left,false),tbody('tdmore:'+t.id,esc(t.name),'→ '+esc(t.step)+' · '+due),'<button class="btn sec small" style="flex:none" data-a="tdgo:'+t.id+'"'+(rt?' disabled':'')+'>5 分钟</button>'); });
-  if(tl.length>pick.length) h+='<button class="lk more" data-a="tab:todo">还有 '+(tl.length-pick.length)+' 件待办</button>';
+    g.todo+=trow(tchk('tdok:'+t.id,left,false),tbody('tdmore:'+t.id,esc(t.name),'→ '+esc(t.step)+' · '+due),'<button class="btn sec small" style="flex:none" data-a="tdgo:'+t.id+'"'+(rt?' disabled':'')+'>5 分钟</button>'); });
+  if(tl.length>pick.length) g.todo+='<button class="lk more" data-a="tab:todo">还有 '+(tl.length-pick.length)+' 件</button>';
+  var h=''; [['focus','专注'],['habit','习惯'],['gym','健身'],['todo','待办']].forEach(function(x){ if(g[x[0]]) h+='<div class="sect">'+x[1]+'</div><div class="card">'+g[x[0]]+'</div>'; });
   return h;
 }
 function habitHero(){
@@ -965,7 +966,7 @@ function pageHabit(){
   if(pc) h+='<button class="banner warn linkb" data-a="push:review"><span>'+pc+' 项待确认</span><span>›</span></button>';
   if(S.pauses[d]) h+='<div class="banner pause">今天暂停：'+esc(S.pauses[d])+' · <a href="#" data-a="unpause" style="color:inherit">撤销</a></div>';
   var rows=todayRows();
-  h+='<div class="card">'+(rows||'<div class="empty">今天没有要做的</div>')+'</div>';
+  h+=rows||'<div class="card"><div class="empty">今天没有要做的</div></div>';
   return h;
 }
 function pageAdd(arg){
