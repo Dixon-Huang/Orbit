@@ -176,6 +176,10 @@ input,select{width:100%;font-size:16px;padding:10px 12px;border-radius:10px;bord
 .journey .jtop{display:flex;align-items:center}
 .journey .jtop>div:first-child{flex:1}
 .thr{color:var(--acc)}
+.iconbtn.gear{background:none;color:var(--mute);padding:0;display:flex;align-items:center;justify-content:center}
+.ghostchk{border-style:dashed !important;opacity:.5}
+.lk.more{display:block;width:100%;text-align:center;padding:10px 0 0;margin-top:4px;border-top:1px solid var(--line)}
+.btn.pri.small .thb{color:#ffd9bf}
 .thb{font-size:11px;font-weight:700;color:#c9703f;margin-left:4px;white-space:nowrap}
 .btn.pri .thb{color:#ffd9bf}
 .nm .thb{vertical-align:1px}
@@ -344,7 +348,7 @@ var seg={focus:'seat', stats:null};
 var cal={month:null};
 var NAV_KEY='orbit-nav';
 try{ var nv=JSON.parse(localStorage.getItem(NAV_KEY)||'null');
-  if(nv && Date.now()-nv.t<30*60000){ nav.tab=nv.tab||'habit'; nav.stack=nv.stack||[]; if(nv.seg) seg=nv.seg; if(nv.cal) cal=nv.cal; var navScroll=nv.y||0; } }catch(e){}
+  if(nv && Date.now()-nv.t<30*60000){ nav.tab=(nv.tab&&nv.tab!=='more')?nv.tab:'habit'; nav.stack=nv.stack||[]; if(nv.seg) seg=nv.seg; if(nv.cal) cal=nv.cal; var navScroll=nv.y||0; } }catch(e){}
 function keepNav(){ try{ var sc=document.getElementById('scroller'); localStorage.setItem(NAV_KEY,JSON.stringify({t:Date.now(),tab:nav.tab,stack:nav.stack,seg:seg,cal:cal,y:sc?sc.scrollTop:0})); }catch(e){} }
 
 // ---------- 工具 ----------
@@ -396,11 +400,11 @@ function weekStreak(n){
 }
 function doneToday(n){ var d=today(); return isWeekly(n)? (done(d,n.id)||weekMet(n,wkStart(d))) : done(d,n.id); }
 var WD=['一','二','三','四','五','六','日'];
-function weekLine(n){
+function weekLine(n,dotsOnly){
   var d=today(), ws=wkStart(d), c=weekCount(n,ws), need=n.perWeek, h='<span class="wd7">';
   for(var i=0;i<7;i++){ var ds=addDays(ws,i), pl=(n.plan||[]).indexOf(i)>=0;
     h+='<i class="'+(done(ds,n.id)?'on':'')+(pl?' pl':'')+(ds===d?' t':'')+(ds>d?' fu':'')+'"></i>'; }
-  h+='</span>';
+  h+='</span>'; if(dotsOnly) return h;
   var daysLeft=7-daysBetween(ws,d)-(done(d,n.id)?1:0), rem=need-c, tip;
   if(weekReserved(n,ws)) tip=' · 本周已用应急';
   else if(c>=need) tip=' · <b class="okw">本周达成</b>';
@@ -684,9 +688,9 @@ function doFail(id, date){
 function markPast(date,id){ S.log[date]=S.log[date]||{}; S.log[date][id]=1; save(); render(); }
 function pauseToday(){
   var d=today(), opts=S.exceptions.map(function(e,i){ return '<button data-a="sel:'+i+'">'+esc(e)+'</button>'; }).join('');
-  if(!S.exceptions.length){ modal('<h3>今天是例外吗？</h3><p>还没有例外情形。</p><button class="btn ghost" data-a="close">好</button>'); return; }
+  if(!S.exceptions.length){ modal('<h3>今天暂停？</h3><p>还没有写暂停日情形。</p><button class="btn ghost" data-a="close">好</button>'); return; }
   var list=S.nodes.map(function(n){ var p=paused(d,n.id); return '<label class="ck"><input type="checkbox" id="px_'+n.id+'"'+(p?' disabled checked':' checked')+'> '+esc(n.name)+(p?' <span class="cr">（已暂停）</span>':'')+'</label>'; }).join('');
-  modal('<h3>今天是例外吗？</h3><div class="chips" style="margin-bottom:6px">'+opts+'</div><input type="hidden" id="tdue" value="">'
+  modal('<h3>今天暂停？</h3><div class="chips" style="margin-bottom:6px">'+opts+'</div><input type="hidden" id="tdue" value="">'
     +'<div style="height:8px"></div>'+list+'<div class="row"><button class="btn ghost" data-a="close">取消</button><button class="btn pri" data-a="ok">确定</button></div>',
     function(a,v){
       if(a!=='ok') return;
@@ -694,7 +698,7 @@ function pauseToday(){
       var e=S.exceptions[+v.tdue], ids=S.nodes.filter(function(n){ return v['px_'+n.id]===true && !paused(d,n.id); }).map(function(n){return n.id;});
       if(!ids.length) return;
       S.pexc=S.pexc||{}; S.pexc[d]=S.pexc[d]||{}; ids.forEach(function(id){ S.pexc[d][id]=e; });
-      hist('例外暂停（'+e+'）：'+ids.map(function(id){return byId(id).name;}).join('、'),'pause'); save(); render();
+      hist('暂停（'+e+'）：'+ids.map(function(id){return byId(id).name;}).join('、'),'pause'); save(); render();
     });
 }
 function unpause(id){
@@ -806,7 +810,7 @@ function violation(kind,id){
         var t=(v.mex||'').trim(); if(!t){ violation(kind,id); return; }
         (isAppt?S.appt.exceptions:st.exceptions).push({text:t,date:today()+' '+new Date().toTimeString().slice(0,5)});
         if(isAppt) S.appt.pending=null;
-        hist(name+' 新增永久例外：'+t); save(); render();
+        hist(name+' 新增已允许的行为：'+t); save(); render();
       }
     });
 }
@@ -817,8 +821,8 @@ function apptGo(){
   else { S.appt.count++; S.appt.pending=null; hist('即时启动'+(st?'（'+st.name+'）':'')+'，预约链 #'+S.appt.count); save(); render(); toast('预约兑现，预约链 #'+S.appt.count+(st&&!st.timerMin?' · 做到后点「成功一次」':'')); }
 }
 function clearQuarter(){
-  modal('<h3>本季度清空例外？</h3><p>所有座位和预约链的例外都会删除。</p><div class="row"><button class="btn ghost" data-a="close">取消</button><button class="btn danger" data-a="clr">清空</button></div>',
-    function(a){ if(a==='clr'){ S.seats.forEach(function(x){x.exceptions=[];}); S.appt.exceptions=[]; S.exClear=quarterStart(); hist('季度清空例外'); save(); render(); } });
+  modal('<h3>清空已允许的行为？</h3><p>所有座位和预约链上已允许的行为都会删除。</p><div class="row"><button class="btn ghost" data-a="close">取消</button><button class="btn danger" data-a="clr">清空</button></div>',
+    function(a){ if(a==='clr'){ S.seats.forEach(function(x){x.exceptions=[];}); S.appt.exceptions=[]; S.exClear=quarterStart(); hist('季度清空已允许的行为'); save(); render(); } });
 }
 function addSeat(){
   modal('<h3>新增神圣座位</h3><label>名字</label><input id="sn" placeholder="例如：图书馆三楼靠窗"><label>每次专注分钟数（0 = 不计时）</label><input id="sm" inputmode="numeric" value="60"><div class="row"><button class="btn ghost" data-a="close">取消</button><button class="btn pri" data-a="ok">添加</button></div>',
@@ -866,32 +870,64 @@ function weekDots(n){
   for(var k=6;k>=0;k--){ var ds=addDays(d,-k); h+='<i class="'+(daysBetween(n.added,ds)<0?'na':paused(ds,n.id)?'pz':done(ds,n.id)?'on':reserved(ds,n.id)?'rs':'')+(k===0?' t':'')+'"></i>'; }
   return h+'</span>';
 }
+function seatBtn(){
+  var st=S.seats.filter(function(x){return x.timerMin>0;})[0]; if(!st) return '';
+  if(S.active) return '<button class="btn sec small" style="flex:none" data-a="tab:focus">计时中</button>';
+  return '<button class="btn pri small" style="flex:none" data-a="go:'+st.id+'">坐下'+thb(sitThrust())+'</button>';
+}
+function gymBtn(){
+  var G=S.gym, d=today(); if(!G.days.length) return '';
+  if(G.run) return '<button class="btn sec small" style="flex:none" data-a="tab:gym">训练中</button>';
+  if(G.log.some(function(L){return L.date===d;})) return '';
+  var nx=G.days[G.next%G.days.length]; if(!nx.ex.length) return '';
+  return '<button class="btn pri small" style="flex:none" data-a="tgym:'+nx.id+'">'+esc(nx.name)+thb(40)+'</button>';
+}
 function renderTree(){
   var d=today(), h='';
   function walk(pid,depth){
     kids(pid).forEach(function(n){
-      var on=done(d,n.id), st=streak(n), wk=isWeekly(n), pz=paused(d,n.id);
-      var badge = wk ? ' <span class="freq">每周 '+n.perWeek+' 次</span>'+(st>=2?' <span class="fire">🔥'+st+' 周</span>':'')
-                     : (st>=3?' <span class="fire">🔥'+st+'</span>':'');
-      if(n.autoStart||n.autoTodo||n.autoGym) badge=' <span class="freq">自动</span>'+badge; else if(!on&&!pz) badge+=thb(10);
-      var meta = wk ? weekLine(n)
-                    : weekDots(n)+' 连续 '+st+' 天 · 应急 '+reserveLeft(n.id)+'/'+S.reserve.perMonth+(reserved(d,n.id)?' · 今天已用应急':'');
+      var on=done(d,n.id), st=streak(n), wk=isWeekly(n), pz=paused(d,n.id), auto=n.autoStart||n.autoTodo||n.autoGym;
+      var badge = wk ? ' <span class="freq">每周 '+n.perWeek+' 次</span>' : (st>=3?' <span class="fire">🔥'+st+'</span>':'');
+      if(!auto && !on && !pz) badge+=thb(10);
+      var meta;
+      if(pz) meta='<b class="plan">今天暂停：'+esc(pauseReason(d,n.id))+'</b>';
+      else if(wk){ var ws=wkStart(d), c=weekCount(n,ws), pt=(n.plan||[]).indexOf(daysBetween(ws,d))>=0 && !on && c<n.perWeek; meta=weekLine(n,1)+' 本周 '+c+'/'+n.perWeek+(pt?' · <b class="plan">今天计划做</b>':''); }
+      else meta=weekDots(n)+' 连续 '+st+' 天'+(reserved(d,n.id)?' · 今天已用应急':'');
+      var act=(on||pz)?'':n.autoStart?seatBtn():n.autoGym?gymBtn():'';
       h+='<div class="node" style="padding-left:'+(depth*22)+'px">'
         +'<button class="chk'+(on?' on':'')+'" data-a="t:'+n.id+'"'+(pz?' disabled':'')+'>'+(on?'✓':'')+'</button>'
-        +'<div class="nb"'+(pz?'':' data-a="t:'+n.id+'"')+'><div class="nm">'+(depth?'<span class="branch">└</span>':'')+esc(n.name)+badge+'</div>'
+        +'<div class="nb" data-a="hd:'+n.id+'"><div class="nm">'+(depth?'<span class="branch">└</span>':'')+esc(n.name)+badge+'</div>'
         +(n.criterion?'<div class="cr">'+esc(n.criterion)+'</div>':'')
-        +'<div class="meta">'+(pz?'<b class="plan">今天例外：'+esc(pauseReason(d,n.id))+'</b>'+(S.pauses[d]?'':' · <a href="#" data-a="unp:'+n.id+'" style="color:inherit">撤销</a>')+'<br>':'')+meta+'</div></div>'
-        +(pz?'':'<button class="fail" data-a="f:'+n.id+'">'+(wk?'放弃本周':'没做到')+'</button>')+'</div>';
+        +'<div class="meta">'+meta+'</div></div>'+act+'</div>';
       walk(n.id,depth+1);
     });
   }
   walk(null,0);
+  // 没有对应定式时，专注和健身单独占一行
+  if(!S.nodes.some(function(n){return n.autoStart;})){ var st0=S.seats.filter(function(x){return x.timerMin>0;})[0]; if(st0) h+='<div class="node"><span class="chk ghostchk"></span><div class="nb" data-a="tab:focus"><div class="nm">'+esc(st0.name)+'</div><div class="meta">#'+st0.count+'</div></div>'+seatBtn()+'</div>'; }
+  if(!S.nodes.some(function(n){return n.autoGym;})){ var gb=gymBtn(); if(gb) h+='<div class="node"><span class="chk ghostchk"></span><div class="nb" data-a="tab:gym"><div class="nm">健身</div></div>'+gb+'</div>'; }
   return h;
 }
+function habitMore(id){
+  var n=byId(id); if(!n) return; var d=today(), wk=isWeekly(n), pz=paused(d,id), ws=wkStart(d);
+  var h='<h3>'+esc(n.name)+'</h3>'+(n.criterion?'<p>'+esc(n.criterion)+'</p>':'');
+  h+='<div class="drow"><span style="flex:1">'+(wk?'连续周数':'连续天数')+'</span><span>'+(wk?weekStreak(n):streak(n))+'</span></div>';
+  if(wk) h+='<div class="drow"><span style="flex:1">本周</span><span>'+weekCount(n,ws)+' / '+n.perWeek+'</span></div>';
+  h+='<div class="drow"><span style="flex:1">本月应急</span><span>'+reserveLeft(n.id)+' / '+S.reserve.perMonth+'</span></div><div style="height:12px"></div>';
+  if(pz && !S.pauses[d]) h+='<button class="btn sec" style="margin-bottom:10px" data-a="unp">撤销今天的暂停</button>';
+  if(!pz) h+='<button class="btn ghost" style="margin-bottom:10px;color:var(--bad)" data-a="fail">'+(wk?'放弃本周':'今天没做到')+'</button>';
+  modal(h+'<button class="btn ghost" data-a="close">关闭</button>', function(a){ if(a==='fail') askFail(id); if(a==='unp') unpause(id); });
+}
+function todoRow(t,rt){
+  var d=today(), od=daysBetween(t.due,d);
+  var dl= od>0?'<b class="late">过期 '+od+' 天</b>': od===0?'<b class="plan">今天到期</b>':md(t.due)+' · 还有 '+(-od)+' 天';
+  return '<div class="node"><button class="chk" style="border-color:'+todoColor(t)+';border-width:3px" data-a="tdok:'+t.id+'"></button><div class="nb" data-a="tdmore:'+t.id+'"><div class="nm">'+esc(t.name)+'</div><div class="cr">→ '+esc(t.step)+'</div><div class="meta">'+dl+'</div></div><button class="btn sec small" style="flex:none" data-a="tdgo:'+t.id+'"'+(rt?' disabled':'')+'>做 5 分钟'+thb(t.sg?TDR[t.dr||0]-Math.round(TDR[t.dr||0]*0.3):TDR[t.dr||0])+'</button></div>';
+}
+function todoSorted(){ return S.todos.slice().sort(function(a,b){return a.due<b.due?-1:a.due>b.due?1:(a.added<b.added?-1:1);}); }
 function pageHabit(){
   var d=today(), act=S.nodes.filter(function(n){return !paused(d,n.id);}), total=act.length, dn=act.filter(function(n){return doneToday(n);}).length;
-  var h='<div class="hdr"><h1>今天</h1><button class="iconbtn" data-a="push:add">＋ 定式</button></div>'
-    +'<div class="sub">'+d+(S.nodes.some(function(n){return !isWeekly(n);})?' · 稳定 ×'+(Math.round(starStab(d)*100)/100):'')+(S.pauses[d]||(S.nodes.length&&!total)?' · 例外暂停':(total&&dn===total?' 🎉':''))+'</div>';
+  var h='<div class="hdr"><h1>今天</h1><button class="iconbtn gear" data-a="push:more"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="6.8"/><path d="M12 2.6v2.6M12 18.8v2.6M2.6 12h2.6M18.8 12h2.6M5.4 5.4l1.8 1.8M16.8 16.8l1.8 1.8M5.4 18.6l1.8-1.8M16.8 7.2l1.8-1.8"/></svg></button></div>'
+    +'<div class="sub">'+d+(S.nodes.some(function(n){return !isWeekly(n);})?' · 稳定 ×'+(Math.round(starStab(d)*100)/100):'')+(S.pauses[d]||(S.nodes.length&&!total)?' · 暂停':(total&&dn===total?' 🎉':''))+'</div>';
   var lb=S.lastBackup?daysBetween(S.lastBackup,today()):null;
   if(S.history.length>5 && (lb==null||lb>=14)) h+='<div class="banner warn">'+(lb==null?'还没有备份':lb+' 天没备份')+' · <a href="#" data-a="push:backup" style="color:inherit">去备份</a></div>';
   var pr=pendingReview();
@@ -908,15 +944,21 @@ function pageHabit(){
       h+='<div class="rev"><span>'+p.ws.slice(5)+' 那周 '+esc(n.name)+' '+weekCount(n,p.ws)+'/'+n.perWeek+'</span><button class="ok" data-a="bw:'+p.ws+':'+p.id+'">忘了打，补一次</button><button class="no" data-a="xw:'+p.ws+':'+p.id+'">没做到</button></div>'; });
     h+='</div>';
   }
-  if(S.pauses[d]) h+='<div class="banner pause">今天例外：'+esc(S.pauses[d])+' · <a href="#" data-a="unpause" style="color:inherit">撤销</a></div>';
-  if(!total) return h+'<div class="card"><div class="empty">树是空的</div></div>';
-  h+='<div class="card">'+renderTree()+'</div>';
-  var best=0, first=d; S.nodes.forEach(function(n){ var s=isWeekly(n)?0:streak(n); if(s>best) best=s; if(n.added<first) first=n.added; });
-  var c=2*Math.PI*38, frac=dn/total;
-  h+='<div class="card"><div class="hero"><div class="hring"><svg width="96" height="96" viewBox="0 0 96 96"><circle cx="48" cy="48" r="38" fill="none" stroke="var(--line)" stroke-width="9"/><circle cx="48" cy="48" r="38" fill="none" stroke="var(--acc)" stroke-width="9" stroke-linecap="round" stroke-dasharray="'+c.toFixed(1)+'" stroke-dashoffset="'+(c*(1-frac)).toFixed(1)+'" transform="rotate(-90 48 48)"/></svg><div><b>'+dn+'/'+total+'</b><span>今天</span></div></div>'
-    +'<div class="hstats"><div><b>'+total+'</b><span>个定式</span></div><div><b>'+best+'</b><span>最长连续</span></div><div><b>'+(daysBetween(first,d)+1)+'</b><span>树龄（天）</span></div></div></div>'
-    +treeSvg()+'</div>';
-  if(act.length) h+='<button class="btn ghost" data-a="pause">今天是例外情形</button>';
+  if(S.pauses[d]) h+='<div class="banner pause">今天暂停：'+esc(S.pauses[d])+' · <a href="#" data-a="unpause" style="color:inherit">撤销</a></div>';
+  var rows=renderTree();
+  if(rows) h+='<div class="card">'+rows+'</div>';
+  // 今天要处理的待办：过期和今天到期的全部，不足三件用最近的补上
+  var tl=todoSorted(), pick=tl.filter(function(t){return t.due<=d;}); tl.forEach(function(t){ if(pick.length<3 && pick.indexOf(t)<0) pick.push(t); });
+  var rt=S.todoRun&&todoById(S.todoRun.id);
+  if(pick.length){ h+='<div class="card">'+pick.map(function(t){return todoRow(t,rt);}).join('')+(tl.length>pick.length?'<button class="lk more" data-a="tab:todo">还有 '+(tl.length-pick.length)+' 件</button>':'')+'</div>'; }
+  if(total){
+    var best=0, first=d; S.nodes.forEach(function(n){ var s=isWeekly(n)?0:streak(n); if(s>best) best=s; if(n.added<first) first=n.added; });
+    var c=2*Math.PI*38, frac=dn/total;
+    h+='<div class="card"><div class="hero"><div class="hring"><svg width="96" height="96" viewBox="0 0 96 96"><circle cx="48" cy="48" r="38" fill="none" stroke="var(--line)" stroke-width="9"/><circle cx="48" cy="48" r="38" fill="none" stroke="var(--acc)" stroke-width="9" stroke-linecap="round" stroke-dasharray="'+c.toFixed(1)+'" stroke-dashoffset="'+(c*(1-frac)).toFixed(1)+'" transform="rotate(-90 48 48)"/></svg><div><b>'+dn+'/'+total+'</b><span>定式</span></div></div>'
+      +'<div class="hstats"><div><b>'+total+'</b><span>个定式</span></div><div><b>'+best+'</b><span>最长连续</span></div><div><b>'+(daysBetween(first,d)+1)+'</b><span>树龄（天）</span></div></div></div>'
+      +treeSvg()+'</div>';
+  }
+  h+='<div class="row"><button class="btn sec" data-a="push:add">＋ 定式</button>'+(act.length?'<button class="btn ghost" data-a="pause">今天暂停</button>':'')+'</div>';
   return h;
 }
 function pageAdd(arg){
@@ -973,7 +1015,7 @@ function todoComplete(id){
   save(); render();
   toast('清掉了：'+esc(t.name)+' ✓', function(){ starRetract('td:'+t.id); S.todos.splice(idx,0,t); var i=S.todoDone.indexOf(rec); if(i>=0) S.todoDone.splice(i,1); ticked.forEach(function(nid){ if(S.log[td]) delete S.log[td][nid]; }); save(); render(); });
 }
-function todoStart(id){ unlockAudio(); var t=todoById(id); if(t&&!t.sg){ t.sg=1; starGrant('ts:'+id,Math.round(TDR[t.dr||0]*0.3)); } S.todoRun={id:id,start:Date.now()}; save(); render(); toTop(); starFlush(); }
+function todoStart(id){ unlockAudio(); nav.tab='todo'; nav.stack=[]; var t=todoById(id); if(t&&!t.sg){ t.sg=1; starGrant('ts:'+id,Math.round(TDR[t.dr||0]*0.3)); } S.todoRun={id:id,start:Date.now()}; save(); render(); toTop(); starFlush(); }
 function todoStop(){
   var r=S.todoRun; if(!r) return; var t=todoById(r.id); S.todoRun=null; save(); render();
   if(t) modal('<h3>先到这</h3><label>下一步</label><input id="tx" value="'+esc(t.step)+'"><div class="row"><button class="btn pri" data-a="ok">保存</button></div>',
@@ -1015,15 +1057,11 @@ function pageTodo(){
             +'<div class="row"><button class="btn ghost" data-a="tdstop">先到这</button><button class="btn pri" data-a="tdok:'+rt.id+'">整件做完了</button></div></div>';
   }
   if(over) h+='<div class="banner warn">'+over+' 件已过期 · 阻力 ×'+starDrag()+'</div>';
-  var list=S.todos.slice().sort(function(a,b){return a.due<b.due?-1:a.due>b.due?1:(a.added<b.added?-1:1);});
+  var list=todoSorted();
   if(list.length) h+=todoCal(list);
   h+='<div class="card">';
   if(!list.length) h+='<div class="empty">没有待办</div>';
-  list.forEach(function(t){
-    var od=daysBetween(t.due,d), age=daysBetween(t.added,d);
-    var dl= od>0?'<b class="late">过期 '+od+' 天</b>': od===0?'<b class="plan">今天到期</b>':md(t.due)+' · 还有 '+(-od)+' 天';
-    h+='<div class="node"><button class="chk" style="border-color:'+todoColor(t)+';border-width:3px" data-a="tdok:'+t.id+'"></button><div class="nb" data-a="tdmore:'+t.id+'"><div class="nm">'+esc(t.name)+'</div><div class="cr">→ '+esc(t.step)+'</div><div class="meta">'+dl+(age>=3?' · 已放 '+age+' 天':'')+(t.moved?' · 改期 '+t.moved+' 次':'')+'</div></div><button class="btn sec small" style="flex:none" data-a="tdgo:'+t.id+'"'+(rt?' disabled':'')+'>做 5 分钟'+thb(t.sg?TDR[t.dr||0]-Math.round(TDR[t.dr||0]*0.3):TDR[t.dr||0])+'</button></div>';
-  });
+  list.forEach(function(t){ h+=todoRow(t,rt); });
   h+='</div>';
   h+='<div class="sum"><div><b>'+S.todos.length+'</b><span>待办</span></div><div><b>'+wk+'</b><span>本周清掉</span></div><div><b>'+S.todoDone.length+'</b><span>累计清掉</span></div></div>';
   if(S.todoDone.length){
@@ -1259,7 +1297,7 @@ function journeyCard(){
   h+='<div class="jlab"><span>最近 8 周</span><span>本周 <b>'+weeks[0]+'</b> · 上周 '+weeks[1]+'</span></div><div class="wk">';
   var anyW=weeks.some(function(x){return x>0;});
   for(var w=7;w>=0;w--) h+='<span class="'+(w===0?'now':'')+'"><i style="height:'+Math.max(3,Math.round(weeks[w]/mx*36))+'px"></i>'+(weeks[w]||'')+'</span>';
-  h+='</div>'+'<div class="jweek">'+S.seats.map(function(x){ return '<span>'+esc(x.name.replace(/番茄钟|睡眠记录/,''))+' <b>#'+x.count+'</b></span>'; }).join('')+'<span>预约链 <b>#'+S.appt.count+'</b></span></div></div>';
+  h+='</div>'+'</div></div>';
   return h;
 }
 function linkBtn(st){ return ''; }
@@ -1310,7 +1348,7 @@ function pageSeat(id){
   var st=seatById(id); if(!st) return '<div class="empty">座位不存在。</div>';
   var h='<div class="card"><div class="seat"><div class="top"><span class="nm" style="flex:1">当前纪录</span><span class="num">#'+st.count+'</span></div><div class="veh">'+(veh(st.count)||'—')+'</div>'
     +(st.timerMin>0?'<div class="cr">累计专注 '+seatTotal(st.id)+' 小时</div>':'')+'</div></div>';
-  h+='<div class="sect">已判定允许的行为</div><div class="card">'+(st.exceptions.length?st.exceptions.map(function(e){return '<div class="drow"><span style="flex:1">'+esc(e.text)+'</span><span class="cr">'+esc(e.date)+'</span></div>';}).join(''):'<div class="empty">没有例外</div>')+'</div>';
+  h+='<div class="sect">已判定允许的行为</div><div class="card">'+(st.exceptions.length?st.exceptions.map(function(e){return '<div class="drow"><span style="flex:1">'+esc(e.text)+'</span><span class="cr">'+esc(e.date)+'</span></div>';}).join(''):'<div class="empty">没有已允许的行为</div>')+'</div>';
   h+='<div class="sect">设置</div><div class="card"><label style="margin-top:0">名字</label><input id="sen" value="'+esc(st.name)+'"><label>每次专注分钟数（0 = 不计时）</label><input id="sem" inputmode="numeric" value="'+st.timerMin+'">'
     +'<div style="height:12px"></div><button class="btn sec" data-a="seatsave:'+st.id+'">保存</button></div>';
   return h;
@@ -1357,7 +1395,7 @@ function pageStats(){
   var kind=seg.stats, dm=statData(kind);
   if(!cal.month) cal.month=today().slice(0,7);
   var ym=cal.month, y=ym.slice(0,4), unit=kind==='focus'?'小时':kind==='todo'?'件':kind==='gym'?'组':'次';
-  var h='<div class="hdr"><h1>统计</h1></div>'+starCard();
+  var h='<div class="hdr"><h1>星图</h1></div>'+starCard();
   h+=segHtml('stats',[['focus','专注'],['habit','习惯'],['todo','待办'],['gym','健身']]);
   if(kind==='focus'){
     var srcs=statSources();
@@ -1393,7 +1431,7 @@ function pageStats(){
     var mark = kind==='habit' && (anyPause(ds) || (e&&e.rs.length)) ? ' mk' : '';
     h+='<button class="lv'+level+mark+(ds===td?' td':'')+'" data-a="day:'+ds+'">'+dd+(n?'<small>'+n+'</small>':'')+'</button>';
   }
-  h+='</div><div class="legend">'+(kind==='habit'?'<span style="margin-right:auto">虚线框：例外或应急</span>':kind==='gym'?'<span style="margin-right:auto">数字是当天组数</span>':'')+(kind==='gym'?'轻':'少')+' <i></i><i style="background:var(--h1)"></i><i style="background:var(--h2)"></i><i style="background:var(--h3)"></i><i style="background:var(--h4)"></i> '+(kind==='gym'?'重':'多')+'</div></div>';
+  h+='</div><div class="legend">'+(kind==='habit'?'<span style="margin-right:auto">虚线框：暂停或应急</span>':kind==='gym'?'<span style="margin-right:auto">数字是当天组数</span>':'')+(kind==='gym'?'轻':'少')+' <i></i><i style="background:var(--h1)"></i><i style="background:var(--h2)"></i><i style="background:var(--h3)"></i><i style="background:var(--h4)"></i> '+(kind==='gym'?'重':'多')+'</div></div>';
   if(kind==='habit') h+='<div class="card"><h2>每个定式 · '+M+' 月</h2>'+habitMonthRows(ym)+'</div>';
   var tots=[], mx=1;
   for(var k=1;k<=12;k++){ var key=y+'-'+String(k).padStart(2,'0'), t=0; keys.forEach(function(d){ if(d.slice(0,7)===key) t+=dm[d].n; }); tots.push(t); if(t>mx) mx=t; }
@@ -1407,8 +1445,8 @@ function pageStats(){
 function showDay(ds){
   var kind=seg.stats, d=statData(kind)[ds], h='<h3>'+ds+'</h3>';
   if(kind==='habit'){
-    if(S.pauses[ds]) h+='<p>例外暂停（全部）：'+esc(S.pauses[ds])+'</p>';
-    if(S.pexc && S.pexc[ds]) Object.keys(S.pexc[ds]).forEach(function(id){ h+='<div class="drow"><span class="k">例外</span><span>'+esc(nameOf(id))+' · '+esc(S.pexc[ds][id])+'</span></div>'; });
+    if(S.pauses[ds]) h+='<p>暂停（全部）：'+esc(S.pauses[ds])+'</p>';
+    if(S.pexc && S.pexc[ds]) Object.keys(S.pexc[ds]).forEach(function(id){ h+='<div class="drow"><span class="k">暂停</span><span>'+esc(nameOf(id))+' · '+esc(S.pexc[ds][id])+'</span></div>'; });
     if(!d && !anyPause(ds)) h+='<p>这一天没有记录。</p>';
     if(d){ d.ids.forEach(function(id){ h+='<div class="drow"><span class="k">✓</span><span>'+esc(nameOf(id))+'</span></div>'; });
       d.rs.forEach(function(id){ h+='<div class="drow"><span class="k">应急</span><span>'+esc(nameOf(id))+'</span></div>'; }); }
@@ -1434,19 +1472,19 @@ function lrow(a,text,v,noarrow){ return '<button class="lrow'+(noarrow?' noarrow
 function pageMore(){
   var anyEx=S.appt.exceptions.length||S.seats.some(function(x){return x.exceptions.length;});
   var can=S.exClear!==quarterStart();
-  var h='<div class="hdr"><h1>更多</h1></div>';
+  var h='';
   h+='<div class="sect">规则</div><div class="list">'+lrow('push:rule:star','星图')+lrow('push:rule:tree','定式树')+lrow('push:rule:seat','神圣座位')+lrow('push:rule:xb','下必为例')+lrow('push:rule:appt','线性时延')+lrow('push:rule:pomo','专注计时与休息')+lrow('push:rule:todo','待办清单')+'</div>';
-  h+='<div class="sect">设置</div><div class="list">'+lrow('push:exc','定式树例外情形',S.exceptions.length+' 种')+lrow('push:rsv','应急次数','每月 '+S.reserve.perMonth+' 次')+lrow('push:seats','神圣座位管理',S.seats.length+' 个')+lrow('push:pomoset','休息时长',S.pomo.s+' / '+S.pomo.l+' 分钟')
-    +lrow(can&&anyEx?'qclr':'noop','季度清空例外',can?(anyEx?'本季度可用 1 次':'暂无例外'):'本季度已用',true)+'</div>';
+  h+='<div class="sect">设置</div><div class="list">'+lrow('push:exc','暂停日',S.exceptions.length+' 种')+lrow('push:rsv','应急次数','每月 '+S.reserve.perMonth+' 次')+lrow('push:seats','神圣座位管理',S.seats.length+' 个')+lrow('push:pomoset','休息时长',S.pomo.s+' / '+S.pomo.l+' 分钟')
+    +lrow(can&&anyEx?'qclr':'noop','清空已允许的行为',can?(anyEx?'本季度可用 1 次':'暂无'):'本季度已用',true)+'</div>';
   h+='<div class="sect">记录</div><div class="list">'+lrow('push:history','历史记录',S.history.length+' 条')+lrow('push:backup','备份与恢复',S.lastBackup?'上次 '+S.lastBackup.slice(5):'还没备份')+'</div>';
   return h;
 }
 var RULES={
-  star:['星图','<p>今日航程 = 推力 × 速度 × 稳定 × 助推（× 阻力）。航程攒够就到达下一站，解锁一张卡片；每次到站从两个目的地里选一个。</p><p><b>推力</b>：当天第一次坐上计时座位 20（坐下就给）；每坐满一次 10；手动打勾一个定式 10；健身开始 20、完成 20；睡眠记录成功一次 15；待办按新建时选的抗拒程度给 10 / 25 / 50，点"做 5 分钟"先给三成，清掉给剩下的。每笔推力有 60% 的概率是 1 倍，30% 是 2 倍，10% 是 3 倍。自动打勾的定式不另给。</p><p><b>速度</b>：由累计专注次数决定飞船型号，永久有效。0 化学火箭 ×1 · 50 核热火箭 ×1.3 · 150 离子推进 ×1.6 · 300 太阳帆 ×2 · 600 聚变推进 ×2.6 · 1200 反物质推进 ×3.5。</p><p><b>稳定</b>：今天每日定式的完成比例，从 ×1 到 ×1.5。例外暂停的定式不计入。</p><p><b>助推</b>：健身当天和第二天 ×1.3。</p><p><b>充能</b>：睡眠记录成功后，下一次"第一次坐下"的推力翻倍。</p><p><b>阻力</b>：每件过期待办让当天航程少一成，最多少三成。只影响当天，已有的航程和卡片不会减少。</p><p><b>打捞</b>：清掉待办有机会得到一张稀有卡，顺手 15%、有点烦 40%、很抗拒 80%。当天每日定式全勾、至少坐满一次、没有过期待办，必得一张。</p>'],
+  star:['星图','<p>今日航程 = 推力 × 速度 × 稳定 × 助推（× 阻力）。航程攒够就到达下一站，解锁一张卡片；每次到站从两个目的地里选一个。</p><p><b>推力</b>：当天第一次坐上计时座位 20（坐下就给）；每坐满一次 10；手动打勾一个定式 10；健身开始 20、完成 20；睡眠记录成功一次 15；待办按新建时选的抗拒程度给 10 / 25 / 50，点"做 5 分钟"先给三成，清掉给剩下的。每笔推力有 60% 的概率是 1 倍，30% 是 2 倍，10% 是 3 倍。自动打勾的定式不另给。</p><p><b>速度</b>：由累计专注次数决定飞船型号，永久有效。0 化学火箭 ×1 · 50 核热火箭 ×1.3 · 150 离子推进 ×1.6 · 300 太阳帆 ×2 · 600 聚变推进 ×2.6 · 1200 反物质推进 ×3.5。</p><p><b>稳定</b>：今天每日定式的完成比例，从 ×1 到 ×1.5。暂停的定式不计入。</p><p><b>助推</b>：健身当天和第二天 ×1.3。</p><p><b>充能</b>：睡眠记录成功后，下一次"第一次坐下"的推力翻倍。</p><p><b>阻力</b>：每件过期待办让当天航程少一成，最多少三成。只影响当天，已有的航程和卡片不会减少。</p><p><b>打捞</b>：清掉待办有机会得到一张稀有卡，顺手 15%、有点烦 40%、很抗拒 80%。当天每日定式全勾、至少坐满一次、没有过期待办，必得一张。</p>'],
   todo:['待办清单','<p>每件待办都要写一个 5 分钟内能做完的第一步，并选一个近的期限：今天、本周内或下周内。</p><p>点"做 5 分钟"只承诺 5 分钟。到点后可以顺手做完，也可以停下并写好下一步。</p><p>过期的待办三选一：现在做 5 分钟、改期（改期次数会显示），或者决定不做并删掉。</p><p>可以把"清杂事"设成每周定式：哪天清掉一件待办，那天自动打勾。</p>'],
-  tree:['定式树','<p>每周定式（比如每周 3 次健身房）按周一到周日结算：达到次数就算这周做到，没达到就用一次应急或删除。加入的那一周不满 7 天，不结算。计划日只用来提醒。</p><p>每个定式每月有固定的应急次数（默认 2 次，事先定死）。没做到时可以用掉一次应急：当天不打勾也不删除，连续天数照常保留。应急用完后再失败，才按堆栈删除。</p><p>每天最多把一个新定式加入树中：和已有定式相关就挂在它下面，是全新的领域就开新分支。</p><p>按堆栈来管理：某个定式有一次没做到，就把它和它的所有子节点一起删除。以后可以重新加入到树的末尾。</p><p>例外：搬家、出游等事先写好的情形，当天整棵树暂停。</p><p>每天凌晨 4:00 才算新的一天，4 点前打的勾都算前一天。</p>'],
+  tree:['定式树','<p>每周定式（比如每周 3 次健身房）按周一到周日结算：达到次数就算这周做到，没达到就用一次应急或删除。加入的那一周不满 7 天，不结算。计划日只用来提醒。</p><p>每个定式每月有固定的应急次数（默认 2 次，事先定死）。没做到时可以用掉一次应急：当天不打勾也不删除，连续天数照常保留。应急用完后再失败，才按堆栈删除。</p><p>每天最多把一个新定式加入树中：和已有定式相关就挂在它下面，是全新的领域就开新分支。</p><p>按堆栈来管理：某个定式有一次没做到，就把它和它的所有子节点一起删除。以后可以重新加入到树的末尾。</p><p>暂停日：搬家、出游等事先写好的情形，当天选中的定式暂停，不打勾也不算失败。</p><p>每天凌晨 4:00 才算新的一天，4 点前打的勾都算前一天。</p>'],
   seat:['神圣座位','<p>违规清零只清当前纪录 #N；累计次数只增不减，决定飞船型号。</p><p>坐在其他座位上没有约束；屁股一碰到神圣座位，就必须用最好的状态 100% 专注满一个小时。没有把握就不坐。</p><p>第一次成功记为 #1，之后每次成功加一个编号。一次失败（刷手机、只坐十分钟就走）就清零，从 #1 重新开始。</p>'],
-  xb:['下必为例','<p>遇到疑似违规，只能二选一：</p><p>1. 判定规则被完全破坏，链条断裂，清空全部纪录，下次从 #1 重新开始。</p><p>2. 判定这个行为允许，但以后遇到同样情况也必须一律允许，在这条链接下来的整个生命周期里，它对该行为彻底失去约束力。</p><p>3. 每一季度（1.1，4.1，7.1，11.1）可以清空一次例外。</p>'],
+  xb:['下必为例','<p>遇到疑似违规，只能二选一：</p><p>1. 判定规则被完全破坏，链条断裂，清空全部纪录，下次从 #1 重新开始。</p><p>2. 判定这个行为允许，但以后遇到同样情况也必须一律允许，在这条链接下来的整个生命周期里，它对该行为彻底失去约束力。</p><p>3. 每一季度（1.1，4.1，7.1，11.1）可以清空一次已允许的行为。</p>'],
   appt:['线性时延','<p>在座位的"坐下"旁边点"预约"，对应打一次响指。触发后 14 分 30 秒内必须执行即时启动信号（预留缓冲，以防真的用完 15 分钟）。</p><p>即时启动信号是打三次响指，触发后必须根据现有条件尽快开始任务。</p><p>超时同样按下必为例处理：要么清空预约链纪录，要么判定允许。</p>'],
   pomo:['专注计时与休息','<p>Forest 计时就是番茄钟：坐上神圣座位开始计时，默认 60 分钟，满了自动记一次。</p><p>每完成一次可以短休息，每完成几次后长休息。休息时长在"更多 › 休息时长"里改。</p>']
 };
@@ -1454,7 +1492,7 @@ function pageRule(k){
   var h='<div class="card rules">'+RULES[k][1]+'</div>';
   if(k==='appt'){
     h+='<div class="sect">预约链</div><div class="card"><div class="seat"><div class="top"><span class="nm" style="flex:1">当前纪录</span><span class="num">#'+S.appt.count+'</span></div></div>'
-      +(S.appt.exceptions.length?S.appt.exceptions.map(function(e){return '<div class="drow"><span style="flex:1">'+esc(e.text)+'</span><span class="cr">'+esc(e.date)+'</span></div>';}).join(''):'<div class="empty">没有例外。</div>')
+      +(S.appt.exceptions.length?S.appt.exceptions.map(function(e){return '<div class="drow"><span style="flex:1">'+esc(e.text)+'</span><span class="cr">'+esc(e.date)+'</span></div>';}).join(''):'<div class="empty">没有已允许的行为</div>')
       +'<div style="height:10px"></div><button class="btn ghost" data-a="v:appt">登记一次疑似违规</button></div>';
   }
   return h;
@@ -1462,8 +1500,8 @@ function pageRule(k){
 function pageExc(){
   var h='<div class="card">';
   S.exceptions.forEach(function(e,i){ h+='<span class="stag">'+esc(e)+'<button data-a="rmex:'+i+'">×</button></span>'; });
-  if(!S.exceptions.length) h+='<div class="empty">还没有例外情形。</div>';
-  return h+'<label>新增一种例外</label><div class="row"><input id="fe" placeholder="例如：生病发烧"><button class="btn sec small" data-a="addex">添加</button></div></div>';
+  if(!S.exceptions.length) h+='<div class="empty">还没有暂停日情形</div>';
+  return h+'<label>新增一种情形</label><div class="row"><input id="fe" placeholder="例如：生病发烧"><button class="btn sec small" data-a="addex">添加</button></div></div>';
 }
 function pageSeats(){
   var h='<div class="list">';
@@ -1503,7 +1541,7 @@ function pageHistory(){
 }
 
 // ---------- 路由 ----------
-var TITLES={star:'星图',backup:'备份与恢复',rsv:'应急次数',add:'添加定式',exc:'定式树例外情形',seats:'神圣座位管理',pomoset:'休息时长',history:'历史记录'};
+var TITLES={more:'设置与规则',star:'星图',backup:'备份与恢复',rsv:'应急次数',add:'添加定式',exc:'暂停日',seats:'神圣座位管理',pomoset:'休息时长',history:'历史记录'};
 function render(){
   keepNav();
   var R=document.getElementById('root'), h='';
@@ -1521,13 +1559,13 @@ function render(){
     if(pg.page==='rsv') h+=pageRsv();
     if(pg.page==='backup') h+=pageBackup();
     if(pg.page==='star') h+=pageStar();
+    if(pg.page==='more') h+=pageMore();
   }else{
     if(nav.tab==='habit') h+=pageHabit();
     if(nav.tab==='focus') h+=pageFocus();
     if(nav.tab==='stats') h+=pageStats();
     if(nav.tab==='todo') h+=pageTodo();
     if(nav.tab==='gym') h+=pageGym();
-    if(nav.tab==='more') h+=pageMore();
   }
   // 进行中的计时：不在对应页面时显示悬浮提示
   var pillTxt=null;
@@ -1535,7 +1573,7 @@ function render(){
   else if(S.pomo.brk && !(nav.tab==='focus'&&!pg)){ pillTxt='● 休息 <span id="pillt">'+mmss(S.pomo.brk.dur-(Date.now()-S.pomo.brk.start))+'</span>'; }
   else if(S.appt.pending && !(nav.tab==='focus'&&!pg)){ pillTxt='● 预约 <span id="pillt">'+mmss(APPT_MS-(Date.now()-S.appt.pending))+'</span>'; }
   if(pillTxt) h+='<button class="pill" data-a="pill">'+pillTxt+'</button>';
-  h+='<div class="tabs">'+[['habit','<circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/>','习惯'],['focus','<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3" fill="currentColor"/>','专注'],['todo','<path d="M4 6.5l1.5 1.5L8 5.5M4 12.5l1.5 1.5L8 11.5M4 18.5l1.5 1.5L8 17.5M11.5 7h8.5M11.5 13h8.5M11.5 19h8.5"/>','待办'],['gym','<path d="M3.5 9.5v5M6.5 7v10M17.5 7v10M20.5 9.5v5M6.5 12h11"/>','健身'],['stats','<rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/>','统计'],['more','<circle cx="5.5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="18.5" cy="12" r="1.6" fill="currentColor"/>','更多']].map(function(t){
+  h+='<div class="tabs">'+[['habit','<circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/>','今天'],['focus','<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3" fill="currentColor"/>','专注'],['todo','<path d="M4 6.5l1.5 1.5L8 5.5M4 12.5l1.5 1.5L8 11.5M4 18.5l1.5 1.5L8 17.5M11.5 7h8.5M11.5 13h8.5M11.5 19h8.5"/>','待办'],['gym','<path d="M3.5 9.5v5M6.5 7v10M17.5 7v10M20.5 9.5v5M6.5 12h11"/>','健身'],['stats','<circle cx="12" cy="12" r="3.2"/><ellipse cx="12" cy="12" rx="9.6" ry="4.2" transform="rotate(-28 12 12)"/><circle cx="19.6" cy="7.4" r="1.3" fill="currentColor"/>','星图']].map(function(t){
     return '<button data-a="tab:'+t[0]+'" class="'+(nav.tab===t[0]?'act':'')+'"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+t[1]+'</svg>'+t[2]+'</button>'; }).join('')+'</div>';
   R.innerHTML=h;
   starCheck();
@@ -1575,6 +1613,8 @@ document.addEventListener('click',function(ev){
     case 'day': return showDay(arg[1]);
     case 'sc': return starShow(arg[1],arg[2]);
     case 't': return toggle(arg[1]);
+    case 'hd': return habitMore(arg[1]);
+    case 'tgym': nav.tab='gym'; nav.stack=[]; return gymStart(arg[1]);
     case 'f': return askFail(arg[1]);
     case 'p': return markPast(arg[1],arg[2]);
     case 'x': return askFail(arg[2],arg[1]);
