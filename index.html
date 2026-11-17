@@ -177,7 +177,13 @@ input,select{width:100%;font-size:16px;padding:10px 12px;border-radius:10px;bord
 .journey .jtop>div:first-child{flex:1}
 .thr{color:var(--acc)}
 .iconbtn.gear{background:none;color:var(--mute);padding:0;display:flex;align-items:center;justify-content:center}
-.ghostchk{border-style:dashed !important;opacity:.5}
+.chk.num{color:#c9703f;font-size:12px;font-weight:700}
+.trow{align-items:center}
+.trow.dim{opacity:.45}
+.trow .meta{margin-top:2px}
+.banner.linkb{display:flex;justify-content:space-between;width:100%;border:none;font-family:inherit;text-align:left;cursor:pointer}
+.iconbtn.gear{position:relative}
+.iconbtn.gear.dot:after{content:'';position:absolute;top:4px;right:2px;width:8px;height:8px;border-radius:50%;background:#d9682b}
 .lk.more{display:block;width:100%;text-align:center;padding:10px 0 0;margin-top:4px;border-top:1px solid var(--line)}
 .btn.pri.small .thb{color:#ffd9bf}
 .thb{font-size:11px;font-weight:700;color:#c9703f;margin-left:4px;white-space:nowrap}
@@ -870,43 +876,51 @@ function weekDots(n){
   for(var k=6;k>=0;k--){ var ds=addDays(d,-k); h+='<i class="'+(daysBetween(n.added,ds)<0?'na':paused(ds,n.id)?'pz':done(ds,n.id)?'on':reserved(ds,n.id)?'rs':'')+(k===0?' t':'')+'"></i>'; }
   return h+'</span>';
 }
-function seatBtn(){
-  var st=S.seats.filter(function(x){return x.timerMin>0;})[0]; if(!st) return '';
-  if(S.active) return '<button class="btn sec small" style="flex:none" data-a="tab:focus">计时中</button>';
-  return '<button class="btn pri small" style="flex:none" data-a="go:'+st.id+'">坐下'+thb(sitThrust())+'</button>';
-}
-function gymBtn(){
-  var G=S.gym, d=today(); if(!G.days.length) return '';
-  if(G.run) return '<button class="btn sec small" style="flex:none" data-a="tab:gym">训练中</button>';
-  if(G.log.some(function(L){return L.date===d;})) return '';
-  var nx=G.days[G.next%G.days.length]; if(!nx.ex.length) return '';
-  return '<button class="btn pri small" style="flex:none" data-a="tgym:'+nx.id+'">'+esc(nx.name)+thb(40)+'</button>';
-}
-function renderTree(){
-  var d=today(), h='';
-  function walk(pid,depth){
-    kids(pid).forEach(function(n){
-      var on=done(d,n.id), st=streak(n), wk=isWeekly(n), pz=paused(d,n.id), auto=n.autoStart||n.autoTodo||n.autoGym;
-      var badge = wk ? ' <span class="freq">每周 '+n.perWeek+' 次</span>' : (st>=3?' <span class="fire">🔥'+st+'</span>':'');
-      if(!auto && !on && !pz) badge+=thb(10);
-      var meta;
-      if(pz) meta='<b class="plan">今天暂停：'+esc(pauseReason(d,n.id))+'</b>';
-      else if(wk){ var ws=wkStart(d), c=weekCount(n,ws), pt=(n.plan||[]).indexOf(daysBetween(ws,d))>=0 && !on && c<n.perWeek; meta=weekLine(n,1)+' 本周 '+c+'/'+n.perWeek+(pt?' · <b class="plan">今天计划做</b>':''); }
-      else meta=weekDots(n)+' 连续 '+st+' 天'+(reserved(d,n.id)?' · 今天已用应急':'');
-      var act=(on||pz)?'':n.autoStart?seatBtn():n.autoGym?gymBtn():'';
-      h+='<div class="node" style="padding-left:'+(depth*22)+'px">'
-        +'<button class="chk'+(on?' on':'')+'" data-a="t:'+n.id+'"'+(pz?' disabled':'')+'>'+(on?'✓':'')+'</button>'
-        +'<div class="nb" data-a="hd:'+n.id+'"><div class="nm">'+(depth?'<span class="branch">└</span>':'')+esc(n.name)+badge+'</div>'
-        +(n.criterion?'<div class="cr">'+esc(n.criterion)+'</div>':'')
-        +'<div class="meta">'+meta+'</div></div>'+act+'</div>';
-      walk(n.id,depth+1);
-    });
-  }
-  walk(null,0);
-  // 没有对应定式时，专注和健身单独占一行
-  if(!S.nodes.some(function(n){return n.autoStart;})){ var st0=S.seats.filter(function(x){return x.timerMin>0;})[0]; if(st0) h+='<div class="node"><span class="chk ghostchk"></span><div class="nb" data-a="tab:focus"><div class="nm">'+esc(st0.name)+'</div><div class="meta">#'+st0.count+'</div></div>'+seatBtn()+'</div>'; }
-  if(!S.nodes.some(function(n){return n.autoGym;})){ var gb=gymBtn(); if(gb) h+='<div class="node"><span class="chk ghostchk"></span><div class="nb" data-a="tab:gym"><div class="nm">健身</div></div>'+gb+'</div>'; }
+function trow(chk,body,btn,dim){ return '<div class="node trow'+(dim?' dim':'')+'">'+chk+body+(btn||'')+'</div>'; }
+function tchk(a,num,on){ return '<button class="chk'+(on?' on':' num')+'"'+(a?' data-a="'+a+'"':' disabled')+'>'+(on?'✓':num)+'</button>'; }
+function tbody(a,name,meta){ return '<div class="nb" data-a="'+a+'"><div class="nm">'+name+'</div>'+(meta?'<div class="meta">'+meta+'</div>':'')+'</div>'; }
+function tbtn(a,txt,pri){ return '<button class="btn '+(pri?'pri':'sec')+' small" style="flex:none" data-a="'+a+'">'+txt+'</button>'; }
+function todayRows(){
+  var d=today(), h='', rt=S.todoRun&&todoById(S.todoRun.id);
+  var seat=S.seats.filter(function(x){return x.timerMin>0;})[0], G=S.gym, gnx=G.days.length?G.days[G.next%G.days.length]:null, gdone=G.log.some(function(L){return L.date===d;});
+  var seatAct=seat?(S.active?['tab:focus','计时中',0]:['go:'+seat.id,'坐下',1]):null;
+  var gymAct=G.run?['tab:gym','训练中',0]:(gnx&&gnx.ex.length&&!gdone?['tgym:'+gnx.id,'开始',1]:null);
+  (function walk(pid){ kids(pid).forEach(function(n){
+    if(!n.autoTodo){
+      var on=done(d,n.id), pz=paused(d,n.id), wk=isWeekly(n), meta=pz?'暂停：'+esc(pauseReason(d,n.id)):(n.criterion?esc(n.criterion):'');
+      if(wk && !pz) meta=(meta?meta+' · ':'')+'本周 '+weekCount(n,wkStart(d))+'/'+n.perWeek;
+      if(n.autoStart && seatAct) h+=trow(tchk(on||pz?null:seatAct[0],sitThrust(),on),tbody('hd:'+n.id,esc(n.name),meta),on||pz?'':tbtn(seatAct[0],seatAct[1],seatAct[2]),pz);
+      else if(n.autoGym) h+=trow(tchk(on||pz||!gymAct?null:gymAct[0],40,on),tbody('hd:'+n.id,esc(n.name),(gnx&&!on?esc(gnx.name)+(meta?' · ':''):'')+meta),on||pz||!gymAct?'':tbtn(gymAct[0],gymAct[1],gymAct[2]),pz);
+      else h+=trow(tchk(pz?null:'t:'+n.id,10,on),tbody('hd:'+n.id,esc(n.name),meta),'',pz);
+    }
+    walk(n.id);
+  }); })(null);
+  if(seat && !S.nodes.some(function(n){return n.autoStart;})) h+=trow(tchk(seatAct[0],sitThrust(),false),tbody('tab:focus',esc(seat.name),'#'+seat.count),tbtn(seatAct[0],seatAct[1],seatAct[2]));
+  if(gymAct && !S.nodes.some(function(n){return n.autoGym;})) h+=trow(tchk(gymAct[0],40,false),tbody('tab:gym','健身',gnx?esc(gnx.name):''),tbtn(gymAct[0],gymAct[1],gymAct[2]));
+  var tl=todoSorted(), pick=tl.filter(function(t){return t.due<=d;}); tl.forEach(function(t){ if(pick.length<3 && pick.indexOf(t)<0) pick.push(t); });
+  pick.forEach(function(t){ var od=daysBetween(t.due,d), base=TDR[t.dr||0], left=t.sg?base-Math.round(base*0.3):base;
+    var due= od>0?'<b class="late">过期 '+od+' 天</b>': od===0?'<b class="plan">今天</b>':md(t.due);
+    h+=trow(tchk('tdok:'+t.id,left,false),tbody('tdmore:'+t.id,esc(t.name),'→ '+esc(t.step)+' · '+due),'<button class="btn sec small" style="flex:none" data-a="tdgo:'+t.id+'"'+(rt?' disabled':'')+'>5 分钟</button>'); });
+  if(tl.length>pick.length) h+='<button class="lk more" data-a="tab:todo">还有 '+(tl.length-pick.length)+' 件待办</button>';
   return h;
+}
+function habitHero(){
+  var d=today(), act=S.nodes.filter(function(n){return !paused(d,n.id);}), total=act.length, dn=act.filter(function(n){return doneToday(n);}).length; if(!S.nodes.length) return '';
+  var best=0, first=d; S.nodes.forEach(function(n){ var s=isWeekly(n)?0:streak(n); if(s>best) best=s; if(n.added<first) first=n.added; });
+  var c=2*Math.PI*38, frac=total?dn/total:0;
+  return '<div class="card"><div class="hero"><div class="hring"><svg width="96" height="96" viewBox="0 0 96 96"><circle cx="48" cy="48" r="38" fill="none" stroke="var(--line)" stroke-width="9"/><circle cx="48" cy="48" r="38" fill="none" stroke="var(--acc)" stroke-width="9" stroke-linecap="round" stroke-dasharray="'+c.toFixed(1)+'" stroke-dashoffset="'+(c*(1-frac)).toFixed(1)+'" transform="rotate(-90 48 48)"/></svg><div><b>'+dn+'/'+total+'</b><span>今天</span></div></div>'
+    +'<div class="hstats"><div><b>'+S.nodes.length+'</b><span>个定式</span></div><div><b>'+best+'</b><span>最长连续</span></div><div><b>'+(daysBetween(first,d)+1)+'</b><span>树龄（天）</span></div></div></div>'+treeSvg()+'</div>';
+}
+function pendingCount(){ return pendingReview().length+pendingWeeks().length; }
+function pageReview(){
+  var pr=pendingReview(), pw=pendingWeeks(), h='';
+  if(!pr.length && !pw.length) return '<div class="card"><div class="empty">都确认完了</div></div>';
+  h+='<div class="card">';
+  pr.forEach(function(p){ var n=byId(p.id); if(!n) return;
+    h+='<div class="rev"><span>'+p.date.slice(5)+' '+esc(n.name)+'</span><button class="ok" data-a="p:'+p.date+':'+p.id+'">做到了</button><button class="no" data-a="x:'+p.date+':'+p.id+'">没做到</button></div>'; });
+  pw.forEach(function(p){ var n=byId(p.id); if(!n) return;
+    h+='<div class="rev"><span>'+p.ws.slice(5)+' 那周 '+esc(n.name)+' '+weekCount(n,p.ws)+'/'+n.perWeek+'</span><button class="ok" data-a="bw:'+p.ws+':'+p.id+'">补一次</button><button class="no" data-a="xw:'+p.ws+':'+p.id+'">没做到</button></div>'; });
+  return h+'</div>';
 }
 function habitMore(id){
   var n=byId(id); if(!n) return; var d=today(), wk=isWeekly(n), pz=paused(d,id), ws=wkStart(d);
@@ -924,41 +938,15 @@ function todoRow(t,rt){
   return '<div class="node"><button class="chk" style="border-color:'+todoColor(t)+';border-width:3px" data-a="tdok:'+t.id+'"></button><div class="nb" data-a="tdmore:'+t.id+'"><div class="nm">'+esc(t.name)+'</div><div class="cr">→ '+esc(t.step)+'</div><div class="meta">'+dl+'</div></div><button class="btn sec small" style="flex:none" data-a="tdgo:'+t.id+'"'+(rt?' disabled':'')+'>做 5 分钟'+thb(t.sg?TDR[t.dr||0]-Math.round(TDR[t.dr||0]*0.3):TDR[t.dr||0])+'</button></div>';
 }
 function todoSorted(){ return S.todos.slice().sort(function(a,b){return a.due<b.due?-1:a.due>b.due?1:(a.added<b.added?-1:1);}); }
+function backupDue(){ var lb=S.lastBackup?daysBetween(S.lastBackup,today()):null; return S.history.length>5 && (lb==null||lb>=14); }
 function pageHabit(){
-  var d=today(), act=S.nodes.filter(function(n){return !paused(d,n.id);}), total=act.length, dn=act.filter(function(n){return doneToday(n);}).length;
-  var h='<div class="hdr"><h1>今天</h1><button class="iconbtn gear" data-a="push:more"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="6.8"/><path d="M12 2.6v2.6M12 18.8v2.6M2.6 12h2.6M18.8 12h2.6M5.4 5.4l1.8 1.8M16.8 16.8l1.8 1.8M5.4 18.6l1.8-1.8M16.8 7.2l1.8-1.8"/></svg></button></div>'
-    +'<div class="sub">'+d+(S.nodes.some(function(n){return !isWeekly(n);})?' · 稳定 ×'+(Math.round(starStab(d)*100)/100):'')+(S.pauses[d]||(S.nodes.length&&!total)?' · 暂停':(total&&dn===total?' 🎉':''))+'</div>';
-  var lb=S.lastBackup?daysBetween(S.lastBackup,today()):null;
-  if(S.history.length>5 && (lb==null||lb>=14)) h+='<div class="banner warn">'+(lb==null?'还没有备份':lb+' 天没备份')+' · <a href="#" data-a="push:backup" style="color:inherit">去备份</a></div>';
-  var pr=pendingReview();
-  if(pr.length){
-    h+='<div class="banner warn"><b>前几天没打勾</b>';
-    pr.forEach(function(p){ var n=byId(p.id); if(!n) return;
-      h+='<div class="rev"><span>'+p.date.slice(5)+' '+esc(n.name)+'</span><button class="ok" data-a="p:'+p.date+':'+p.id+'">做到了</button><button class="no" data-a="x:'+p.date+':'+p.id+'">没做到</button></div>'; });
-    h+='</div>';
-  }
-  var pw=pendingWeeks();
-  if(pw.length){
-    h+='<div class="banner warn"><b>上周没达成</b>';
-    pw.forEach(function(p){ var n=byId(p.id); if(!n) return;
-      h+='<div class="rev"><span>'+p.ws.slice(5)+' 那周 '+esc(n.name)+' '+weekCount(n,p.ws)+'/'+n.perWeek+'</span><button class="ok" data-a="bw:'+p.ws+':'+p.id+'">忘了打，补一次</button><button class="no" data-a="xw:'+p.ws+':'+p.id+'">没做到</button></div>'; });
-    h+='</div>';
-  }
+  var d=today(), pc=pendingCount();
+  var h='<div class="hdr"><h1>今天</h1><button class="iconbtn gear'+(backupDue()?' dot':'')+'" data-a="push:more"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="6.8"/><path d="M12 2.6v2.6M12 18.8v2.6M2.6 12h2.6M18.8 12h2.6M5.4 5.4l1.8 1.8M16.8 16.8l1.8 1.8M5.4 18.6l1.8-1.8M16.8 7.2l1.8-1.8"/></svg></button></div>'
+    +'<div class="sub">'+d+(S.nodes.some(function(n){return !isWeekly(n);})?' · 稳定 ×'+(Math.round(starStab(d)*100)/100):'')+'</div>';
+  if(pc) h+='<button class="banner warn linkb" data-a="push:review"><span>'+pc+' 项待确认</span><span>›</span></button>';
   if(S.pauses[d]) h+='<div class="banner pause">今天暂停：'+esc(S.pauses[d])+' · <a href="#" data-a="unpause" style="color:inherit">撤销</a></div>';
-  var rows=renderTree();
-  if(rows) h+='<div class="card">'+rows+'</div>';
-  // 今天要处理的待办：过期和今天到期的全部，不足三件用最近的补上
-  var tl=todoSorted(), pick=tl.filter(function(t){return t.due<=d;}); tl.forEach(function(t){ if(pick.length<3 && pick.indexOf(t)<0) pick.push(t); });
-  var rt=S.todoRun&&todoById(S.todoRun.id);
-  if(pick.length){ h+='<div class="card">'+pick.map(function(t){return todoRow(t,rt);}).join('')+(tl.length>pick.length?'<button class="lk more" data-a="tab:todo">还有 '+(tl.length-pick.length)+' 件</button>':'')+'</div>'; }
-  if(total){
-    var best=0, first=d; S.nodes.forEach(function(n){ var s=isWeekly(n)?0:streak(n); if(s>best) best=s; if(n.added<first) first=n.added; });
-    var c=2*Math.PI*38, frac=dn/total;
-    h+='<div class="card"><div class="hero"><div class="hring"><svg width="96" height="96" viewBox="0 0 96 96"><circle cx="48" cy="48" r="38" fill="none" stroke="var(--line)" stroke-width="9"/><circle cx="48" cy="48" r="38" fill="none" stroke="var(--acc)" stroke-width="9" stroke-linecap="round" stroke-dasharray="'+c.toFixed(1)+'" stroke-dashoffset="'+(c*(1-frac)).toFixed(1)+'" transform="rotate(-90 48 48)"/></svg><div><b>'+dn+'/'+total+'</b><span>定式</span></div></div>'
-      +'<div class="hstats"><div><b>'+total+'</b><span>个定式</span></div><div><b>'+best+'</b><span>最长连续</span></div><div><b>'+(daysBetween(first,d)+1)+'</b><span>树龄（天）</span></div></div></div>'
-      +treeSvg()+'</div>';
-  }
-  h+='<div class="row"><button class="btn sec" data-a="push:add">＋ 定式</button>'+(act.length?'<button class="btn ghost" data-a="pause">今天暂停</button>':'')+'</div>';
+  var rows=todayRows();
+  h+='<div class="card">'+(rows||'<div class="empty">今天没有要做的</div>')+'</div>';
   return h;
 }
 function pageAdd(arg){
@@ -1402,6 +1390,7 @@ function pageStats(){
     if(!srcs.length) return h+'<div class="card"><div class="empty">还没有计时的座位。</div></div>';
     if(srcs.length>1) h+=segHtml('fseat',srcs.map(function(s){return [s.id,s.name.replace('番茄钟','')];}));
   }
+  if(kind==='habit') h+=habitHero();
   var mTot=0, mDays=0, keys=Object.keys(dm);
   keys.forEach(function(d){ if(d.slice(0,7)===ym && dm[d].n){ mTot+=dm[d].n; mDays++; } });
   var t1,t2,t3;
@@ -1472,7 +1461,9 @@ function lrow(a,text,v,noarrow){ return '<button class="lrow'+(noarrow?' noarrow
 function pageMore(){
   var anyEx=S.appt.exceptions.length||S.seats.some(function(x){return x.exceptions.length;});
   var can=S.exClear!==quarterStart();
-  var h='';
+  var h='', lb=S.lastBackup?daysBetween(S.lastBackup,today()):null;
+  if(backupDue()) h+='<button class="banner warn linkb" data-a="push:backup"><span>'+(lb==null?'还没有备份':lb+' 天没备份')+'</span><span>›</span></button>';
+  h+='<div class="sect">定式</div><div class="list">'+lrow('push:add','添加定式',S.lastAdd===today()?'今天已加过':'')+lrow('pause','今天暂停')+'</div>';
   h+='<div class="sect">规则</div><div class="list">'+lrow('push:rule:star','星图')+lrow('push:rule:tree','定式树')+lrow('push:rule:seat','神圣座位')+lrow('push:rule:xb','下必为例')+lrow('push:rule:appt','线性时延')+lrow('push:rule:pomo','专注计时与休息')+lrow('push:rule:todo','待办清单')+'</div>';
   h+='<div class="sect">设置</div><div class="list">'+lrow('push:exc','暂停日',S.exceptions.length+' 种')+lrow('push:rsv','应急次数','每月 '+S.reserve.perMonth+' 次')+lrow('push:seats','神圣座位管理',S.seats.length+' 个')+lrow('push:pomoset','休息时长',S.pomo.s+' / '+S.pomo.l+' 分钟')
     +lrow(can&&anyEx?'qclr':'noop','清空已允许的行为',can?(anyEx?'本季度可用 1 次':'暂无'):'本季度已用',true)+'</div>';
@@ -1541,7 +1532,7 @@ function pageHistory(){
 }
 
 // ---------- 路由 ----------
-var TITLES={more:'设置与规则',star:'星图',backup:'备份与恢复',rsv:'应急次数',add:'添加定式',exc:'暂停日',seats:'神圣座位管理',pomoset:'休息时长',history:'历史记录'};
+var TITLES={review:'待确认',more:'设置与规则',star:'星图',backup:'备份与恢复',rsv:'应急次数',add:'添加定式',exc:'暂停日',seats:'神圣座位管理',pomoset:'休息时长',history:'历史记录'};
 function render(){
   keepNav();
   var R=document.getElementById('root'), h='';
@@ -1560,6 +1551,7 @@ function render(){
     if(pg.page==='backup') h+=pageBackup();
     if(pg.page==='star') h+=pageStar();
     if(pg.page==='more') h+=pageMore();
+    if(pg.page==='review') h+=pageReview();
   }else{
     if(nav.tab==='habit') h+=pageHabit();
     if(nav.tab==='focus') h+=pageFocus();
