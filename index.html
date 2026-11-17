@@ -176,31 +176,56 @@ input,select{width:100%;font-size:16px;padding:10px 12px;border-radius:10px;bord
 .journey .jtop{display:flex;align-items:center}
 .journey .jtop>div:first-child{flex:1}
 .thr{color:var(--acc)}
-#toast .thr{color:#9fe0bd}
-.star{cursor:pointer}
-.strack{display:flex;align-items:flex-end;gap:10px}
-.strack .sbar{flex:1;position:relative;padding-top:26px;margin-left:10px}
-.strack .sdst{font-size:24px;line-height:1;margin-bottom:-8px}
-.strack .sship{position:absolute;top:0;transform:translateX(-50%);font-size:20px;line-height:1}
-.seq{display:flex;align-items:flex-end;justify-content:space-between;gap:2px}
-.seq span{display:flex;flex-direction:column;align-items:center;font-size:11px;color:var(--mute);min-width:0}
-.seq span b{font-size:17px;color:var(--ink);font-weight:700}
-.seq span.off b{color:var(--mute);font-weight:500}
-.seq span.late b{color:#d9682b}
-.seq span.tot b{color:var(--acc);font-size:20px}
-.seq em{font-style:normal;color:var(--mute);font-size:13px;padding-bottom:14px}
-.scard{text-align:center;padding:6px 0 4px}
-.scard .big{font-size:64px;line-height:1.2}
-.scard h3{margin:4px 0 8px}
-.scard p{text-align:left}
-.btn.pick{display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 6px}
-.btn.pick span{font-size:34px;line-height:1.1}
-.sgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.sgrid button{border:1px solid var(--line);background:var(--bg);color:var(--mute);border-radius:12px;padding:8px 2px;font-size:11px;min-height:64px;display:flex;flex-direction:column;align-items:center;gap:3px;overflow:hidden}
-.sgrid button span{font-size:24px;line-height:1.1}
-.sgrid button.on{background:var(--card);color:var(--ink);cursor:pointer}
-.sgrid button.tg{border-color:var(--acc);border-style:dashed}
-.drow.dim{opacity:.45}
+#toast .thr{color:#ffb38a}
+.space{background:radial-gradient(120% 90% at 85% 0%,#3a2a78 0%,#1a1b4b 42%,#0c1030 100%);border-color:#2b2f66;color:#fff1d6;position:relative;overflow:hidden}
+.star{cursor:pointer;padding:0 0 14px}
+.scene{display:block;width:100%;height:auto;aspect-ratio:340/150}
+.orb{overflow:visible}
+.shead{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;padding:0 16px;margin-top:-6px}
+.shead small{display:block;font-size:12px;color:#a9a6d6;margin-bottom:2px}
+.shead h2{margin:0;font-family:"Songti SC","STSong","Noto Serif CJK SC",serif;font-size:28px;font-weight:700;letter-spacing:.04em;color:#fff7e6;line-height:1.15}
+.sprog{font-size:13px;color:#a9a6d6;white-space:nowrap;padding-bottom:4px;font-variant-numeric:tabular-nums}
+.sprog b{font-size:20px;color:#fff1d6}
+.seq{display:flex;align-items:flex-end;justify-content:space-between;gap:2px;margin:14px 16px 0;padding-top:12px;border-top:1px solid rgba(255,241,214,.14)}
+.seq span{display:flex;flex-direction:column;align-items:center;font-size:11px;color:#a9a6d6;min-width:0}
+.seq span b{font-size:17px;color:#fff1d6;font-weight:700;font-variant-numeric:tabular-nums}
+.seq span.off b{color:#6f6da0;font-weight:500}
+.seq span.drag b{color:#ff8f7a}
+.seq span.tot b{color:#ffb38a;font-size:22px}
+.seq em{font-style:normal;color:#6f6da0;font-size:13px;padding-bottom:14px}
+.chg{margin:10px 16px 0;font-size:12px;color:#9fe9ff}
+.dlg.space{padding:0 0 16px}
+.dlg.space .row{padding:0 16px}
+.scard{position:relative;text-align:center;padding:26px 22px 4px}
+.scard .sky{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.scard .art{position:relative;height:190px;display:flex;align-items:center;justify-content:center;animation:arrive .9s cubic-bezier(.2,.8,.2,1) both}
+.scard .stag{position:relative;font-size:13px;color:#ffb38a;letter-spacing:.2em;margin-top:6px}
+.scard h3{position:relative;margin:4px 0 12px;font-family:"Songti SC","STSong","Noto Serif CJK SC",serif;font-size:32px;letter-spacing:.06em;color:#fff7e6}
+.scard p{position:relative;text-align:left;color:#d6d2f2;font-size:15px;line-height:1.7;margin:0 0 6px}
+@keyframes arrive{from{transform:scale(.35) translateY(30px);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.scard .art{animation:none}}
+.btn.glow{background:#fff1d6;color:#1a1b4b;font-weight:700}
+.pickwrap{padding-bottom:10px}
+.picks{position:relative;display:flex;gap:12px;margin-top:14px}
+.picks button{flex:1;background:rgba(255,241,214,.06);border:1px solid rgba(255,241,214,.22);border-radius:16px;padding:14px 4px 12px;color:#fff7e6;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px}
+.picks b{font-family:"Songti SC","STSong","Noto Serif CJK SC",serif;font-size:19px;letter-spacing:.05em}
+.sgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px 6px}
+.sgrid button{border:none;background:none;color:#d6d2f2;padding:2px 0;font-size:11px;min-height:78px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:4px}
+.sgrid button b{font-weight:500;white-space:nowrap}
+.sgrid button i{width:34px;height:34px;margin-top:10px;border-radius:50%;border:1.2px dashed rgba(255,241,214,.22)}
+.sgrid button.on{cursor:pointer}
+.sgrid button.tg .orb{opacity:.45}
+.sgrid button.tg b{color:#ffb38a}
+.fleetrow{display:grid;grid-template-columns:repeat(3,1fr);gap:12px 6px}
+.fleetrow button{border:none;background:none;color:#8b88bd;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;padding:0}
+.fleetrow button i{width:30px;height:30px;margin:8px 0;border-radius:50%;border:1.2px dashed rgba(255,241,214,.22)}
+.fleetrow b{font-weight:500}
+.fleetrow small{font-size:11px;color:#6f6da0}
+.fleetrow .got{color:#d6d2f2;cursor:pointer}
+.fleetrow .cur{color:#fff7e6;cursor:pointer}
+.fleetrow .cur b{font-weight:700}
+.fleetrow .cur small{color:#ffb38a}
+.shipbadge{width:64px;height:64px;border-radius:50%;background:radial-gradient(circle at 70% 20%,#3a2a78,#0c1030);flex:none}
 .jbig{font-size:40px;font-weight:800;line-height:1.1}
 .jbig small{font-size:15px;font-weight:600;color:var(--mute)}
 .jcur{font-size:46px;line-height:1}
@@ -401,7 +426,7 @@ function hash01(str){ var h=2166136261; for(var i=0;i<str.length;i++){ h^=str.ch
 function shipIdx(){ var t=allTotal(), k=0; SHIPS.forEach(function(x,i){ if(t>=x[0]) k=i; }); return k; }
 function stopById(id){ return STOPS.filter(function(x){return x[0]===id;})[0]; }
 function rareById(id){ return RARE.filter(function(x){return x[0]===id;})[0]; }
-function starCost(n){ return 400+50*n; }
+function starCost(n){ return n===0?100:350+50*n; }
 function starGrant(k,b){
   var d=today(), D=S.star.days[d]=S.star.days[d]||{e:[]}; if(!D.e) D.e=[];
   if(D.e.some(function(x){return x.k===k;})) return;
@@ -437,15 +462,95 @@ function starSync(){
   var old=addDays(d,-14); Object.keys(S.star.days).forEach(function(k){ if(k<old) delete S.star.days[k].e; });
   Object.keys(S.star.clear).forEach(function(k){ if(k<old) delete S.star.clear[k]; });
 }
-function cardHtml(c,tag){ return '<div class="scard"><div class="big">'+c[2]+'</div>'+(tag?'<div class="cr">'+tag+'</div>':'')+'<h3>'+esc(c[1])+'</h3><p>'+esc(c[3])+'</p></div>'; }
+// ----- 星图绘制 -----
+var ORBS={
+ earth:{c:['#7fc4ff','#1b4fa8'],sp:[[-10,-6,13,9,'#5fae6a',.9],[12,10,10,7,'#4f9a5c',.9],[4,-20,9,4,'#fff',.7]],gl:'#6fb7ff'},
+ iss:{t:'station'}, moon:{c:['#f1efe9','#7d7a74'],cr:1}, venus:{c:['#fff0c2','#b98a3e'],bd:[[-14,7,'#e0b469',.35],[4,9,'#c9974a',.3]],gl:'#ffe2a0'},
+ mercury:{c:['#cfc4b6','#5e554c'],cr:1,r:24}, sun:{t:'sun'},
+ mars:{c:['#f0916a','#8a3320'],sp:[[-6,6,16,8,'#6e2a1c',.45],[10,-8,8,5,'#5c2318',.4]],cap:1},
+ phobos:{t:'rock',c:['#b7ab9d','#4b443d'],pts:'-28,-6 -18,-20 2,-24 22,-14 28,4 16,20 -6,22 -24,12'},
+ ceres:{c:['#c9c6c0','#5d5a55'],cr:1,r:25,sp:[[8,-4,3,2,'#fff',.95]]},
+ jupiter:{c:['#f3dfc1','#9c6b42'],bd:[[-20,6,'#b9793f',.55],[-8,4,'#fff3dc',.5],[0,8,'#a8683a',.5],[13,5,'#d9a66d',.5]],sp:[[9,6,7,4,'#c9502f',.95]],r:34},
+ grs:{c:['#f0d2a8','#a56a3c'],bd:[[-26,10,'#b9793f',.5],[-8,6,'#fff0d6',.45],[14,12,'#a8683a',.5]],sp:[[2,2,20,12,'#c44a2a',.95],[2,2,12,6,'#e0714b',.9]],r:36},
+ io:{c:['#fff18a','#b89a24'],sp:[[-8,-8,5,4,'#e2632b',.9],[10,4,6,5,'#d9531f',.85],[-2,12,3,3,'#2b2118',.9],[14,-12,2.5,2.5,'#2b2118',.9]]},
+ europa:{c:['#fbf6ea','#a59a86'],ln:1}, ganymede:{c:['#cdbfae','#62574b'],sp:[[-8,-4,14,9,'#51463c',.4],[12,10,9,6,'#efe6d6',.5]],cr:1,r:32},
+ saturn:{c:['#f6e3b0','#a98447'],bd:[[-12,5,'#cfa765',.45],[2,7,'#e9cf95',.5]],ring:'#e6cf9a',r:24},
+ rings:{c:['#f6e3b0','#a98447'],ring:'#f1ddb0',r:15,rw:2.4},
+ titan:{c:['#ffc56e','#a8641c'],gl:'#ffb44d'}, enceladus:{c:['#ffffff','#a9c4d6'],ln:2,plume:1,r:24},
+ uranus:{c:['#c9f4f1','#4f9ea6'],ring:'#bfe9ef',rv:1,r:27}, neptune:{c:['#7aa8ff','#1d3aa0'],sp:[[-6,2,8,4,'#16296f',.75]],bd:[[-14,3,'#a9c8ff',.35]]},
+ triton:{c:['#f1d9d2','#8c7a78'],cap:2,r:25}, pluto:{c:['#e9cfa8','#7b5a3c'],heart:1,r:27}, charon:{c:['#c8c4be','#5d5a56'],cap:3,r:22},
+ arrokoth:{t:'lobes',c:['#d98c62','#6a3421'],lb:[[-10,6,19,16],[15,-8,13,12]]},
+ voyager:{t:'probe'},
+ halley:{t:'comet',c:'#eaf6ff'}, borisov:{t:'comet',c:'#9fe9ff'},
+ '67p':{t:'lobes',c:['#8d8a86','#2d2b29'],lb:[[-8,8,20,15],[13,-10,13,11]]}, itokawa:{t:'lobes',c:['#b9a78e','#4d4234'],lb:[[-10,4,18,11],[14,-3,13,9]]},
+ oumuamua:{t:'lobes',c:['#c9705a','#4f1f18'],lb:[[0,0,34,7]],rot:-28},
+ bennu:{t:'rock',c:['#77777d','#222226'],pts:'0,-28 20,-10 26,2 8,24 -8,24 -26,2 -20,-10'},
+ psyche:{t:'rock',c:['#e3e8f2','#59606e'],pts:'-26,-8 -10,-24 14,-22 28,-4 20,18 -2,26 -22,14',metal:1},
+ parker:{t:'probe',sh:1}, ingenuity:{t:'heli'}, jwst:{t:'scope'}, change4:{t:'lander'}, record:{t:'disc'}
+};
+var orbN=0;
+function orb(id,sz,x,y){
+  var o=ORBS[id]||{c:['#ccc','#555']}, u='o'+(orbN++), R=o.r||30, t=o.t||'p', h='';
+  var S0='<svg class="orb" width="'+sz+'" height="'+sz+'" viewBox="-50 -50 100 100"'+(x!=null?' x="'+x+'" y="'+y+'"':'')+'>';
+  var G=function(c){ return '<radialGradient id="'+u+'g" cx=".34" cy=".28" r=".85"><stop offset="0" stop-color="'+c[0]+'"/><stop offset="1" stop-color="'+c[1]+'"/></radialGradient><radialGradient id="'+u+'s" cx=".3" cy=".25" r=".9"><stop offset=".5" stop-color="#05061c" stop-opacity="0"/><stop offset="1" stop-color="#05061c" stop-opacity=".8"/></radialGradient>'; };
+  var L='stroke="#fff1d6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"';
+  if(t==='sun') return S0+'<defs><radialGradient id="'+u+'g"><stop offset="0" stop-color="#fffbe6"/><stop offset=".45" stop-color="#ffd36b"/><stop offset=".62" stop-color="#ff9a3c" stop-opacity=".55"/><stop offset="1" stop-color="#ff7a2a" stop-opacity="0"/></radialGradient></defs><circle r="50" fill="url(#'+u+'g)"/><circle r="22" fill="#fff6cf"/></svg>';
+  if(t==='comet') return S0+'<defs><linearGradient id="'+u+'g" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="'+o.c+'" stop-opacity=".9"/><stop offset="1" stop-color="'+o.c+'" stop-opacity="0"/></linearGradient><radialGradient id="'+u+'h"><stop offset="0" stop-color="#fff"/><stop offset=".4" stop-color="'+o.c+'" stop-opacity=".8"/><stop offset="1" stop-color="'+o.c+'" stop-opacity="0"/></radialGradient></defs><path d="M-30 22 L44 -40 L-18 34 Z" fill="url(#'+u+'g)"/><path d="M-28 18 L20 -46 L-22 30 Z" fill="url(#'+u+'g)" opacity=".5"/><circle cx="-24" cy="26" r="16" fill="url(#'+u+'h)"/><circle cx="-24" cy="26" r="5" fill="#fff"/></svg>';
+  if(t==='rock'||t==='lobes'){
+    h=S0+'<defs>'+G(o.c)+'<clipPath id="'+u+'c">';
+    var shp= t==='rock' ? '<polygon points="'+o.pts+'" stroke-linejoin="round"/>' : o.lb.map(function(b){return '<ellipse cx="'+b[0]+'" cy="'+b[1]+'" rx="'+b[2]+'" ry="'+b[3]+'"/>';}).join('');
+    h+=shp+'</clipPath></defs><g'+(o.rot?' transform="rotate('+o.rot+')"':'')+'><g clip-path="url(#'+u+'c)"><rect x="-50" y="-50" width="100" height="100" fill="url(#'+u+'g)"/>'
+      +(o.metal?'<path d="M-30 -4 L30 -16 M-28 10 L26 2" stroke="#fff" stroke-width="3" opacity=".45"/>':'<circle cx="-8" cy="-2" r="4" fill="#000" opacity=".2"/><circle cx="10" cy="8" r="3" fill="#000" opacity=".18"/><circle cx="4" cy="-12" r="2" fill="#000" opacity=".18"/>')
+      +'<rect x="-50" y="-50" width="100" height="100" fill="url(#'+u+'s)"/></g></g></svg>';
+    return h;
+  }
+  if(t==='station') return S0+'<g '+L+'><rect x="-8" y="-5" width="16" height="10" rx="2" fill="#fff1d6"/><path d="M-36 0H36"/></g><g fill="#e88f6c"><rect x="-38" y="-18" width="9" height="36" rx="1.5"/><rect x="-26" y="-18" width="9" height="36" rx="1.5"/><rect x="17" y="-18" width="9" height="36" rx="1.5"/><rect x="29" y="-18" width="9" height="36" rx="1.5"/></g></svg>';
+  if(t==='probe') return S0+(o.sh?'<circle cx="-30" cy="-30" r="20" fill="#ffb347" opacity=".3"/><circle cx="-30" cy="-30" r="11" fill="#ffe7a8" opacity=".85"/>':'')+'<g '+L+'><path d="M-4 6 L26 30 M2 2 L-30 22 M4 0 L34 -14"/><ellipse cx="-6" cy="-10" rx="22" ry="9" transform="rotate(-35 -6 -10)" fill="#fff1d6"/><rect x="-4" y="-2" width="14" height="10" rx="2" fill="#e88f6c" stroke="none"/></g>'+(o.sh?'<rect x="-26" y="-30" width="30" height="7" rx="2" transform="rotate(45 -11 -26)" fill="#fff"/>':'')+'</svg>';
+  if(t==='heli') return S0+'<g '+L+'><path d="M-34 -22H34 M-26 -14H26 M0 -22V-2 M-10 16 L-18 32 M10 16 L18 32"/><rect x="-11" y="-2" width="22" height="18" rx="3" fill="#fff1d6"/><rect x="-9" y="-30" width="18" height="5" rx="1" fill="#e88f6c" stroke="none"/></g></svg>';
+  if(t==='scope'){ var hx=''; [[0,0],[0,-14],[0,14],[12,-7],[12,7],[-12,-7],[-12,7]].forEach(function(q){ hx+='<polygon points="-6,-3.5 0,-7 6,-3.5 6,3.5 0,7 -6,3.5" transform="translate('+q[0]+','+(q[1]-10)+')" fill="#f2c14e" stroke="#7a5a12" stroke-width=".8"/>'; }); return S0+'<polygon points="-40,22 0,8 40,22 0,38" fill="#d9c2e8" opacity=".85"/><polygon points="-32,22 0,12 32,22 0,32" fill="#b79ad0"/>'+hx+'</svg>'; }
+  if(t==='lander') return S0+'<ellipse cx="0" cy="30" rx="40" ry="8" fill="#8f8a84"/><g '+L+'><path d="M-12 10 L-24 28 M12 10 L24 28 M0 -12 V-26 M-8 -26 H8"/><rect x="-16" y="-12" width="32" height="22" rx="3" fill="#f2c14e"/></g><rect x="-34" y="-8" width="14" height="14" fill="#6fa8dc"/><rect x="20" y="-8" width="14" height="14" fill="#6fa8dc"/></svg>';
+  if(t==='disc') return S0+'<defs><radialGradient id="'+u+'g" cx=".35" cy=".3"><stop offset="0" stop-color="#fff1b8"/><stop offset="1" stop-color="#b8862b"/></radialGradient></defs><circle r="34" fill="url(#'+u+'g)"/><g fill="none" stroke="#7a5512" stroke-width="1" opacity=".7"><circle r="28"/><circle r="22"/><circle r="16"/><circle r="10"/></g><circle r="4" fill="#3a2a0a"/></svg>';
+  // 行星
+  h=S0+'<defs>'+G(o.c)+'<clipPath id="'+u+'c"><circle r="'+R+'"/></clipPath>'+(o.gl?'<radialGradient id="'+u+'h"><stop offset=".55" stop-color="'+o.gl+'" stop-opacity=".5"/><stop offset="1" stop-color="'+o.gl+'" stop-opacity="0"/></radialGradient>':'')+'</defs>';
+  if(o.gl) h+='<circle r="'+(R+14)+'" fill="url(#'+u+'h)"/>';
+  var rg=o.ring?'<g transform="rotate('+(o.rv?78:-18)+')" fill="none" stroke="'+o.ring+'"><ellipse rx="'+(R*(o.rv?1.55:o.rw||1.85))+'" ry="'+(R*(o.rv?0.3:o.rw?0.72:0.5))+'" stroke-width="'+(o.rv?1.8:o.rw?9:5)+'" opacity=".75" CLIP/>'+(o.rv?'':'<ellipse rx="'+(R*(o.rw?1.75:1.45))+'" ry="'+(R*(o.rw?0.5:0.38))+'" stroke-width="2" opacity=".5" CLIP/>')+'</g>':'';
+  if(o.plume) h+='<path d="M-6 '+(R-2)+' L-14 46 M0 '+R+' L0 50 M6 '+(R-2)+' L14 46" stroke="#bfe6ff" stroke-width="3" stroke-linecap="round" opacity=".7"/>';
+  h+=rg.replace(/ CLIP/g,'')+'<circle r="'+R+'" fill="url(#'+u+'g)"/><g clip-path="url(#'+u+'c)">';
+  (o.bd||[]).forEach(function(b){ h+='<rect x="-50" y="'+b[0]+'" width="100" height="'+b[1]+'" fill="'+b[2]+'" opacity="'+b[3]+'"/>'; });
+  (o.sp||[]).forEach(function(b){ h+='<ellipse cx="'+b[0]+'" cy="'+b[1]+'" rx="'+b[2]+'" ry="'+b[3]+'" fill="'+b[4]+'" opacity="'+b[5]+'"/>'; });
+  if(o.cr) [[-12,-8,6],[9,4,5],[-2,14,4],[14,-14,3],[-18,8,3],[3,-18,2.5]].forEach(function(q){ h+='<circle cx="'+q[0]+'" cy="'+q[1]+'" r="'+q[2]+'" fill="#000" opacity=".16"/><circle cx="'+(q[0]+.8)+'" cy="'+(q[1]+.8)+'" r="'+q[2]+'" fill="none" stroke="#fff" stroke-width=".7" opacity=".25"/>'; });
+  if(o.ln) h+='<g stroke="'+(o.ln===2?'#7fb6d9':'#a0623a')+'" stroke-width="1.1" fill="none" opacity=".7"><path d="M-30 -8 Q-6 2 28 -16"/><path d="M-26 12 Q0 -6 30 10"/><path d="M-10 -30 Q4 0 -6 30"/><path d="M12 -28 Q-4 4 18 28"/></g>';
+  if(o.cap===1) h+='<ellipse cx="0" cy="'+(-R)+'" rx="14" ry="6" fill="#fff" opacity=".9"/>';
+  if(o.cap===2) h+='<rect x="-50" y="2" width="100" height="50" fill="#e8a9a0" opacity=".45"/>';
+  if(o.cap===3) h+='<ellipse cx="-2" cy="'+(-R+3)+'" rx="14" ry="8" fill="#8f3f2c" opacity=".7"/>';
+  if(o.heart) h+='<g fill="#fff3dc" opacity=".92" transform="translate(4,6) rotate(-12)"><circle cx="-6" cy="-3" r="8"/><circle cx="6" cy="-3" r="8"/><polygon points="-13.5,0 13.5,0 0,15"/></g>';
+  h+='<circle r="'+R+'" fill="url(#'+u+'s)"/></g>';
+  if(o.ring) h+='<g clip-path="url(#'+u+'f)">'+rg.replace(/ CLIP/g,'')+'</g><defs><clipPath id="'+u+'f"><rect x="-60" y="2" width="120" height="60" transform="rotate('+(o.rv?78:-18)+')"/></clipPath></defs>';
+  return h+'</svg>';
+}
+var PLUME=['#ff9d5c','#ff6b5e','#6fe3ff','#ffe08a','#ff7ad9','#ffffff'];
+function shipG(i){ // 朝 +x，原点在船身中心
+  var c=PLUME[i]||PLUME[0];
+  if(i===3) return '<g><polygon points="0,-13 13,0 0,13 -13,0" fill="#ffe9a8" opacity=".92"/><path d="M0 -13V13M-13 0H13" stroke="#b98a2e" stroke-width=".8"/><circle r="2.4" fill="#fff"/></g>';
+  return '<g><path d="M-9 0 L-'+(22+i*3)+' 0" stroke="'+c+'" stroke-width="5" stroke-linecap="round" opacity=".35"/><path d="M-9 0 L-'+(15+i*2)+' 0" stroke="'+c+'" stroke-width="2.6" stroke-linecap="round"/><path d="M11 0 L-7 -6.5 L-3.5 0 L-7 6.5 Z" fill="#fff1d6"/></g>';
+}
+function shipSvg(i,sz){ return '<svg class="orb" width="'+sz+'" height="'+sz+'" viewBox="-30 -30 60 60"><g transform="rotate(-28)">'+shipG(i)+'</g></svg>'; }
+function starsSvg(seed,n,w,hh){ var s=''; for(var i=0;i<n;i++){ var a=hash01(seed+'x'+i), b=hash01(seed+'y'+i), c=hash01(seed+'z'+i); s+='<circle cx="'+(a*w).toFixed(1)+'" cy="'+(b*hh).toFixed(1)+'" r="'+(0.4+c*0.9).toFixed(2)+'" fill="#fff" opacity="'+(0.25+c*0.6).toFixed(2)+'"/>'; } return s; }
+function cardHtml(kind,id,tag){
+  var nm,fact,art;
+  if(kind==='ship'){ var x=SHIPS[+id]; nm=x[1]; fact=x[4]; art=shipSvg(+id,150); }
+  else{ var c=kind==='rare'?rareById(id):stopById(id); nm=c[1]; fact=c[3]; art=orb(id,170); }
+  return '<div class="scard"><svg class="sky" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice">'+starsSvg(id+'k',46,300,200)+'</svg><div class="art">'+art+'</div>'+(tag?'<div class="stag">'+tag+'</div>':'')+'<h3>'+esc(nm)+'</h3><p>'+esc(fact)+'</p></div>';
+}
+function spaceModal(html,cb){ modal(html,cb); var d=document.querySelector('#mask .dlg'); if(d) d.classList.add('space'); }
 function starCheck(){
   if(document.getElementById('mask')) return;
   var Z=S.star;
-  if(Z.pend.length){ var p=Z.pend[0], c=p.t==='rare'?rareById(p.id):p.t==='ship'?[0,SHIPS[p.id][1],SHIPS[p.id][3],SHIPS[p.id][4]]:stopById(p.id);
-    modal(cardHtml(c,p.t==='rare'?'打捞':p.t==='ship'?'新飞船 · 速度 ×'+SHIPS[p.id][2]:'到达')+'<div class="row"><button class="btn pri" data-a="ok">收下</button></div>', function(){ Z.pend.shift(); save(); render(); });
+  if(Z.pend.length){ var p=Z.pend[0];
+    spaceModal(cardHtml(p.t,p.id,p.t==='rare'?'打捞':p.t==='ship'?'新飞船 · 速度 ×'+SHIPS[p.id][2]:'到达')+'<div class="row"><button class="btn glow" data-a="ok">收下</button></div>', function(){ Z.pend.shift(); save(); render(); });
     return; }
   if(Z.offer && Z.offer.length){
-    modal('<h3>下一站</h3><div class="row">'+Z.offer.map(function(id,i){ var c=stopById(id); return '<button class="btn sec pick" data-a="go'+i+'"><span>'+c[2]+'</span>'+esc(c[1])+'</button>'; }).join('')+'</div>',
+    spaceModal('<div class="scard pickwrap"><svg class="sky" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice">'+starsSvg('pick'+Z.at.length,46,300,200)+'</svg><div class="stag">下一站</div><div class="picks">'+Z.offer.map(function(id,i){ var c=stopById(id); return '<button data-a="go'+i+'">'+orb(id,104)+'<b>'+esc(c[1])+'</b></button>'; }).join('')+'</div></div>',
       function(a){ var i=+a.slice(2); if(Z.offer&&Z.offer[i]){ Z.target=Z.offer[i]; Z.offer=null; save(); render(); } });
     return; }
   var si=shipIdx(); if(Z.ship==null) Z.ship=si; if(si>Z.ship){ Z.ship=si; Z.pend.push({t:'ship',id:si}); save(); return starCheck(); }
@@ -455,32 +560,40 @@ function starCheck(){
     save(); return starCheck(); }
 }
 function starCard(){
-  var Z=S.star, T=starToday(), sh=SHIPS[shipIdx()], tg=Z.target?stopById(Z.target):null, cost=starCost(Z.at.length), prog=Math.max(0,starTotal()-Z.spent), pct=tg?Math.min(100,prog/cost*100):100;
+  var Z=S.star, T=starToday(), si=shipIdx(), sh=SHIPS[si], tg=Z.target?stopById(Z.target):null, cost=starCost(Z.at.length), prog=Math.max(0,starTotal()-Z.spent), t=tg?Math.min(1,prog/cost):1;
+  var from=Z.at.length?Z.at[Z.at.length-1]:'earth', fromN=Z.at.length?stopById(from)[1]:'地球';
   var f=function(x){ return (Math.round(x*100)/100).toString(); };
-  var h='<div class="card star" data-a="push:star"><div class="strack"><div class="sbar"><div class="bar"><i style="width:'+pct.toFixed(1)+'%"></i></div><span class="sship" style="left:'+pct.toFixed(1)+'%">'+sh[3]+'</span></div><span class="sdst">'+(tg?tg[2]:'🏁')+'</span></div>'
-    +'<div class="jlab" style="margin:8px 0 10px"><span>'+sh[1]+'</span><span>'+(tg?esc(tg[1])+' · <b>'+Math.min(prog,cost)+'</b> / '+cost:'航线走完')+'</span></div>'
+  var P0=[46,112],P1=[150,6],P2=[258,74], q=function(a,b,k){ return [a[0]+(b[0]-a[0])*k,a[1]+(b[1]-a[1])*k]; };
+  var A=q(P0,P1,t), B=q(P1,P2,t), C=q(A,B,t), ang=Math.atan2(B[1]-A[1],B[0]-A[0])*180/Math.PI;
+  var path='M'+P0+' Q'+P1+' '+P2;
+  var sc='<svg class="scene" viewBox="0 0 340 150" preserveAspectRatio="xMidYMid slice">'+starsSvg('home'+Z.at.length,54,340,150)
+    +'<path d="'+path+'" fill="none" stroke="#fff1d6" stroke-opacity=".28" stroke-width="1.2" stroke-dasharray="2 5" stroke-linecap="round"/>'
+    +'<path d="M'+P0+' Q'+A.map(function(v){return v.toFixed(1);})+' '+C.map(function(v){return v.toFixed(1);})+'" fill="none" stroke="#fff1d6" stroke-width="1.6" stroke-linecap="round"/>'
+    +orb(from,44,24,90)+(tg?orb(Z.target,128,214,10):'')
+    +'<g transform="translate('+C[0].toFixed(1)+','+C[1].toFixed(1)+') rotate('+ang.toFixed(1)+')">'+shipG(si)+'</g></svg>';
+  return '<div class="card space star" data-a="push:star">'+sc
+    +'<div class="shead"><div><small>'+esc(fromN)+' 出发 · '+sh[1]+'</small><h2>'+(tg?esc(tg[1]):'航线走完')+'</h2></div>'+(tg?'<div class="sprog"><b>'+Math.min(prog,cost)+'</b> / '+cost+'</div>':'')+'</div>'
     +'<div class="seq"><span><b>'+T.raw+'</b>推力</span><em>×</em><span><b>'+f(T.sp)+'</b>速度</span><em>×</em><span><b>'+f(T.st)+'</b>稳定</span><em>×</em><span'+(T.bo>1?'':' class="off"')+'><b>'+f(T.bo)+'</b>助推</span>'
-    +(T.dr<1?'<em>×</em><span class="late"><b>'+f(T.dr)+'</b>阻力</span>':'')+'<em>=</em><span class="tot"><b>'+T.d+'</b>今日</span></div>'
-    +(Z.charge?'<div class="jlab" style="margin:10px 0 0"><span>🔋 已充能</span><span></span></div>':'')+'</div>';
-  return h;
+    +(T.dr<1?'<em>×</em><span class="drag"><b>'+f(T.dr)+'</b>阻力</span>':'')+'<em>=</em><span class="tot"><b>'+T.d+'</b>今日</span></div>'
+    +(Z.charge?'<div class="chg">已充能 · 下次第一次坐下推力翻倍</div>':'')+'</div>';
 }
 function shipCard(){
   var t=allTotal(), i=shipIdx(), sh=SHIPS[i], nx=SHIPS[i+1];
-  var h='<div class="jtop"><div><div class="jbig">'+t+'<small> 次</small></div><div class="cr">'+sh[1]+' · 速度 ×'+sh[2]+'</div></div><div class="fleet">'+sh[3]+'</div></div>';
-  if(nx) h+='<div class="jlab"><span>'+nx[3]+' '+nx[1]+' ×'+nx[2]+'</span><span>还差 <b>'+(nx[0]-t)+'</b> 次</span></div><div class="bar"><i style="width:'+((t-sh[0])/(nx[0]-sh[0])*100).toFixed(1)+'%"></i></div>';
+  var h='<div class="jtop"><div><div class="jbig">'+t+'<small> 次</small></div><div class="cr">'+sh[1]+' · 速度 ×'+sh[2]+'</div></div><div class="shipbadge">'+shipSvg(i,64)+'</div></div>';
+  if(nx) h+='<div class="jlab"><span>'+nx[1]+' ×'+nx[2]+'</span><span>还差 <b>'+(nx[0]-t)+'</b> 次</span></div><div class="bar"><i style="width:'+((t-sh[0])/(nx[0]-sh[0])*100).toFixed(1)+'%"></i></div>';
   return h;
 }
 function pageStar(){
   var Z=S.star, si=shipIdx(), h=starCard().replace(' data-a="push:star"','');
-  h+='<div class="sect">飞船</div><div class="card">';
-  SHIPS.forEach(function(x,i){ h+='<div class="drow'+(i>si?' dim':'')+'"'+(i<=si?' data-a="sc:ship:'+i+'"':'')+'><span style="width:26px">'+(i<=si?x[3]:'·')+'</span><span style="flex:1'+(i===si?';font-weight:700':'')+'">'+x[1]+'</span><span class="cr">×'+x[2]+' · '+x[0]+' 次</span></div>'; });
-  h+='</div><div class="sect">航线 · '+Z.at.length+' / '+STOPS.length+'</div><div class="card"><div class="sgrid">';
-  STOPS.forEach(function(x){ var got=Z.at.indexOf(x[0])>=0, tg=Z.target===x[0]; h+='<button class="'+(got?'on':tg?'tg':'')+'"'+(got?' data-a="sc:stop:'+x[0]+'"':'')+'><span>'+(got||tg?x[2]:'？')+'</span>'+(got||tg?esc(x[1]):'')+'</button>'; });
-  h+='</div></div><div class="sect">打捞 · '+Z.cards.length+' / '+RARE.length+'</div><div class="card"><div class="sgrid">';
-  RARE.forEach(function(x){ var got=Z.cards.indexOf(x[0])>=0; h+='<button class="'+(got?'on':'')+'"'+(got?' data-a="sc:rare:'+x[0]+'"':'')+'><span>'+(got?x[2]:'？')+'</span>'+(got?esc(x[1]):'')+'</button>'; });
+  h+='<div class="sect">飞船</div><div class="card space"><div class="fleetrow">';
+  SHIPS.forEach(function(x,i){ h+='<button class="'+(i===si?'cur':i<si?'got':'')+'"'+(i<=si?' data-a="sc:ship:'+i+'"':'')+'>'+(i<=si?shipSvg(i,46):'<i></i>')+'<b>'+x[1]+'</b><small>×'+x[2]+(i>si?' · '+x[0]+' 次':'')+'</small></button>'; });
+  h+='</div></div><div class="sect">航线 · '+Z.at.length+' / '+STOPS.length+'</div><div class="card space"><div class="sgrid">';
+  STOPS.forEach(function(x){ var got=Z.at.indexOf(x[0])>=0, tg=Z.target===x[0]; h+='<button class="'+(got?'on':tg?'tg':'')+'"'+(got?' data-a="sc:stop:'+x[0]+'"':'')+'>'+(got||tg?orb(x[0],54)+'<b>'+esc(x[1])+'</b>':'<i></i>')+'</button>'; });
+  h+='</div></div><div class="sect">打捞 · '+Z.cards.length+' / '+RARE.length+'</div><div class="card space"><div class="sgrid">';
+  RARE.forEach(function(x){ var got=Z.cards.indexOf(x[0])>=0; h+='<button class="'+(got?'on':'')+'"'+(got?' data-a="sc:rare:'+x[0]+'"':'')+'>'+(got?orb(x[0],54)+'<b>'+esc(x[1])+'</b>':'<i></i>')+'</button>'; });
   return h+'</div></div>';
 }
-function starShow(kind,id){ var c=kind==='rare'?rareById(id):kind==='ship'?[0,SHIPS[+id][1],SHIPS[+id][3],SHIPS[+id][4]]:stopById(id); if(c) modal(cardHtml(c)+'<div class="row"><button class="btn ghost" data-a="close">关闭</button></div>'); }
+function starShow(kind,id){ spaceModal(cardHtml(kind,id)+'<div class="row"><button class="btn glow" data-a="close">关闭</button></div>'); }
 
 // ---------- 提示音 ----------
 var actx=null;
@@ -1310,7 +1423,7 @@ function pageRule(k){
 }
 function pageExc(){
   var h='<div class="card">';
-  S.exceptions.forEach(function(e,i){ h+='<span class="tag">'+esc(e)+'<button data-a="rmex:'+i+'">×</button></span>'; });
+  S.exceptions.forEach(function(e,i){ h+='<span class="stag">'+esc(e)+'<button data-a="rmex:'+i+'">×</button></span>'; });
   if(!S.exceptions.length) h+='<div class="empty">还没有例外情形。</div>';
   return h+'<label>新增一种例外</label><div class="row"><input id="fe" placeholder="例如：生病发烧"><button class="btn sec small" data-a="addex">添加</button></div></div>';
 }
