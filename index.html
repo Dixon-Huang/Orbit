@@ -175,6 +175,32 @@ input,select{width:100%;font-size:16px;padding:10px 12px;border-radius:10px;bord
 .drow .k{color:var(--mute);width:40px;flex:none}
 .journey .jtop{display:flex;align-items:center}
 .journey .jtop>div:first-child{flex:1}
+.thr{color:var(--acc)}
+#toast .thr{color:#9fe0bd}
+.star{cursor:pointer}
+.strack{display:flex;align-items:flex-end;gap:10px}
+.strack .sbar{flex:1;position:relative;padding-top:26px;margin-left:10px}
+.strack .sdst{font-size:24px;line-height:1;margin-bottom:-8px}
+.strack .sship{position:absolute;top:0;transform:translateX(-50%);font-size:20px;line-height:1}
+.seq{display:flex;align-items:flex-end;justify-content:space-between;gap:2px}
+.seq span{display:flex;flex-direction:column;align-items:center;font-size:11px;color:var(--mute);min-width:0}
+.seq span b{font-size:17px;color:var(--ink);font-weight:700}
+.seq span.off b{color:var(--mute);font-weight:500}
+.seq span.late b{color:#d9682b}
+.seq span.tot b{color:var(--acc);font-size:20px}
+.seq em{font-style:normal;color:var(--mute);font-size:13px;padding-bottom:14px}
+.scard{text-align:center;padding:6px 0 4px}
+.scard .big{font-size:64px;line-height:1.2}
+.scard h3{margin:4px 0 8px}
+.scard p{text-align:left}
+.btn.pick{display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 6px}
+.btn.pick span{font-size:34px;line-height:1.1}
+.sgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.sgrid button{border:1px solid var(--line);background:var(--bg);color:var(--mute);border-radius:12px;padding:8px 2px;font-size:11px;min-height:64px;display:flex;flex-direction:column;align-items:center;gap:3px;overflow:hidden}
+.sgrid button span{font-size:24px;line-height:1.1}
+.sgrid button.on{background:var(--card);color:var(--ink);cursor:pointer}
+.sgrid button.tg{border-color:var(--acc);border-style:dashed}
+.drow.dim{opacity:.45}
 .jbig{font-size:40px;font-weight:800;line-height:1.1}
 .jbig small{font-size:15px;font-weight:600;color:var(--mute)}
 .jcur{font-size:46px;line-height:1}
@@ -358,11 +384,103 @@ function weekLine(n){
 
 // ---------- 保存 ----------
 function save(){
-  S.rev = (S.rev||0)+1;
+  starSync(); S.rev = (S.rev||0)+1;
   try{ localStorage.setItem(LS_KEY, JSON.stringify(S)); setSaving(''); }catch(e){ setSaving('保存失败：存储空间不可用'); }
 }
 function setSaving(t){ var el=document.getElementById('saving'); if(el) el.textContent=t; }
 function hist(text,type){ S.history.unshift({date:today(),type:type||'seat',text:text}); }
+
+// ---------- 星图 ----------
+var SHIPS=[[0, "化学火箭", 1, "🚀", "燃烧推进剂，喷出高温气体。推力大，但几分钟内就把燃料烧完。"], [50, "核热火箭", 1.3, "☢️", "用反应堆加热氢气再喷出，同样多的推进剂，效率约为化学火箭的两倍。美国在 1960 年代做过地面试车。"], [150, "离子推进", 1.6, "⚡", "用电场加速带电粒子。推力只相当于一张纸的重量，但能连续工作数年。黎明号靠它先后环绕了灶神星和谷神星。"], [300, "太阳帆", 2, "⛵", "不带推进剂，靠阳光的光压推动一张极薄的帆，只要有光就一直在加速。"], [600, "聚变推进", 2.6, "💥", "设想用核聚变的产物直接做喷流，目前还停留在理论和实验阶段。"], [1200, "反物质推进", 3.5, "✨", "物质与反物质湮灭时，质量全部转化为能量，是已知能量密度最高的反应。人类至今造出的反物质极其微量。"]];
+var STOPS=[["iss", "国际空间站", "🛰️", "约 90 分钟绕地球一圈，上面的人一天能看到大约 16 次日出。"], ["moon", "月球", "🌕", "每年远离地球约 3.8 厘米。这个数字是用阿波罗宇航员留在月面的反射镜，靠激光测距量出来的。"], ["venus", "金星", "🟡", "自转一圈约 243 个地球日，比它绕太阳一圈（约 225 日）还久，而且自转方向和大多数行星相反。"], ["mercury", "水星", "⚫", "几乎没有大气保温：白天约 430°C，夜里降到约 −180°C。"], ["sun", "太阳", "☀️", "一颗恒星占了整个太阳系质量的约 99.8%。"], ["mars", "火星", "🔴", "奥林帕斯山是太阳系已知最高的火山，高度是珠穆朗玛峰的两到三倍。"], ["phobos", "火卫一", "🥔", "每天绕火星约三圈，轨道在缓慢下降。几千万年后，它会撞上火星，或者被撕碎成一道环。"], ["ceres", "谷神星", "⚪", "小行星带里最大的天体，也是离太阳最近的矮行星。"], ["jupiter", "木星", "🟠", "质量是太阳系其他所有行星加起来的两倍多。"], ["grs", "大红斑", "🌀", "木星上一场比地球还大的风暴，已经刮了一百多年。"], ["io", "木卫一", "🌋", "太阳系火山活动最剧烈的天体。木星的引力不断揉捏它的内部，把它加热。"], ["europa", "木卫二", "🧊", "冰壳之下有一片全球性的咸水海洋，水量约为地球海洋的两倍。"], ["ganymede", "木卫三", "🌑", "太阳系最大的卫星，比水星还大，也是唯一已知自带磁场的卫星。"], ["saturn", "土星", "🪐", "唯一平均密度比水还低的行星。"], ["rings", "土星环", "💍", "从土星向外延伸约 28 万公里，主环的厚度通常只有约 10 米。"], ["titan", "土卫六", "🟤", "唯一拥有浓厚大气的卫星，表面有液态甲烷和乙烷构成的河流与湖海。"], ["enceladus", "土卫二", "⛲", "南极的裂缝不断向太空喷出水汽和冰粒，来源是冰壳下的海洋。"], ["uranus", "天王星", "🩵", "自转轴倾斜约 98 度，几乎是躺着绕太阳转。"], ["neptune", "海王星", "🔵", "太阳系风最大的行星，风速超过每小时 2000 公里。"], ["triton", "海卫一", "❄️", "公转方向和海王星的自转方向相反，很可能是被海王星俘获的柯伊伯带天体。"], ["pluto", "冥王星", "🤍", "2015 年新视野号飞掠时，拍到它表面一片心形的明亮区域，其中一半是氮冰平原。"], ["charon", "卡戎", "🌗", "和冥王星互相潮汐锁定，两者永远以同一面相对。"], ["arrokoth", "阿罗科斯", "⛄", "形状像雪人的柯伊伯带小天体。2019 年元旦新视野号飞掠了它，这是探测器到访过的最远天体。"], ["voyager", "旅行者 1 号", "📡", "1977 年发射，2012 年 8 月进入星际空间，是离地球最远的人造物体。"]];
+var RARE=[["halley", "哈雷彗星", "☄️", "大约每 76 年回归一次。上次是 1986 年，下次在 2061 年。"], ["67p", "67P 彗星", "🪨", "2014 年，罗塞塔号的着陆器菲莱落在它表面，是人类第一次在彗核上着陆。"], ["oumuamua", "奥陌陌", "🛸", "2017 年发现，第一个被确认来自太阳系之外的天体。"], ["bennu", "贝努", "💎", "奥西里斯-REx 采集了这颗小行星的样本，2023 年 9 月送回地球。"], ["itokawa", "糸川", "🥜", "隼鸟号 2010 年带回了它的微粒，是人类第一次从小行星取样返回。"], ["parker", "帕克太阳探测器", "🌞", "2024 年 12 月 24 日从距太阳表面约 610 万公里处掠过，时速约 69 万公里，是最快的人造物体。"], ["ingenuity", "机智号", "🚁", "2021 年 4 月在火星上完成人类第一次地外动力飞行。原计划飞 5 次，最终飞了 72 次。"], ["jwst", "韦布望远镜", "🔭", "停在日地第二拉格朗日点附近，距地球约 150 万公里。"], ["change4", "嫦娥四号", "🐇", "2019 年 1 月，人类探测器第一次在月球背面软着陆。"], ["record", "旅行者金唱片", "📀", "两艘旅行者号各带一张镀金唱片，录有地球的声音、音乐和 55 种语言的问候。"], ["borisov", "鲍里索夫彗星", "💫", "2019 年发现，第二个被确认的星际访客，也是第一颗星际彗星。"], ["psyche", "灵神星", "⚙️", "一颗富含金属的小行星。NASA 的同名探测器 2023 年 10 月发射，正在前往。"]];
+var TDR=[10,25,50], TDRN=['顺手','有点烦','很抗拒'], TDROP=[0.15,0.4,0.8];
+if(!S.star) S.star={days:{},gift:80,spent:0,at:[],target:STOPS[0][0],offer:null,cards:[],pend:[],charge:false,clear:{},seed:Math.floor(Math.random()*1e9),since:today()};
+var starBuf='';
+function hash01(str){ var h=2166136261; for(var i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619); } h^=h>>>13; h=Math.imul(h,0x5bd1e995); h^=h>>>15; return (h>>>0)/4294967296; }
+function shipIdx(){ var t=allTotal(), k=0; SHIPS.forEach(function(x,i){ if(t>=x[0]) k=i; }); return k; }
+function stopById(id){ return STOPS.filter(function(x){return x[0]===id;})[0]; }
+function rareById(id){ return RARE.filter(function(x){return x[0]===id;})[0]; }
+function starCost(n){ return 400+50*n; }
+function starGrant(k,b){
+  var d=today(), D=S.star.days[d]=S.star.days[d]||{e:[]}; if(!D.e) D.e=[];
+  if(D.e.some(function(x){return x.k===k;})) return;
+  var r=hash01(S.star.seed+'|'+d+'|'+k), m=r<0.6?1:r<0.9?2:3;
+  D.e.push({k:k,b:b,m:m});
+  starBuf+=(starBuf?' ':'')+'<b class="thr">▲ '+b+(m>1?' ×'+m:'')+'</b>';
+}
+function starRetract(k){ var D=S.star.days[today()]; if(!D||!D.e) return; D.e=D.e.filter(function(x){return x.k!==k;}); }
+function starFlush(){ if(starBuf) toast(''); }
+function starStab(date){
+  var ds=S.nodes.filter(function(n){return !isWeekly(n) && n.added<=date;}); if(!ds.length) return 1;
+  var act=ds.filter(function(n){return !paused(date,n.id);}); if(!act.length) return 1.5;
+  return 1+0.5*act.filter(function(n){return done(date,n.id);}).length/act.length;
+}
+function starBoost(date){ var y=addDays(date,-1); return S.gym.log.some(function(L){return L.date===date||L.date===y;})?1.3:1; }
+function starDrag(){ var d=today(), n=S.todos.filter(function(t){return t.due<d;}).length; return Math.max(0.7,1-0.1*n); }
+function starRaw(D){ var x=0; (D&&D.e||[]).forEach(function(e){ x+=e.b*e.m; }); return x; }
+function starToday(){ var d=today(), D=S.star.days[d], o={raw:starRaw(D),sp:SHIPS[shipIdx()][2],st:starStab(d),bo:starBoost(d),dr:starDrag()}; o.d=Math.round(o.raw*o.sp*o.st*o.bo*o.dr); return o; }
+function starTotal(){ var t=S.star.gift||0; Object.keys(S.star.days).forEach(function(k){ t+=S.star.days[k].d||0; }); return t; }
+function starRare(){
+  var left=RARE.filter(function(x){return S.star.cards.indexOf(x[0])<0;});
+  if(!left.length){ starGrant('bonus:'+Date.now(),30); return; }
+  var c=left[Math.floor(hash01(S.star.seed+'|rare|'+S.star.cards.length)*left.length)];
+  S.star.cards.push(c[0]); S.star.pend.push({t:'rare',id:c[0]});
+}
+function starSync(){
+  var d=today(), D=S.star.days[d];
+  if(D){ D.d=starToday().d; }
+  if(!S.star.clear[d] && D && D.e && D.e.some(function(x){return x.k.indexOf('ses:')===0;}) && starDrag()===1){
+    var act=S.nodes.filter(function(n){return !isWeekly(n) && !paused(d,n.id);});
+    if(act.length && act.every(function(n){return done(d,n.id);})){ S.star.clear[d]=1; starRare(); }
+  }
+  var old=addDays(d,-14); Object.keys(S.star.days).forEach(function(k){ if(k<old) delete S.star.days[k].e; });
+  Object.keys(S.star.clear).forEach(function(k){ if(k<old) delete S.star.clear[k]; });
+}
+function cardHtml(c,tag){ return '<div class="scard"><div class="big">'+c[2]+'</div>'+(tag?'<div class="cr">'+tag+'</div>':'')+'<h3>'+esc(c[1])+'</h3><p>'+esc(c[3])+'</p></div>'; }
+function starCheck(){
+  if(document.getElementById('mask')) return;
+  var Z=S.star;
+  if(Z.pend.length){ var p=Z.pend[0], c=p.t==='rare'?rareById(p.id):p.t==='ship'?[0,SHIPS[p.id][1],SHIPS[p.id][3],SHIPS[p.id][4]]:stopById(p.id);
+    modal(cardHtml(c,p.t==='rare'?'打捞':p.t==='ship'?'新飞船 · 速度 ×'+SHIPS[p.id][2]:'到达')+'<div class="row"><button class="btn pri" data-a="ok">收下</button></div>', function(){ Z.pend.shift(); save(); render(); });
+    return; }
+  if(Z.offer && Z.offer.length){
+    modal('<h3>下一站</h3><div class="row">'+Z.offer.map(function(id,i){ var c=stopById(id); return '<button class="btn sec pick" data-a="go'+i+'"><span>'+c[2]+'</span>'+esc(c[1])+'</button>'; }).join('')+'</div>',
+      function(a){ var i=+a.slice(2); if(Z.offer&&Z.offer[i]){ Z.target=Z.offer[i]; Z.offer=null; save(); render(); } });
+    return; }
+  var si=shipIdx(); if(Z.ship==null) Z.ship=si; if(si>Z.ship){ Z.ship=si; Z.pend.push({t:'ship',id:si}); save(); return starCheck(); }
+  if(Z.target && starTotal()-Z.spent>=starCost(Z.at.length)){
+    Z.spent+=starCost(Z.at.length); Z.at.push(Z.target); Z.pend.push({t:'stop',id:Z.target}); hist('到达 '+stopById(Z.target)[1],'star');
+    var left=STOPS.filter(function(x){return Z.at.indexOf(x[0])<0;}); Z.target=null; Z.offer=left.slice(0,2).map(function(x){return x[0];}); if(Z.offer.length===1){ Z.target=Z.offer[0]; Z.offer=null; }
+    save(); return starCheck(); }
+}
+function starCard(){
+  var Z=S.star, T=starToday(), sh=SHIPS[shipIdx()], tg=Z.target?stopById(Z.target):null, cost=starCost(Z.at.length), prog=Math.max(0,starTotal()-Z.spent), pct=tg?Math.min(100,prog/cost*100):100;
+  var f=function(x){ return (Math.round(x*100)/100).toString(); };
+  var h='<div class="card star" data-a="push:star"><div class="strack"><div class="sbar"><div class="bar"><i style="width:'+pct.toFixed(1)+'%"></i></div><span class="sship" style="left:'+pct.toFixed(1)+'%">'+sh[3]+'</span></div><span class="sdst">'+(tg?tg[2]:'🏁')+'</span></div>'
+    +'<div class="jlab" style="margin:8px 0 10px"><span>'+sh[1]+'</span><span>'+(tg?esc(tg[1])+' · <b>'+Math.min(prog,cost)+'</b> / '+cost:'航线走完')+'</span></div>'
+    +'<div class="seq"><span><b>'+T.raw+'</b>推力</span><em>×</em><span><b>'+f(T.sp)+'</b>速度</span><em>×</em><span><b>'+f(T.st)+'</b>稳定</span><em>×</em><span'+(T.bo>1?'':' class="off"')+'><b>'+f(T.bo)+'</b>助推</span>'
+    +(T.dr<1?'<em>×</em><span class="late"><b>'+f(T.dr)+'</b>阻力</span>':'')+'<em>=</em><span class="tot"><b>'+T.d+'</b>今日</span></div>'
+    +(Z.charge?'<div class="jlab" style="margin:10px 0 0"><span>🔋 已充能</span><span></span></div>':'')+'</div>';
+  return h;
+}
+function shipCard(){
+  var t=allTotal(), i=shipIdx(), sh=SHIPS[i], nx=SHIPS[i+1];
+  var h='<div class="jtop"><div><div class="jbig">'+t+'<small> 次</small></div><div class="cr">'+sh[1]+' · 速度 ×'+sh[2]+'</div></div><div class="fleet">'+sh[3]+'</div></div>';
+  if(nx) h+='<div class="jlab"><span>'+nx[3]+' '+nx[1]+' ×'+nx[2]+'</span><span>还差 <b>'+(nx[0]-t)+'</b> 次</span></div><div class="bar"><i style="width:'+((t-sh[0])/(nx[0]-sh[0])*100).toFixed(1)+'%"></i></div>';
+  return h;
+}
+function pageStar(){
+  var Z=S.star, si=shipIdx(), h=starCard().replace(' data-a="push:star"','');
+  h+='<div class="sect">飞船</div><div class="card">';
+  SHIPS.forEach(function(x,i){ h+='<div class="drow'+(i>si?' dim':'')+'"'+(i<=si?' data-a="sc:ship:'+i+'"':'')+'><span style="width:26px">'+(i<=si?x[3]:'·')+'</span><span style="flex:1'+(i===si?';font-weight:700':'')+'">'+x[1]+'</span><span class="cr">×'+x[2]+' · '+x[0]+' 次</span></div>'; });
+  h+='</div><div class="sect">航线 · '+Z.at.length+' / '+STOPS.length+'</div><div class="card"><div class="sgrid">';
+  STOPS.forEach(function(x){ var got=Z.at.indexOf(x[0])>=0, tg=Z.target===x[0]; h+='<button class="'+(got?'on':tg?'tg':'')+'"'+(got?' data-a="sc:stop:'+x[0]+'"':'')+'><span>'+(got||tg?x[2]:'？')+'</span>'+(got||tg?esc(x[1]):'')+'</button>'; });
+  h+='</div></div><div class="sect">打捞 · '+Z.cards.length+' / '+RARE.length+'</div><div class="card"><div class="sgrid">';
+  RARE.forEach(function(x){ var got=Z.cards.indexOf(x[0])>=0; h+='<button class="'+(got?'on':'')+'"'+(got?' data-a="sc:rare:'+x[0]+'"':'')+'><span>'+(got?x[2]:'？')+'</span>'+(got?esc(x[1]):'')+'</button>'; });
+  return h+'</div></div>';
+}
+function starShow(kind,id){ var c=kind==='rare'?rareById(id):kind==='ship'?[0,SHIPS[+id][1],SHIPS[+id][3],SHIPS[+id][4]]:stopById(id); if(c) modal(cardHtml(c)+'<div class="row"><button class="btn ghost" data-a="close">关闭</button></div>'); }
 
 // ---------- 提示音 ----------
 var actx=null;
@@ -373,8 +491,9 @@ function beep(){ try{ if(!actx) return; [0,0.35,0.7].forEach(function(t){ var o=
 function toggle(id){
   var d=today(); if(paused(d,id)) return;
   S.log[d]=S.log[d]||{};
-  if(S.log[d][id]===1||S.log[d][id]===true) delete S.log[d][id]; else S.log[d][id]=1;
-  save(); render();
+  var nd=byId(id), auto=nd&&(nd.autoStart||nd.autoTodo||nd.autoGym);
+  if(S.log[d][id]===1||S.log[d][id]===true){ delete S.log[d][id]; starRetract('h:'+id); } else { S.log[d][id]=1; if(!auto) starGrant('h:'+id,10); }
+  save(); render(); starFlush();
 }
 function askFail(id, date, wk){
   var ids = subtree(id), n = byId(id), dt=date||today(), left=reserveLeft(id,dt);
@@ -481,7 +600,7 @@ function seatCheck(){
   S.active=null;
   var p=S.pomo; if(p.doneDate!==dateOf(a.start)){ p.done=0; p.doneDate=dateOf(a.start); }
   p.done++; p.next = p.done%p.every===0?'long':'short'; p.justDone=st.id;
-  hist(st.name+' #'+st.count+' 完成'); beep(); save(); return true;
+  hist(st.name+' #'+st.count+' 完成'); beep(); starGrant('ses:'+a.start,10); save(); setTimeout(starFlush,200); return true;
 }
 function breakStart(kind){ var p=S.pomo; p.brk={start:Date.now(),dur:(kind==='long'?p.l:p.s)*60000,kind:kind}; p.next=null; p.justDone=null; unlockAudio(); save(); render(); }
 function breakEnd(){ S.pomo.brk=null; S.pomo.next=null; S.pomo.justDone=null; save(); render(); }
@@ -489,8 +608,9 @@ function breakCheck(){ var b=S.pomo.brk; if(!b) return false; if(Date.now()-b.st
 function seatSuccess(id){
   var st=seatById(id); st.count++;
   var entry={date:today(),slot:slotOf(Date.now()),n:1,tag:'',seat:id}, he={date:today(),type:'seat',text:st.name+' #'+st.count+' 完成'};
+  var sk='sl:'+Date.now(), hadC=S.star.charge; starGrant(sk,15); if(!(st.timerMin>0)) S.star.charge=true;
   S.seatLog.push(entry); S.history.unshift(he); save(); render();
-  toast(esc(st.name)+' 记为 #'+st.count, function(){ var i=S.seatLog.indexOf(entry); if(i>=0) S.seatLog.splice(i,1); var j=S.history.indexOf(he); if(j>=0) S.history.splice(j,1); st.count=Math.max(0,st.count-1); save(); render(); });
+  toast(esc(st.name)+' 记为 #'+st.count, function(){ starRetract(sk); S.star.charge=hadC; var i=S.seatLog.indexOf(entry); if(i>=0) S.seatLog.splice(i,1); var j=S.history.indexOf(he); if(j>=0) S.history.splice(j,1); st.count=Math.max(0,st.count-1); save(); render(); });
 }
 function beginSeat(id,tag){
   var st=seatById(id); if(!st||busy()) return;
@@ -501,11 +621,13 @@ function beginSeat(id,tag){
   hist('坐上 '+st.name+'（'+(tag||'未写内容')+'）');
   var now=new Date(), hm=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0'), td=today();
   if(st.timerMin>0) S.nodes.forEach(function(n){ if(n.autoStart && !done(td,n.id)){ S.log[td]=S.log[td]||{}; S.log[td][n.id]=1; hist('「'+n.name+'」自动打勾','add'); setTimeout(function(){ toast('「'+esc(n.name)+'」自动打勾 ✓'); },300); } });
-  nav.tab='focus'; nav.stack=[]; save(); render(); toTop();
+  if(st.timerMin>0){ var D0=S.star.days[td]; if(!(D0&&D0.e&&D0.e.some(function(x){return x.k==='sit1';}))){ starGrant('sit1',S.star.charge?40:20); S.star.charge=false; } }
+  nav.tab='focus'; nav.stack=[]; save(); render(); toTop(); setTimeout(starFlush,700);
 }
 var toastTimer=null, toastUndo=null;
 function toast(html,undo){
   var t=document.getElementById('toast'); if(!t){ t=document.createElement('div'); t.id='toast'; document.body.appendChild(t); }
+  if(starBuf){ html=(html?html+' ':'')+starBuf; starBuf=''; }
   toastUndo=undo||null; t.innerHTML='<span>'+html+'</span>'+(undo?'<button data-a="undo">撤销</button>':''); t.className='show';
   clearTimeout(toastTimer); toastTimer=setTimeout(function(){ t.className=''; toastUndo=null; },6000);
 }
@@ -637,8 +759,8 @@ function pageHabit(){
     h+='</div>';
   }
   if(S.pauses[d]) h+='<div class="banner pause">今天例外：'+esc(S.pauses[d])+' · <a href="#" data-a="unpause" style="color:inherit">撤销</a></div>';
-  if(!total) return h+'<div class="card"><div class="empty">树是空的</div></div>';
-  h+='<div class="card">'+renderTree()+'</div>';
+  if(!total) return h+'<div class="card"><div class="empty">树是空的</div></div>'+starCard();
+  h+='<div class="card">'+renderTree()+'</div>'+starCard();
   var best=0, first=d; S.nodes.forEach(function(n){ var s=isWeekly(n)?0:streak(n); if(s>best) best=s; if(n.added<first) first=n.added; });
   var c=2*Math.PI*38, frac=dn/total;
   h+='<div class="card"><div class="hero"><div class="hring"><svg width="96" height="96" viewBox="0 0 96 96"><circle cx="48" cy="48" r="38" fill="none" stroke="var(--line)" stroke-width="9"/><circle cx="48" cy="48" r="38" fill="none" stroke="var(--acc)" stroke-width="9" stroke-linecap="round" stroke-dasharray="'+c.toFixed(1)+'" stroke-dashoffset="'+(c*(1-frac)).toFixed(1)+'" transform="rotate(-90 48 48)"/></svg><div><b>'+dn+'/'+total+'</b><span>今天</span></div></div>'
@@ -677,6 +799,7 @@ function todoForm(pre,msg){
     +'<button class="'+(sel===3?'on':'')+'" data-a="sel:3">几天内<small id="dnsm">'+dnSmall(dn)+'</small></button></div>'
     +'<div id="dnrow" class="dnrow" style="display:'+(sel===3?'flex':'none')+'"><button class="btn ghost" data-a="dn:-1">−</button><span><b id="dnv">'+dn+'</b> 天内</span><button class="btn ghost" data-a="dn:1">＋</button></div>'
     +'<input type="hidden" id="tdue" value="'+sel+'"><input type="hidden" id="tdn" value="'+dn+'">'
+    +(pre.id?'':'<label>抗拒程度</label><div class="seg" style="margin:0">'+TDRN.map(function(x,i){return '<button class="'+(i===(pre.dr||0)?'on':'')+'" data-a="dr:'+i+'">'+x+'</button>';}).join('')+'</div><input type="hidden" id="tdr" value="'+(pre.dr||0)+'">')
     +'<div class="row"><button class="btn ghost" data-a="close">取消</button><button class="btn pri" data-a="save">保存</button></div>',
     function(a,v){
       if(a!=='save') return;
@@ -684,8 +807,8 @@ function todoForm(pre,msg){
       if(k===3){ due=dnDate(n); lab=n+' 天内'; } else { due=o[k][1]; lab=o[k][0]; }
       if(pre.id){ var t=todoById(pre.id); if(t){ t.due=due; t.moved=(t.moved||0)+1; save(); render(); toast('改到 '+lab+'（'+md(due)+'）'); } return; }
       var nm=(v.tn||'').trim(), stp=(v.ts||'').trim();
-      if(!nm||!stp) return todoForm({name:nm,step:stp,sel:k,n:n},'两项都要填');
-      S.todos.push({id:'t'+Date.now().toString(36),name:nm,step:stp,due:due,added:today(),moved:0}); save(); render(); toast('已加入 · '+lab+'（'+md(due)+' 前）');
+      if(!nm||!stp) return todoForm({name:nm,step:stp,sel:k,n:n,dr:+v.tdr||0},'两项都要填');
+      S.todos.push({id:'t'+Date.now().toString(36),name:nm,step:stp,due:due,added:today(),moved:0,dr:+v.tdr||0}); save(); render(); toast('已加入 · '+lab+'（'+md(due)+' 前）');
     });
 }
 function todoComplete(id){
@@ -693,12 +816,14 @@ function todoComplete(id){
   var idx=S.todos.indexOf(t); S.todos.splice(idx,1);
   var rec={name:t.name,date:today(),added:t.added}; S.todoDone.push(rec);
   if(S.todoRun&&S.todoRun.id===id) S.todoRun=null;
-  var td=today(), ticked=[];
+  var td=today(), ticked=[], dr=t.dr||0, part=Math.round(TDR[dr]*0.3);
   S.nodes.forEach(function(n){ if(n.autoTodo && !done(td,n.id)){ S.log[td]=S.log[td]||{}; S.log[td][n.id]=1; ticked.push(n.id); } });
+  starGrant('td:'+t.id, t.sg?TDR[dr]-part:TDR[dr]);
+  if(!t.rolled){ t.rolled=1; if(hash01(S.star.seed+'|drop|'+t.id)<TDROP[dr]) starRare(); }
   save(); render();
-  toast('清掉了：'+esc(t.name)+' ✓', function(){ S.todos.splice(idx,0,t); var i=S.todoDone.indexOf(rec); if(i>=0) S.todoDone.splice(i,1); ticked.forEach(function(nid){ if(S.log[td]) delete S.log[td][nid]; }); save(); render(); });
+  toast('清掉了：'+esc(t.name)+' ✓', function(){ starRetract('td:'+t.id); S.todos.splice(idx,0,t); var i=S.todoDone.indexOf(rec); if(i>=0) S.todoDone.splice(i,1); ticked.forEach(function(nid){ if(S.log[td]) delete S.log[td][nid]; }); save(); render(); });
 }
-function todoStart(id){ unlockAudio(); S.todoRun={id:id,start:Date.now()}; save(); render(); toTop(); }
+function todoStart(id){ unlockAudio(); var t=todoById(id); if(t&&!t.sg){ t.sg=1; starGrant('ts:'+id,Math.round(TDR[t.dr||0]*0.3)); } S.todoRun={id:id,start:Date.now()}; save(); render(); toTop(); starFlush(); }
 function todoStop(){
   var r=S.todoRun; if(!r) return; var t=todoById(r.id); S.todoRun=null; save(); render();
   if(t) modal('<h3>先到这</h3><label>下一步</label><input id="tx" value="'+esc(t.step)+'"><div class="row"><button class="btn pri" data-a="ok">保存</button></div>',
@@ -706,8 +831,9 @@ function todoStop(){
 }
 function todoMore(id){
   var t=todoById(id); if(!t) return;
-  modal('<h3>'+esc(t.name)+'</h3><p>放了 '+daysBetween(t.added,today())+' 天'+(t.moved?' · 已改期 '+t.moved+' 次':'')+'</p><button class="btn sec" style="margin-bottom:10px" data-a="mv">改期</button><button class="btn ghost" style="margin-bottom:10px" data-a="drop">决定不做了，删掉</button><button class="btn ghost" data-a="close">取消</button>',
+  modal('<h3>'+esc(t.name)+'</h3><p>放了 '+daysBetween(t.added,today())+' 天'+(t.moved?' · 已改期 '+t.moved+' 次':'')+'</p>'+(t.dr==null?'<div class="seg" style="margin:0 0 10px">'+TDRN.map(function(x,i){return '<button data-a="setdr'+i+'">'+x+'</button>';}).join('')+'</div>':'')+'<button class="btn sec" style="margin-bottom:10px" data-a="mv">改期</button><button class="btn ghost" style="margin-bottom:10px" data-a="drop">决定不做了，删掉</button><button class="btn ghost" data-a="close">取消</button>',
     function(a){
+      if(a.indexOf('setdr')===0){ t.dr=+a.slice(5); save(); render(); }
       if(a==='mv') todoForm({id:id});
       if(a==='drop'){ S.todos.splice(S.todos.indexOf(t),1); if(S.todoRun&&S.todoRun.id===id) S.todoRun=null; hist('待办「'+t.name+'」决定不做','todo'); save(); render(); }
     });
@@ -829,14 +955,14 @@ function gymVolCard(dayId){
   var d=vals.length>1?Math.round((vals[vals.length-1]-vals[0])/Math.max(1,vals[0])*100):null;
   return '<div class="card"><h2>'+esc(ls[0].name)+' · 每次训练量（kg）'+(d!=null?' · 比第一次 '+(d>=0?'+':'')+d+'%':'')+'</h2>'+bigChart(vals,lb,'kg',true)+'</div>';
 }
-function saveLocal(){ S.rev=(S.rev||0)+1; try{ localStorage.setItem(LS_KEY, JSON.stringify(S)); }catch(e){} }
+function saveLocal(){ starSync(); S.rev=(S.rev||0)+1; try{ localStorage.setItem(LS_KEY, JSON.stringify(S)); }catch(e){} }
 function gymDay(id){ return S.gym.days.filter(function(x){return x.id===id;})[0]; }
 function gymLast(name){ for(var i=S.gym.log.length-1;i>=0;i--){ var it=S.gym.log[i].items.filter(function(x){return x.n===name;})[0]; if(it) return {date:S.gym.log[i].date,w:it.w,reps:it.reps}; } return null; }
 function wtxt(w){ return w==null||w===''?'—':w+' kg'; }
 function gymStart(id){
   var dy=gymDay(id); if(!dy||!dy.ex.length) return;
   S.gym.run={day:id,start:Date.now(),items:dy.ex.map(function(e){ var l=gymLast(e.n); return {n:e.n,s:e.s,lo:e.lo,hi:e.hi,w:(l&&l.w!=null)?l.w:e.w,reps:new Array(e.s).fill(null)}; })};
-  saveLocal(); render(); toTop();
+  starGrant('g1:'+S.gym.run.start,20); saveLocal(); render(); toTop(); starFlush();
 }
 function gymFinish(){
   var r=S.gym.run; if(!r) return;
@@ -850,9 +976,9 @@ function gymFinish(){
   if(dy){ r.items.forEach(function(it){ var e=dy.ex.filter(function(x){return x.n===it.n;})[0]; if(e){ if(it.w!=null) e.w=it.w; e.s=it.s; } }); }
   var idx=S.gym.days.indexOf(dy); S.gym.next=(idx+1)%S.gym.days.length; S.gym.run=null; seg.gym=null;
   S.nodes.forEach(function(n){ if(n.autoGym && !done(td,n.id)){ S.log[td]=S.log[td]||{}; S.log[td][n.id]=1; } });
-  hist('健身：'+(dy?dy.name:'')+' · '+items.length+' 个动作 '+sets+' 组','gym'); save(); render(); toTop();
+  hist('健身：'+(dy?dy.name:'')+' · '+items.length+' 个动作 '+sets+' 组','gym'); starGrant('g2:'+r.start,20); save(); render(); toTop();
   var h='<h3>练完了 · '+esc(dy?dy.name:'')+' 💪</h3><div class="sum" style="margin-bottom:10px"><div><b>'+min+'</b><span>分钟'+(capped?'（按上限算）':'')+'</span></div><div><b>'+sets+'</b><span>组</span></div><div><b>'+Math.round(tv)+'</b><span>训练量 kg</span></div></div>'
-    +'<p>估算消耗：'+(kc?'<b style="color:var(--ink)">'+kc[0]+'–'+kc[1]+' 千卡</b>':'填体重后显示')+'</p>';
+    +(starBuf?'<p>'+starBuf+'</p>':'')+'<p>估算消耗：'+(kc?'<b style="color:var(--ink)">'+kc[0]+'–'+kc[1]+' 千卡</b>':'填体重后显示')+'</p>';
   items.forEach(function(it,i){ var p=cmp[i], t;
     if(!p) t='首次记录';
     else{ var a=vol(it), b=vol(p), ra=it.reps.reduce(function(x,y){return x+y;},0), rb=p.reps.reduce(function(x,y){return x+y;},0);
@@ -862,7 +988,7 @@ function gymFinish(){
     var pb=prs[i], tr=it.reps.reduce(function(x,y){return x+y;},0);
     if(pb && it.w!=null && pb.w!=null && (it.w>pb.w || (it.w===pb.w && tr>pb.tr))) t+=' 🏆 新纪录';
     h+='<div class="drow"><span style="flex:1">'+esc(it.n)+'</span><span class="cr">'+t+'</span></div>'; });
-  modal(h+'<div class="row"><button class="btn pri" data-a="close">好</button></div>');
+  starBuf=''; modal(h+'<div class="row"><button class="btn pri" data-a="ok">好</button></div>', function(){ render(); });
 }
 function syncPlan(){
   var r=S.gym.run, dy=r&&gymDay(r.day); if(!dy) return;
@@ -901,7 +1027,7 @@ function gymMuscle(){
 }
 function gymAbort(){
   modal('<h3>放弃这次训练？</h3><div class="row"><button class="btn ghost" data-a="close">继续练</button><button class="btn danger" data-a="ab">放弃</button></div>',
-    function(a){ if(a==='ab'){ S.gym.run=null; saveLocal(); render(); } });
+    function(a){ if(a==='ab'){ starRetract('g1:'+S.gym.run.start); S.gym.run=null; saveLocal(); render(); } });
 }
 function gymExForm(dayId,i){
   var dy=gymDay(dayId), e=i>=0?dy.ex[i]:{n:'',s:4,lo:8,hi:12,w:null};
@@ -971,7 +1097,6 @@ function ringSvg(frac){
   return '<svg width="210" height="210" viewBox="0 0 210 210"><circle cx="105" cy="105" r="'+r+'" fill="none" stroke="var(--line)" stroke-width="10"/>'
     +'<circle id="pring" cx="105" cy="105" r="'+r+'" fill="none" stroke="var(--acc)" stroke-width="10" stroke-linecap="round" stroke-dasharray="'+c.toFixed(1)+'" stroke-dashoffset="'+(c*(1-frac)).toFixed(1)+'"/></svg>';
 }
-var STOPS=[[1,'🚗'],[3,'🚐'],[9,'🚎'],[27,'🚃'],[81,'🚄'],[243,'🛩️'],[729,'🚀']];
 function allTotal(){ var t=0; S.seats.forEach(function(x){ t+=seatTotal(x.id); }); return t; }
 function journeyCard(){
   if(!S.seats.length) return '';
@@ -979,12 +1104,7 @@ function journeyCard(){
   var td=today(), ws=weekStart(td), weeks=[0,0,0,0,0,0,0,0], last28=0;
   S.seatLog.forEach(function(l){ var idx=l.date>=ws?0:Math.ceil(daysBetween(l.date,ws)/7); if(idx>=0&&idx<8) weeks[idx]+=l.n; if(daysBetween(l.date,td)<28&&daysBetween(l.date,td)>=0) last28+=l.n; });
   var mx=Math.max.apply(null,weeks.concat([1]));
-  var h='<div class="card journey"><div class="jtop"><div><div class="jbig">'+tot+'<small> 次</small></div><div class="cr">累计</div></div><div class="fleet">'+(veh(tot)||'🚶')+'</div></div>';
-  h+='<div class="jlab"><span>这一程 '+base+' → '+n10+'</span><span>'+(filled===0&&tot>0?'刚到站 🎉':'还差 <b>'+(n10-tot)+'</b> 次')+'</span></div><div class="cells">';
-  for(var i=0;i<10;i++) h+='<i class="'+(i<filled?'on':'')+(i===filled-1?' last':'')+'"></i>';
-  h+='</div>';
-  var eta=''; if(last28>0){ var wk=Math.ceil((n100-tot)/(last28/4)); if(wk<=12) eta=' · 按最近 4 周的速度约 '+wk+' 周'; }
-  h+='<div class="jlab"><span>下一个整百 '+n100+'</span><span>还差 '+(n100-tot)+' 次'+eta+'</span></div><div class="bar"><i style="width:'+(tot-b100)+'%"></i></div>';
+  var h='<div class="card journey">'+shipCard();
   h+='<div class="jlab"><span>最近 8 周</span><span>本周 <b>'+weeks[0]+'</b> · 上周 '+weeks[1]+'</span></div><div class="wk">';
   var anyW=weeks.some(function(x){return x>0;});
   for(var w=7;w>=0;w--) h+='<span class="'+(w===0?'now':'')+'"><i style="height:'+Math.max(3,Math.round(weeks[w]/mx*36))+'px"></i>'+(weeks[w]||'')+'</span>';
@@ -1024,7 +1144,7 @@ function pageFocus(){
   h+='<div class="card">';
   S.seats.forEach(function(st){
     h+='<div class="seat"><div class="top" data-a="push:seat:'+st.id+'"><span class="nm" style="flex:1">'+esc(st.name)+' <span class="cr">›</span></span><span class="num">#'+st.count+'</span></div>'
-      +'<div class="veh">'+(veh(st.count)||'—')+'</div><div class="row">'
+      +'<div class="row" style="margin-top:8px">'
       +(st.timerMin>0
         ? '<button class="btn pri" style="flex:1" data-a="go:'+st.id+'"'+(busy()?' disabled':'')+'>坐下 · '+st.timerMin+' 分钟</button><button class="btn sec" style="width:auto" data-a="ap:'+st.id+'"'+(busy()||S.appt.pending?' disabled':'')+'>预约</button>'
         : '<button class="btn pri" style="flex:1" data-a="ok:'+st.id+'">成功一次 +1</button><button class="btn sec" style="width:auto" data-a="ap:'+st.id+'"'+(S.appt.pending?' disabled':'')+'>预约</button>')
@@ -1150,9 +1270,9 @@ function showDay(ds){
   }else{
     if(!d) h+='<p>这一天没有记录。</p>';
     else{
-      h+='<p>'+d.n+' 小时 · '+veh(d.n)+'</p>';
+      h+='<p>'+d.n+' 小时</p>';
       ['m','a','e'].forEach(function(s){ var n=0,tags={}; d[s].forEach(function(x){ n+=x.n; if(x.tag) tags[x.tag]=1; });
-        if(n) h+='<div class="drow"><span class="k">'+SLOTN[s]+'</span><span>'+veh(n)+' '+n+' 次'+(Object.keys(tags).length?' · '+esc(Object.keys(tags).join('、')):'')+'</span></div>'; });
+        if(n) h+='<div class="drow"><span class="k">'+SLOTN[s]+'</span><span>'+n+' 次'+(Object.keys(tags).length?' · '+esc(Object.keys(tags).join('、')):'')+'</span></div>'; });
     }
   }
   modal(h+'<div class="row"><button class="btn ghost" data-a="close">关闭</button></div>');
@@ -1164,16 +1284,17 @@ function pageMore(){
   var anyEx=S.appt.exceptions.length||S.seats.some(function(x){return x.exceptions.length;});
   var can=S.exClear!==quarterStart();
   var h='<div class="hdr"><h1>更多</h1></div>';
-  h+='<div class="sect">规则</div><div class="list">'+lrow('push:rule:tree','定式树')+lrow('push:rule:seat','神圣座位')+lrow('push:rule:xb','下必为例')+lrow('push:rule:appt','线性时延')+lrow('push:rule:pomo','专注计时与休息')+lrow('push:rule:todo','待办清单')+'</div>';
+  h+='<div class="sect">规则</div><div class="list">'+lrow('push:rule:star','星图')+lrow('push:rule:tree','定式树')+lrow('push:rule:seat','神圣座位')+lrow('push:rule:xb','下必为例')+lrow('push:rule:appt','线性时延')+lrow('push:rule:pomo','专注计时与休息')+lrow('push:rule:todo','待办清单')+'</div>';
   h+='<div class="sect">设置</div><div class="list">'+lrow('push:exc','定式树例外情形',S.exceptions.length+' 种')+lrow('push:rsv','应急次数','每月 '+S.reserve.perMonth+' 次')+lrow('push:seats','神圣座位管理',S.seats.length+' 个')+lrow('push:pomoset','休息时长',S.pomo.s+' / '+S.pomo.l+' 分钟')
     +lrow(can&&anyEx?'qclr':'noop','季度清空例外',can?(anyEx?'本季度可用 1 次':'暂无例外'):'本季度已用',true)+'</div>';
   h+='<div class="sect">记录</div><div class="list">'+lrow('push:history','历史记录',S.history.length+' 条')+lrow('push:backup','备份与恢复',S.lastBackup?'上次 '+S.lastBackup.slice(5):'还没备份')+'</div>';
   return h;
 }
 var RULES={
+  star:['星图','<p>今日航程 = 推力 × 速度 × 稳定 × 助推（× 阻力）。航程攒够就到达下一站，解锁一张卡片；每次到站从两个目的地里选一个。</p><p><b>推力</b>：当天第一次坐上计时座位 20（坐下就给）；每坐满一次 10；手动打勾一个定式 10；健身开始 20、完成 20；按时睡成功一次 15；待办按新建时选的抗拒程度给 10 / 25 / 50，点"做 5 分钟"先给三成，清掉给剩下的。每笔推力有 60% 的概率是 1 倍，30% 是 2 倍，10% 是 3 倍。自动打勾的定式不另给。</p><p><b>速度</b>：由累计专注次数决定飞船型号，永久有效。0 化学火箭 ×1 · 50 核热火箭 ×1.3 · 150 离子推进 ×1.6 · 300 太阳帆 ×2 · 600 聚变推进 ×2.6 · 1200 反物质推进 ×3.5。</p><p><b>稳定</b>：今天每日定式的完成比例，从 ×1 到 ×1.5。例外暂停的定式不计入。</p><p><b>助推</b>：健身当天和第二天 ×1.3。</p><p><b>充能</b>：按时睡成功后，下一次"第一次坐下"的推力翻倍。</p><p><b>阻力</b>：每件过期待办让当天航程少一成，最多少三成。只影响当天，已有的航程和卡片不会减少。</p><p><b>打捞</b>：清掉待办有机会得到一张稀有卡，顺手 15%、有点烦 40%、很抗拒 80%。当天每日定式全勾、至少坐满一次、没有过期待办，必得一张。</p>'],
   todo:['待办清单','<p>每件待办都要写一个 5 分钟内能做完的第一步，并选一个近的期限：今天、本周内或下周内。</p><p>点"做 5 分钟"只承诺 5 分钟。到点后可以顺手做完，也可以停下并写好下一步。</p><p>过期的待办三选一：现在做 5 分钟、改期（改期次数会显示），或者决定不做并删掉。</p><p>可以把"清杂事"设成每周定式：哪天清掉一件待办，那天自动打勾。</p>'],
   tree:['定式树','<p>每周定式（比如每周 3 次健身房）按周一到周日结算：达到次数就算这周做到，没达到就用一次应急或删除。加入的那一周不满 7 天，不结算。计划日只用来提醒。</p><p>每个定式每月有固定的应急次数（默认 2 次，事先定死）。没做到时可以用掉一次应急：当天不打勾也不删除，连续天数照常保留。应急用完后再失败，才按堆栈删除。</p><p>每天最多把一个新定式加入树中：和已有定式相关就挂在它下面，是全新的领域就开新分支。</p><p>按堆栈来管理：某个定式有一次没做到，就把它和它的所有子节点一起删除。以后可以重新加入到树的末尾。</p><p>例外：搬家、出游等事先写好的情形，当天整棵树暂停。</p><p>每天凌晨 4:00 才算新的一天，4 点前打的勾都算前一天。</p>'],
-  seat:['神圣座位','<p>违规清零只清当前纪录 #N；累计次数只增不减，在旅程卡片上一直保留。</p><p>坐在其他座位上没有约束；屁股一碰到神圣座位，就必须用最好的状态 100% 专注满一个小时。没有把握就不坐。</p><p>第一次成功记为 #1，之后每次成功加一个编号。一次失败（刷手机、只坐十分钟就走）就清零，从 #1 重新开始。</p><p>车型换算：🚗 1 · 🚐 3 · 🚎 9 · 🚃 27 · 🚄 81 · 🛩️ 243 · 🚀 729</p>'],
+  seat:['神圣座位','<p>违规清零只清当前纪录 #N；累计次数只增不减，决定飞船型号。</p><p>坐在其他座位上没有约束；屁股一碰到神圣座位，就必须用最好的状态 100% 专注满一个小时。没有把握就不坐。</p><p>第一次成功记为 #1，之后每次成功加一个编号。一次失败（刷手机、只坐十分钟就走）就清零，从 #1 重新开始。</p>'],
   xb:['下必为例','<p>遇到疑似违规，只能二选一：</p><p>1. 判定规则被完全破坏，链条断裂，清空全部纪录，下次从 #1 重新开始。</p><p>2. 判定这个行为允许，但以后遇到同样情况也必须一律允许，在这条链接下来的整个生命周期里，它对该行为彻底失去约束力。</p><p>3. 每一季度（1.1，4.1，7.1，11.1）可以清空一次例外。</p>'],
   appt:['线性时延','<p>在座位的"坐下"旁边点"预约"，对应打一次响指。触发后 14 分 30 秒内必须执行即时启动信号（预留缓冲，以防真的用完 15 分钟）。</p><p>即时启动信号是打三次响指，触发后必须根据现有条件尽快开始任务。</p><p>超时同样按下必为例处理：要么清空预约链纪录，要么判定允许。</p>'],
   pomo:['专注计时与休息','<p>Forest 计时就是番茄钟：坐上神圣座位开始计时，默认 60 分钟，满了自动记一次。</p><p>每完成一次可以短休息，每完成几次后长休息。休息时长在"更多 › 休息时长"里改。</p>']
@@ -1181,7 +1302,7 @@ var RULES={
 function pageRule(k){
   var h='<div class="card rules">'+RULES[k][1]+'</div>';
   if(k==='appt'){
-    h+='<div class="sect">预约链</div><div class="card"><div class="seat"><div class="top"><span class="nm" style="flex:1">当前纪录</span><span class="num">#'+S.appt.count+'</span></div><div class="veh">'+(veh(S.appt.count)||'—')+'</div></div>'
+    h+='<div class="sect">预约链</div><div class="card"><div class="seat"><div class="top"><span class="nm" style="flex:1">当前纪录</span><span class="num">#'+S.appt.count+'</span></div></div>'
       +(S.appt.exceptions.length?S.appt.exceptions.map(function(e){return '<div class="drow"><span style="flex:1">'+esc(e.text)+'</span><span class="cr">'+esc(e.date)+'</span></div>';}).join(''):'<div class="empty">没有例外。</div>')
       +'<div style="height:10px"></div><button class="btn ghost" data-a="v:appt">登记一次疑似违规</button></div>';
   }
@@ -1231,7 +1352,7 @@ function pageHistory(){
 }
 
 // ---------- 路由 ----------
-var TITLES={backup:'备份与恢复',rsv:'应急次数',add:'添加定式',exc:'定式树例外情形',seats:'神圣座位管理',pomoset:'休息时长',history:'历史记录'};
+var TITLES={star:'星图',backup:'备份与恢复',rsv:'应急次数',add:'添加定式',exc:'定式树例外情形',seats:'神圣座位管理',pomoset:'休息时长',history:'历史记录'};
 function render(){
   keepNav();
   var R=document.getElementById('root'), h='';
@@ -1248,6 +1369,7 @@ function render(){
     if(pg.page==='history') h+=pageHistory();
     if(pg.page==='rsv') h+=pageRsv();
     if(pg.page==='backup') h+=pageBackup();
+    if(pg.page==='star') h+=pageStar();
   }else{
     if(nav.tab==='habit') h+=pageHabit();
     if(nav.tab==='focus') h+=pageFocus();
@@ -1265,6 +1387,7 @@ function render(){
   h+='<div class="tabs">'+[['habit','<circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/>','习惯'],['focus','<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3" fill="currentColor"/>','专注'],['todo','<path d="M4 6.5l1.5 1.5L8 5.5M4 12.5l1.5 1.5L8 11.5M4 18.5l1.5 1.5L8 17.5M11.5 7h8.5M11.5 13h8.5M11.5 19h8.5"/>','待办'],['gym','<path d="M3.5 9.5v5M6.5 7v10M17.5 7v10M20.5 9.5v5M6.5 12h11"/>','健身'],['stats','<rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/>','统计'],['more','<circle cx="5.5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="18.5" cy="12" r="1.6" fill="currentColor"/>','更多']].map(function(t){
     return '<button data-a="tab:'+t[0]+'" class="'+(nav.tab===t[0]?'act':'')+'"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+t[1]+'</svg>'+t[2]+'</button>'; }).join('')+'</div>';
   R.innerHTML=h;
+  starCheck();
 }
 
 // ---------- 弹窗 ----------
@@ -1278,6 +1401,7 @@ document.addEventListener('click',function(ev){
   ev.preventDefault();
   var a=t.getAttribute('data-a');
   if(t.closest('#mask') && a.indexOf('sel:')===0){ Array.prototype.forEach.call(t.parentNode.children,function(b){ b.classList.remove('on'); }); t.classList.add('on'); var hd=document.getElementById('tdue'); if(hd) hd.value=a.slice(4); var dr=document.getElementById('dnrow'); if(dr) dr.style.display=a==='sel:3'?'flex':'none'; return; }
+  if(t.closest('#mask') && a.indexOf('dr:')===0){ Array.prototype.forEach.call(t.parentNode.children,function(b){ b.classList.remove('on'); }); t.classList.add('on'); document.getElementById('tdr').value=a.slice(3); return; }
   if(t.closest('#mask') && a.indexOf('dn:')===0){ var hn=document.getElementById('tdn'), nv=Math.min(60,Math.max(1,(+hn.value||3)+(+a.slice(3)))); hn.value=nv; document.getElementById('dnv').textContent=nv; document.getElementById('dnsm').textContent=dnSmall(nv); return; }
   if(t.closest('#mask') && (a.indexOf('cx:')===0||a.indexOf('cp:')===0)){
     Array.prototype.forEach.call(t.parentNode.children,function(b){ b.classList.remove('on'); }); t.classList.add('on');
@@ -1298,6 +1422,7 @@ document.addEventListener('click',function(ev){
     case 'caly': cal.month=monthAdd(cal.month,12*(+arg[1])); render(); return;
     case 'calto': cal.month=arg[1]; render(); return;
     case 'day': return showDay(arg[1]);
+    case 'sc': return starShow(arg[1],arg[2]);
     case 't': return toggle(arg[1]);
     case 'f': return askFail(arg[1]);
     case 'p': return markPast(arg[1],arg[2]);
