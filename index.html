@@ -855,21 +855,38 @@ function treeSvg(){
     if(cx.length){ x=cx.reduce(function(a,b){return a+b;},0)/cx.length; } else x=leafI++;
     pos[n.id]={x:x,d:depth}; if(depth>maxD) maxD=depth; xs.push(x); }); return xs; }
   lay(null,0);
-  var nL=Math.max(1,leafI), W=320, H=120+maxD*72;
-  function X(x){ return nL===1?160:46+x*(228/(nL-1)); }
-  function Y(dp){ return H-78-dp*72; }
-  var br='', nd='';
+  var nL=Math.max(1,leafI), W=320, H=214+maxD*78, FX=160, FY=H-64;
+  function X(x){ return nL===1?160:50+x*(220/(nL-1)); }
+  function Y(dp){ return H-158-dp*78; }
+  var br='', fo='', lb='';
+  // 树干：下粗上细，带根
+  var trunk='<path d="M'+(FX-13)+' '+(H-20)+' C'+(FX-9)+' '+(H-40)+','+(FX-6)+' '+(FY+10)+','+(FX-5)+' '+FY+' L'+(FX+5)+' '+FY+' C'+(FX+6)+' '+(FY+10)+','+(FX+9)+' '+(H-40)+','+(FX+13)+' '+(H-20)+' Z" fill="url(#tbark)"/>'
+    +'<path d="M'+(FX-12)+' '+(H-22)+' q-10 4 -20 3 M'+(FX+12)+' '+(H-22)+' q10 4 20 3" stroke="#7a5636" stroke-width="4" stroke-linecap="round" fill="none"/>'
+    +'<path d="M'+(FX-3)+' '+(H-26)+' C'+(FX-2)+' '+(H-42)+','+(FX-1)+' '+(FY+12)+','+(FX-1)+' '+(FY+2)+'" stroke="#c9a37a" stroke-width="2.4" stroke-linecap="round" fill="none" opacity=".7"/>';
   S.nodes.forEach(function(n){
-    var p=pos[n.id], x=X(p.x), y=Y(p.d), par=n.parentId&&pos[n.parentId], px=par?X(par.x):160, py=par?Y(par.d):H-10, my=(py+y)/2;
-    br+='<path d="M'+px+' '+py+' C'+px+' '+my+','+x+' '+my+','+x+' '+y+'" fill="none" stroke="#a07a55" stroke-width="'+Math.max(3,7-p.d*1.5)+'" stroke-linecap="round"/>';
-    var on=doneToday(n), st=streak(n)*(isWeekly(n)?3:1), r=15+Math.min(st,8);
+    var p=pos[n.id], x=X(p.x), y=Y(p.d), par=n.parentId&&pos[n.parentId], px=par?X(par.x):FX, py=par?Y(par.d):FY, w=Math.max(3.5,9-p.d*2.2);
+    var c1y=py-(py-y)*0.5, c2y=y+(py-y)*0.62, path='M'+px+' '+py+' C'+px+' '+c1y.toFixed(1)+','+x+' '+c2y.toFixed(1)+','+x+' '+y;
+    br+='<path d="'+path+'" fill="none" stroke="#7a5636" stroke-width="'+w+'" stroke-linecap="round"/><path d="'+path+'" fill="none" stroke="#c9a37a" stroke-width="'+(w*0.32).toFixed(1)+'" stroke-linecap="round" opacity=".65" transform="translate(-1,-.6)"/>';
+    var on=doneToday(n), pz=paused(d,n.id), st=streak(n)*(isWeekly(n)?3:1), r=19+Math.min(st,10)*0.9;
+    var k=function(i){ return hash01(n.id+'l'+i); };
+    var g='<g'+(pz?' opacity="0.4"':' data-a="t:'+n.id+'"')+' style="cursor:pointer">';
+    if(on){
+      [[0,0,1],[-.62,.18,.66],[.62,.2,.66],[-.34,-.52,.68],[.38,-.5,.66],[0,.5,.6]].forEach(function(q,i){ g+='<circle cx="'+(x+q[0]*r).toFixed(1)+'" cy="'+(y+q[1]*r).toFixed(1)+'" r="'+(q[2]*r).toFixed(1)+'" fill="'+(i%3===0?'var(--h4)':i%3===1?'var(--h3)':'var(--acc)')+'"/>'; });
+      g+='<circle cx="'+(x-r*0.32).toFixed(1)+'" cy="'+(y-r*0.42).toFixed(1)+'" r="'+(r*0.36).toFixed(1)+'" fill="#fff" opacity=".16"/>';
+      for(var i=0;i<Math.min(5,Math.floor(st/3));i++){ var a=i*2.4+k(i)*1.2+0.6, rr=r*(0.62+k(i+9)*0.3); g+='<circle cx="'+(x+Math.cos(a)*rr).toFixed(1)+'" cy="'+(y+Math.sin(a)*rr).toFixed(1)+'" r="3.2" fill="#e88f6c" stroke="#fff1d6" stroke-width=".8"/>'; }
+      g+='<path d="M'+(x-6)+' '+y+' l4.2 4.6 l8 -9.4" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>';
+    }else{
+      [[0,0,1],[-.6,.2,.62],[.6,.2,.62],[-.32,-.5,.64],[.36,-.48,.62]].forEach(function(q){ g+='<circle cx="'+(x+q[0]*r).toFixed(1)+'" cy="'+(y+q[1]*r).toFixed(1)+'" r="'+(q[2]*r).toFixed(1)+'" fill="var(--h1)"/>'; });
+      g+='<circle cx="'+x+'" cy="'+y+'" r="'+(r*0.62).toFixed(1)+'" fill="none" stroke="var(--h3)" stroke-width="1.6" stroke-dasharray="3 4" opacity=".8"/>';
+      if(st) g+='<text x="'+x+'" y="'+(y+4.5)+'" text-anchor="middle" font-size="12" font-weight="700" fill="var(--h4)">'+st+'</text>';
+    }
+    fo+=g+'</g>';
     var lab=n.name.length>7?n.name.slice(0,7)+'…':n.name;
-    nd+='<g'+(paused(d,n.id)?' opacity="0.4"':' data-a="t:'+n.id+'"')+' style="cursor:pointer">'
-      +'<circle cx="'+x+'" cy="'+y+'" r="'+r+'" fill="'+(on?'var(--acc)':'var(--card)')+'" stroke="'+(on?'var(--acc)':'var(--h2)')+'" stroke-width="3"'+(on?'':' stroke-dasharray="5 4"')+'/>'
-      +(on?'<text x="'+x+'" y="'+(y+6)+'" text-anchor="middle" font-size="17" fill="#fff">✓</text>':(st?'<text x="'+x+'" y="'+(y+5)+'" text-anchor="middle" font-size="12" fill="var(--mute)">'+st+'</text>':''))
-      +'<text x="'+x+'" y="'+(y+r+16)+'" text-anchor="middle" font-size="12" fill="var(--ink)" stroke="var(--card)" stroke-width="4" paint-order="stroke">'+esc(lab)+'</text></g>';
+    lb+='<text x="'+x+'" y="'+(y+r+17).toFixed(1)+'" text-anchor="middle" font-size="12" fill="var(--ink)" stroke="var(--card)" stroke-width="4" paint-order="stroke">'+esc(lab)+'</text>';
   });
-  return '<svg class="tree" viewBox="0 0 '+W+' '+H+'" width="100%"><ellipse cx="160" cy="'+(H-8)+'" rx="90" ry="6" fill="var(--h1)"/>'+br+nd+'</svg>';
+  var grass=''; [[-70,0],[-46,3],[52,2],[78,-1],[-18,4],[24,4]].forEach(function(q){ var gx=FX+q[0], gy=H-17+q[1]; grass+='<path d="M'+gx+' '+gy+' q-2 -7 -5 -9 M'+gx+' '+gy+' q0 -8 1 -11 M'+gx+' '+gy+' q3 -6 6 -7" stroke="var(--h3)" stroke-width="1.4" stroke-linecap="round" fill="none"/>'; });
+  return '<svg class="tree" viewBox="0 0 '+W+' '+H+'" width="100%"><defs><linearGradient id="tbark" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8f6a45"/><stop offset=".45" stop-color="#a9825c"/><stop offset="1" stop-color="#6b4a2e"/></linearGradient><radialGradient id="tgnd" cx=".5" cy=".3" r=".7"><stop offset="0" stop-color="var(--h2)"/><stop offset="1" stop-color="var(--h1)"/></radialGradient></defs>'
+    +'<ellipse cx="160" cy="'+(H-13)+'" rx="124" ry="11" fill="url(#tgnd)"/>'+grass+br+trunk+fo+lb+'</svg>';
 }
 function weekDots(n){
   var d=today(), h='<span class="wd7">';
