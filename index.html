@@ -301,6 +301,13 @@ svg.tree g.pop{transform-box:fill-box;transform-origin:center;animation:chkPop .
 .plist em{font-style:normal;font-weight:700;color:#ffb38a;font-variant-numeric:tabular-nums}
 .chapc{padding-top:44px}
 .chapc h3{font-size:30px}
+.logs{position:relative;text-align:left;border-top:1px solid rgba(255,241,214,.16);margin-top:12px;padding-top:12px;animation:riseIn .5s .95s ease-out both}
+.scard .logs p{font-size:14px;line-height:1.6;color:#e9e6ff;margin:0 0 8px;animation:none}
+.logs b{display:inline-block;min-width:38px;margin-right:8px;font-weight:700;font-size:12px}
+.tierbar{display:flex;gap:8px;margin:0 0 10px}
+.tierbar button{flex:1;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:8px 4px;font-size:13px;font-weight:600;cursor:pointer}
+.tierbar button.on{background:#1a1b4b;border-color:#3a2a78;color:#fff1d6}
+.tierbar button.lock{opacity:.4;cursor:default;font-weight:400}
 .jbig{font-size:40px;font-weight:800;line-height:1.1}
 .jbig small{font-size:15px;font-weight:600;color:var(--mute)}
 .jcur{font-size:46px;line-height:1}
@@ -491,44 +498,59 @@ function setSaving(t){ var el=document.getElementById('saving'); if(el) el.textC
 function hist(text,type){ S.history.unshift({date:today(),type:type||'seat',text:text}); }
 
 // ---------- 星图 ----------
-var SHIPS=[[0, "东方一号", 1, "", "1961 年 4 月 12 日，加加林乘它绕地球一圈，全程 108 分钟。这是人类第一次进入太空。"], [10, "土星五号", 1.1, "", "把阿波罗飞船送往月球的火箭。它最后一次飞行是在 1973 年，把天空实验室送入了轨道。"], [25, "航天飞机", 1.2, "", "第一种可重复使用的载人航天器：像火箭一样发射，像滑翔机一样着陆。1981 到 2011 年一共飞行了 135 次。"], [45, "NERVA 核热火箭", 1.3, "", "用反应堆加热液氢再喷出。地面试验证明它可以反复关机和重启，但项目在 1973 年 1 月取消，一次也没有上过天。"], [75, "深空一号", 1.4, "", "1998 到 2001 年间，它的离子发动机累计工作超过 16000 小时，第一次证明离子推进可以用于行星际任务。"], [115, "黎明号", 1.5, "", "用电场加速带电粒子，推力只相当于一张纸的重量，但能连续工作数年。它靠这个先后环绕了灶神星和谷神星，是第一个环绕过两个地外天体的探测器。"], [165, "伊卡洛斯", 1.6, "", "日本 2010 年发射，第一艘成功飞行的太阳帆飞船。它不带推进剂，靠阳光的光压推动一张极薄的帆。"], [225, "光帆 2 号", 1.8, "", "行星学会靠众筹造的小卫星，帆面每边 5.6 米。2019 年，它只靠阳光就抬高了自己的轨道。"], [300, "猎户座", 2, "", "在飞船后方连续引爆小型核弹，用一块巨大的钢制推板接住冲击来前进。设计始于 1950 年代末，1965 年终止。"], [380, "代达罗斯", 2.3, "", "英国星际学会 1973 到 1978 年设计的无人聚变飞船：用 50 年飞到 5.9 光年外的巴纳德星，巡航速度约为光速的 12%。"], [470, "突破摄星", 2.6, "", "2016 年提出的方案：用地面激光阵列推动只有一克重的芯片和几米宽的光帆，加速到光速的 20%，大约 20 年飞抵半人马座 α。"], [570, "巴萨德冲压发动机", 3, "", "罗伯特·巴萨德 1960 年提出：用磁场收集星际空间里的氢，压缩到聚变温度产生推力，这样就不用自带燃料。"], [680, "反物质飞船", 3.5, "", "物质与反物质湮灭时，质量全部转化为能量，是已知能量密度最高的反应。人类至今造出的反物质极其微量。"]];
-var SHIPART=['vostok','saturn','shuttle','nerva','ds1','dawn','ikaros','lightsail','orion','daedalus','starshot','bussard','anti'];
-var STOPS=[["iss", "国际空间站", "🛰️", "约 90 分钟绕地球一圈，上面的人一天能看到大约 16 次日出。"], ["moon", "月球", "🌕", "每年远离地球约 3.8 厘米。这个数字是用阿波罗宇航员留在月面的反射镜，靠激光测距量出来的。"], ["venus", "金星", "🟡", "自转一圈约 243 个地球日，比它绕太阳一圈（约 225 日）还久，而且自转方向和大多数行星相反。"], ["mercury", "水星", "⚫", "几乎没有大气保温：白天约 430°C，夜里降到约 −180°C。"], ["sun", "太阳", "☀️", "一颗恒星占了整个太阳系质量的约 99.8%。"], ["mars", "火星", "🔴", "奥林帕斯山是太阳系已知最高的火山，高度是珠穆朗玛峰的两到三倍。"], ["phobos", "火卫一", "🥔", "每天绕火星约三圈，轨道在缓慢下降。几千万年后，它会撞上火星，或者被撕碎成一道环。"], ["ceres", "谷神星", "⚪", "小行星带里最大的天体，也是离太阳最近的矮行星。"], ["jupiter", "木星", "🟠", "质量是太阳系其他所有行星加起来的两倍多。"], ["grs", "大红斑", "🌀", "木星上一场比地球还大的风暴，已经刮了一百多年。"], ["io", "木卫一", "🌋", "太阳系火山活动最剧烈的天体。木星的引力不断揉捏它的内部，把它加热。"], ["europa", "木卫二", "🧊", "冰壳之下有一片全球性的咸水海洋，水量约为地球海洋的两倍。"], ["ganymede", "木卫三", "🌑", "太阳系最大的卫星，比水星还大，也是唯一已知自带磁场的卫星。"], ["saturn", "土星", "🪐", "唯一平均密度比水还低的行星。"], ["rings", "土星环", "💍", "从土星向外延伸约 28 万公里，主环的厚度通常只有约 10 米。"], ["titan", "土卫六", "🟤", "唯一拥有浓厚大气的卫星，表面有液态甲烷和乙烷构成的河流与湖海。"], ["enceladus", "土卫二", "⛲", "南极的裂缝不断向太空喷出水汽和冰粒，来源是冰壳下的海洋。"], ["uranus", "天王星", "🩵", "自转轴倾斜约 98 度，几乎是躺着绕太阳转。"], ["neptune", "海王星", "🔵", "太阳系风最大的行星，风速超过每小时 2000 公里。"], ["triton", "海卫一", "❄️", "公转方向和海王星的自转方向相反，很可能是被海王星俘获的柯伊伯带天体。"], ["pluto", "冥王星", "🤍", "2015 年新视野号飞掠时，拍到它表面一片心形的明亮区域，其中一半是氮冰平原。"], ["charon", "卡戎", "🌗", "和冥王星互相潮汐锁定，两者永远以同一面相对。"], ["arrokoth", "阿罗科斯", "⛄", "形状像雪人的柯伊伯带小天体。2019 年元旦新视野号飞掠了它，这是探测器到访过的最远天体。"], ["voyager", "旅行者 1 号", "📡", "1977 年发射，2012 年 8 月进入星际空间，是离地球最远的人造物体。"]];
+var SHIPS=[[0, "东方一号", 1, "", "1961 年 4 月 12 日，加加林乘它绕地球一圈，全程 108 分钟。这是人类第一次进入太空。"], [10, "土星五号", 1.1, "", "把阿波罗飞船送往月球的火箭。它最后一次飞行是在 1973 年，把天空实验室送入了轨道。"], [25, "航天飞机", 1.2, "", "第一种可重复使用的载人航天器：像火箭一样发射，像滑翔机一样着陆。1981 到 2011 年一共飞行了 135 次。"], [45, "NERVA 核热火箭", 1.3, "", "用反应堆加热液氢再喷出。地面试验证明它可以反复关机和重启，但项目在 1973 年 1 月取消，一次也没有上过天。"], [75, "深空一号", 1.4, "", "1998 到 2001 年间，它的离子发动机累计工作超过 16000 小时，第一次证明离子推进可以用于行星际任务。"], [115, "黎明号", 1.5, "", "用电场加速带电粒子，推力只相当于一张纸的重量，但能连续工作数年。它靠这个先后环绕了灶神星和谷神星，是第一个环绕过两个地外天体的探测器。"], [165, "伊卡洛斯", 1.6, "", "日本 2010 年发射，第一艘成功飞行的太阳帆飞船。它不带推进剂，靠阳光的光压推动一张极薄的帆。"], [225, "光帆 2 号", 1.8, "", "行星学会靠众筹造的小卫星，帆面每边 5.6 米。2019 年，它只靠阳光就抬高了自己的轨道。"], [300, "猎户座", 2, "", "在飞船后方连续引爆小型核弹，用一块巨大的钢制推板接住冲击来前进。设计始于 1950 年代末，1965 年终止。"], [400, "代达罗斯", 2.4, "", "英国星际学会 1973 到 1978 年设计的无人聚变飞船：用 50 年飞到 5.9 光年外的巴纳德星，巡航速度约为光速的 12%。"], [520, "突破摄星", 2.8, "", "2016 年提出的方案：用地面激光阵列推动只有一克重的芯片和几米宽的光帆，加速到光速的 20%，大约 20 年飞抵半人马座 α。"], [660, "巴萨德冲压发动机", 3.3, "", "罗伯特·巴萨德 1960 年提出：用磁场收集星际空间里的氢，压缩到聚变温度产生推力，这样就不用自带燃料。"], [820, "反物质飞船", 4, "", "物质与反物质湮灭时，质量全部转化为能量，是已知能量密度最高的反应。人类至今造出的反物质极其微量。"], [1000, "曲率飞船", 5, "", "1994 年，物理学家阿尔库别雷证明：在广义相对论里，可以压缩飞船前方的空间、拉伸后方的空间，让飞船以任意快的速度到达远处，而飞船在自己那一小块空间里并没有超过光速。它需要负能量密度的物质，目前没人知道怎么造。"], [1250, "克拉斯尼科夫管", 6.5, "", "克拉斯尼科夫 1995 年提出：飞船以接近光速飞过去，在身后留下一条被扭曲的时空隧道；回程走这条隧道，可以在出发后不久就回到起点。它同样需要负能量物质。"], [1550, "虫洞飞船", 8.5, "", "1988 年，莫里斯和索恩在《美国物理学杂志》上写出了能让人穿过的虫洞要满足的条件：必须用一种负能量的奇异物质把喉部撑开。这样的虫洞是广义相对论允许的解，但没有任何观测证据。"], [1900, "未命名", 12, "", "它还没有名字。"]];
+var SHIPART=['vostok','saturn','shuttle','nerva','ds1','dawn','ikaros','lightsail','orion','daedalus','starshot','bussard','anti','warp','krasnikov','wormhole','final'], MK=['I','II','III'];
+var STOPS=[["iss", "国际空间站", "🛰️", "约 90 分钟绕地球一圈，上面的人一天能看到大约 16 次日出。"], ["moon", "月球", "🌕", "每年远离地球约 3.8 厘米。这个数字是用阿波罗宇航员留在月面的反射镜，靠激光测距量出来的。"], ["venus", "金星", "🟡", "自转一圈约 243 个地球日，比它绕太阳一圈（约 225 日）还久，而且自转方向和大多数行星相反。"], ["mercury", "水星", "⚫", "几乎没有大气保温：白天约 430°C，夜里降到约 −180°C。"], ["sun", "太阳", "☀️", "一颗恒星占了整个太阳系质量的约 99.8%。"], ["mars", "火星", "🔴", "奥林帕斯山是太阳系已知最高的火山，高度是珠穆朗玛峰的两到三倍。"], ["phobos", "火卫一", "🥔", "每天绕火星约三圈，轨道在缓慢下降。几千万年后，它会撞上火星，或者被撕碎成一道环。"], ["ceres", "谷神星", "⚪", "小行星带里最大的天体，也是离太阳最近的矮行星。"], ["jupiter", "木星", "🟠", "质量是太阳系其他所有行星加起来的两倍多。"], ["grs", "大红斑", "🌀", "木星上一场比地球还大的风暴，已经刮了一百多年。"], ["io", "木卫一", "🌋", "太阳系火山活动最剧烈的天体。木星的引力不断揉捏它的内部，把它加热。"], ["europa", "木卫二", "🧊", "冰壳之下有一片全球性的咸水海洋，水量约为地球海洋的两倍。"], ["ganymede", "木卫三", "🌑", "太阳系最大的卫星，比水星还大，也是唯一已知自带磁场的卫星。"], ["saturn", "土星", "🪐", "唯一平均密度比水还低的行星。"], ["rings", "土星环", "💍", "从土星向外延伸约 28 万公里，主环的厚度通常只有约 10 米。"], ["titan", "土卫六", "🟤", "唯一拥有浓厚大气的卫星，表面有液态甲烷和乙烷构成的河流与湖海。"], ["enceladus", "土卫二", "⛲", "南极的裂缝不断向太空喷出水汽和冰粒，来源是冰壳下的海洋。"], ["uranus", "天王星", "🩵", "自转轴倾斜约 98 度，几乎是躺着绕太阳转。"], ["neptune", "海王星", "🔵", "太阳系风最大的行星，风速超过每小时 2000 公里。"], ["triton", "海卫一", "❄️", "公转方向和海王星的自转方向相反，很可能是被海王星俘获的柯伊伯带天体。"], ["pluto", "冥王星", "🤍", "2015 年新视野号飞掠时，拍到它表面一片心形的明亮区域，其中一半是氮冰平原。"], ["charon", "卡戎", "🌗", "和冥王星互相潮汐锁定，两者永远以同一面相对。"], ["arrokoth", "阿罗科斯", "⛄", "形状像雪人的柯伊伯带小天体。2019 年元旦新视野号飞掠了它，这是探测器到访过的最远天体。"], ["voyager", "旅行者 1 号", "📡", "1977 年发射，2012 年 8 月进入星际空间，是离地球最远的人造物体。"], ["oort", "奥尔特云", "", "理论上包裹着太阳系的一层冰质小天体，像个球壳。至今没有人直接看见过它，是从长周期彗星飞来的方向推断出来的。"], ["proxima", "比邻星", "", "离太阳最近的恒星，一颗又小又暗的红矮星，距离 4.24 光年。"], ["proximab", "比邻星 b", "", "2016 年发现，位于比邻星的宜居带里。它离恒星很近，11.2 天就绕一圈。"], ["alphacen", "半人马座 α", "", "两颗恒星互相绕转，大约 80 年一圈。其中 A 星和太阳很像。"], ["barnard", "巴纳德星", "", "距离约 6 光年，是离太阳最近的单颗恒星，也是在天空中移动得最快的恒星。"], ["sirius", "天狼星", "", "夜空中最亮的恒星，距离 8.6 光年，发出的光是太阳的 25 倍左右。"], ["siriusb", "天狼星 B", "", "天狼星的伴星，人类发现的第一颗白矮星。质量和太阳差不多，个头却比地球还小。"], ["vega", "织女星", "", "距离 25 光年。1850 年，它成为太阳之外第一颗被拍下照片的恒星。大约一万两千年前它是北极星，一万多年后还会再当一次。"], ["fomalhaut", "北落师门", "", "和织女星差不多远，也是 25 光年左右，同样是一颗比太阳更热、更亮的白色恒星。"], ["trappist", "TRAPPIST-1", "", "一颗很小很冷的恒星，距离约 40 光年。2017 年公布：它有七颗地球大小的行星。"], ["trappiste", "TRAPPIST-1e", "", "七颗行星里位于宜居带的三颗之一，大小和地球差不多。"]];
+var LOGS={"iss": [["c", "第一站，离家 400 公里。按这个进度，追上旅行者 1 号还差 259 亿公里。"], ["z", "收到。夜班就我一个，你慢慢飞，我陪着。"]], "moon": [["c", "信号单程一秒多。从现在起，你说的每句话我都得等。"], ["z", "一秒而已，比我家网还快。"]], "venus": [["c", "提醒一下，我们在往反方向飞。"], ["z", "借个力而已，探测器都这么干。"]], "mercury": [["c", "外壳温度超出设计上限。我没有慌，我只是在报数。"]], "sun": [["z", "看够了就回来，别学飞蛾。"], ["c", "已记录。折返的路一米都不会少。"]], "mars": [["c", "信号单程十几分钟。从这里开始没法聊天了，只能写信。"], ["z", "那我一次多写点。"]], "phobos": [["c", "它每天往下掉一点。和某些人的作息很像。"]], "ceres": [["z", "黎明号当年到了这儿就没再走。你别停。"]], "jupiter": [["c", "信号单程四十分钟。旅行者 1 号 1979 年经过这里，领先我们四十七年。"], ["z", "四十七年怎么了，它又不会加速。"]], "grs": [["c", "这场风暴比地球还大。建议绕行。我说的是建议。"]], "io": [["z", "我泡了杯面，等你这条回信的工夫，面坨了。"]], "europa": [["c", "冰层下面有海。我的任务清单里没有\"下去看看\"，很遗憾。"]], "ganymede": [["z", "我女儿问飞船到哪儿了。我说在太阳系最大的卫星上。她问那它为什么不算行星，我答不上来。"]], "saturn": [["c", "信号单程一个多小时。旅行者 1 号 1980 年经过这里。"], ["z", "我今天夜班八小时，够和你说三句话。"]], "rings": [["c", "宽 28 万公里，厚 10 米。我算了三遍，没算错。"]], "titan": [["z", "有大气，有湖。要不是湖里装的是甲烷，我都想去。"]], "enceladus": [["c", "它在往太空喷水。我无法解释为什么这让我心情很好。"]], "uranus": [["c", "信号单程两个半小时。这颗行星是躺着转的，我不予置评。"]], "neptune": [["z", "四个小时才到你那儿。我现在说晚安，你听到的时候我已经下班了。"]], "triton": [["c", "它是倒着转的。这一带没有一个正常的。"]], "pluto": [["z", "上面有颗心。我女儿照着画了一张，说要寄给你。我说寄不到，她说那你念给它听。"]], "charon": [["c", "两个天体永远面对面。老周，这是不是你们说的\"陪伴\"？"], ["z", "差不多。"]], "arrokoth": [["c", "最后一个有探测器来过的地方。再往前只有它了。"]], "voyager": [["c", "追上了。信号单程一天整。它还在以每秒 17 公里向外飞，没有要停的意思。"], ["z", "它身上有张唱片，是写给别人的信。你既然到了，就替我们送远一点。"]], "oort": [["c", "奥尔特云。理论上我们就在里面。我什么也没看见，和理论一致。"]], "proxima": [["c", "4.24 光年。老周这条消息是四年前发的。"], ["z", "等你看到这条，我女儿该上小学了。替我看看那边的太阳是什么颜色。"]], "proximab": [["c", "红色。请转告。回信到他手里是四年后。"]], "alphacen": [["z", "听说那边有两个太阳。我们这儿今天阴天，一个都没有。"]], "barnard": [["c", "它是天上跑得最快的恒星。我们比它快。我只是陈述事实。"]], "sirius": [["c", "8.6 光年。全天最亮的恒星，近看确实亮。"], ["z", "这条是八年多前写的。我女儿上初中了，物理不及格，说是遗传我。"]], "siriusb": [["c", "一颗烧完了的恒星，质量和太阳一样，个头比地球小。老周，恒星也会退休。"]], "vega": [["z", "这条要飞二十五年才到你那儿。我算了算，你看到的时候我早退休了。值班的换成了小周，对，就是画冥王星的那个。"], ["c", "已收到。延迟二十五年。"]], "fomalhaut": [["x", "我是小周。我爸让我转告：别光赶路，多看看。另外，冥王星那张画他一直贴在控制台上。"]], "trappist": [["c", "40 光年。七颗行星，三颗在宜居带。信送到了，虽然没人签收。"]], "trappiste": [["x", "这条消息出发的时候，我爸刚把你送出太阳系。等它到你手里，我大概也要退休了。他最后问了一句：还往前吗？"], ["c", "往前需要一艘比消息更快的船。我查过了，理论上有。"]]}, WHO={c:['罗盘','#7fd6ff'],z:['老周','#ffb38a'],x:['小周','#ffe08a']};
 var RARE=[["halley", "哈雷彗星", "☄️", "大约每 76 年回归一次。上次是 1986 年，下次在 2061 年。"], ["67p", "67P 彗星", "🪨", "2014 年，罗塞塔号的着陆器菲莱落在它表面，是人类第一次在彗核上着陆。"], ["oumuamua", "奥陌陌", "🛸", "2017 年发现，第一个被确认来自太阳系之外的天体。"], ["bennu", "贝努", "💎", "奥西里斯-REx 采集了这颗小行星的样本，2023 年 9 月送回地球。"], ["itokawa", "糸川", "🥜", "隼鸟号 2010 年带回了它的微粒，是人类第一次从小行星取样返回。"], ["parker", "帕克太阳探测器", "🌞", "2024 年 12 月 24 日从距太阳表面约 610 万公里处掠过，时速约 69 万公里，是最快的人造物体。"], ["ingenuity", "机智号", "🚁", "2021 年 4 月在火星上完成人类第一次地外动力飞行。原计划飞 5 次，最终飞了 72 次。"], ["jwst", "韦布望远镜", "🔭", "停在日地第二拉格朗日点附近，距地球约 150 万公里。"], ["change4", "嫦娥四号", "🐇", "2019 年 1 月，人类探测器第一次在月球背面软着陆。"], ["record", "旅行者金唱片", "📀", "两艘旅行者号各带一张镀金唱片，录有地球的声音、音乐和 55 种语言的问候。"], ["borisov", "鲍里索夫彗星", "💫", "2019 年发现，第二个被确认的星际访客，也是第一颗星际彗星。"], ["psyche", "灵神星", "⚙️", "一颗富含金属的小行星。NASA 的同名探测器 2023 年 10 月发射，正在前往。"]];
 var TDR=[10,25,50], TDRN=['顺手','有点烦','很抗拒'], TDROP=[0.15,0.4,0.8];
 if(!S.star) S.star={days:{},gift:80,spent:0,at:[],target:STOPS[0][0],offer:null,cards:[],pend:[],charge:false,clear:{},seed:Math.floor(Math.random()*1e9),since:today()};
 var starBuf='';
 function hash01(str){ var h=2166136261; for(var i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619); } h^=h>>>13; h=Math.imul(h,0x5bd1e995); h^=h>>>15; return (h>>>0)/4294967296; }
-function shipIdx(){ var t=allTotal(), k=0; SHIPS.forEach(function(x,i){ if(t>=x[0]) k=i; }); return k; }
+function shipState(){ var t=allTotal(), i=0; SHIPS.forEach(function(x,k){ if(t>=x[0]) i=k; }); var a=SHIPS[i], b=SHIPS[i+1], o={i:i,m:0,sp:a[2],nextAt:null,nextName:'',from:a[0]};
+  if(b){ var step=(b[0]-a[0])/3; o.m=Math.min(2,Math.floor((t-a[0])/step)); o.sp=Math.round((a[2]+(b[2]-a[2])*o.m/3)*100)/100; o.from=Math.round(a[0]+step*o.m); o.nextAt=o.m<2?Math.round(a[0]+step*(o.m+1)):b[0]; o.nextName=o.m<2?a[1]+' · 改装 '+MK[o.m+1]:b[1]; }
+  o.lv=i*3+o.m; return o; }
+function shipIdx(){ return shipState().i; }
 function stopById(id){ return STOPS.filter(function(x){return x[0]===id;})[0]; }
 function rareById(id){ return RARE.filter(function(x){return x[0]===id;})[0]; }
-var CHAP=[["近地", "1977 年，旅行者 1 号离开地球，至今仍在向外飞，是离我们最远的人造物体。任务：沿着探测器们走过的路，一站一站向外，直到追上它。每次只能飞往相邻的天体，路越远，要攒的航程越多。"], ["内太阳系", "向内的一条支线。帕克太阳探测器就是一次次借金星的引力收紧轨道，才贴近了太阳。这条路的尽头是太阳，看完要原路折返。"], ["火星与小行星带", "向外的第一步。黎明号曾在这里环绕谷神星。"], ["木星系", "1979 年，旅行者 1 号从这里飞过。木星身边有三颗大卫星可以顺路去看，卫星之间离得很近。"], ["土星系", "1980 年，旅行者 1 号从这里飞过。"], ["冰巨星", "旅行者 2 号是唯一到过海王星的探测器，它在 1989 年 8 月飞掠那里。从这里开始，每一段路都很长。"], ["柯伊伯带", "新视野号 2015 年飞掠冥王星，2019 年元旦飞掠阿罗科斯。"], ["星际空间", "最后一段。旅行者 1 号在 2012 年 8 月越过了太阳风的边界，进入星际空间。"]], NODE={"earth": [250, 150, 0], "iss": [302, 118, 0], "moon": [306, 186, 0], "venus": [186, 104, 1], "mercury": [118, 72, 1], "sun": [52, 42, 1], "mars": [196, 236, 2], "phobos": [254, 262, 2], "ceres": [126, 306, 2], "jupiter": [200, 396, 3], "grs": [136, 372, 3], "io": [258, 364, 3], "europa": [294, 416, 3], "ganymede": [250, 458, 3], "saturn": [118, 548, 4], "rings": [56, 524, 4], "enceladus": [66, 594, 4], "titan": [152, 620, 4], "uranus": [232, 690, 5], "neptune": [128, 782, 5], "triton": [70, 814, 5], "pluto": [222, 874, 6], "charon": [280, 896, 6], "arrokoth": [158, 956, 6], "voyager": [250, 1030, 7]}, EDGE=[["earth", "iss", 1], ["earth", "moon", 1], ["iss", "moon", 1], ["earth", "venus", 4], ["venus", "mercury", 3], ["mercury", "sun", 3], ["earth", "mars", 4], ["mars", "phobos", 1], ["mars", "ceres", 4], ["ceres", "jupiter", 5], ["jupiter", "grs", 1], ["jupiter", "io", 1], ["io", "europa", 1], ["europa", "ganymede", 1], ["jupiter", "ganymede", 2], ["jupiter", "saturn", 6], ["saturn", "rings", 1], ["saturn", "enceladus", 1], ["rings", "enceladus", 1], ["enceladus", "titan", 1], ["saturn", "titan", 1.5], ["saturn", "uranus", 7], ["uranus", "neptune", 7], ["neptune", "triton", 1], ["neptune", "pluto", 8], ["pluto", "charon", 1], ["pluto", "arrokoth", 5], ["arrokoth", "voyager", 10]], RUNIT=220;
-function starCur(){ var Z=S.star; return Z.at.length?Z.at[Z.at.length-1]:'earth'; }
-function starKnown(){ var k={earth:1}; S.star.at.forEach(function(id){k[id]=1;}); return k; }
-function starReach(){ var k=starKnown(), out=[]; EDGE.forEach(function(e){ if(k[e[0]]&&!k[e[1]]&&out.indexOf(e[1])<0) out.push(e[1]); if(k[e[1]]&&!k[e[0]]&&out.indexOf(e[0])<0) out.push(e[0]); }); return out.sort(function(a,b){return starCostTo(a)-starCostTo(b);}); }
-function starDist(to){ // 只经过到过的地方，从当前位置到 to 的最短路
-  var k=starKnown(); k[to]=1; var d={}, q=[starCur()]; d[q[0]]=0;
-  for(var g=0;g<200&&q.length;g++){ q.sort(function(a,b){return d[a]-d[b];}); var u=q.shift(); if(u===to) return d[u];
-    EDGE.forEach(function(e){ var v=e[0]===u?e[1]:e[1]===u?e[0]:null; if(!v||!k[v]) return; var nd=d[u]+e[2]; if(d[v]==null||nd<d[v]){ d[v]=nd; if(q.indexOf(v)<0) q.push(v); } }); }
+var TIERS=[{"name": "太阳系", "goal": "追上旅行者 1 号", "start": "earth", "startName": "地球", "end": "voyager", "unit": 220, "H": 1080, "chl": [[1, 30], [2, 214], [3, 340], [4, 500], [5, 668], [6, 852], [7, 1004]], "CH": [["近地", "1977 年，旅行者 1 号离开地球，一直向外飞。就在这个月，它离地球满了一光日，是最远的人造物体。任务：沿着探测器们走过的路，一站一站向外，直到追上它。每次只能飞往相邻的天体，路越远，要攒的航程越多。"], ["内太阳系", "向内的一条支线。帕克太阳探测器就是一次次借金星的引力收紧轨道，才贴近了太阳。这条路的尽头是太阳，看完要原路折返。"], ["火星与小行星带", "向外的第一步。黎明号曾在这里环绕谷神星。"], ["木星系", "1979 年，旅行者 1 号从这里飞过。木星身边有三颗大卫星可以顺路去看，卫星之间离得很近。"], ["土星系", "1980 年，旅行者 1 号从这里飞过。"], ["冰巨星", "旅行者 2 号是唯一到过海王星的探测器，它在 1989 年 8 月飞掠那里。从这里开始，每一段路都很长。"], ["柯伊伯带", "新视野号 2015 年飞掠冥王星，2019 年元旦飞掠阿罗科斯。"], ["星际空间", "最后一段。旅行者 1 号在 2012 年 8 月越过了太阳风的边界，进入星际空间。"]], "NODE": {"earth": [250, 150, 0], "iss": [302, 118, 0], "moon": [306, 186, 0], "venus": [186, 104, 1], "mercury": [118, 72, 1], "sun": [52, 42, 1], "mars": [196, 236, 2], "phobos": [254, 262, 2], "ceres": [126, 306, 2], "jupiter": [200, 396, 3], "grs": [136, 372, 3], "io": [258, 364, 3], "europa": [294, 416, 3], "ganymede": [250, 458, 3], "saturn": [118, 548, 4], "rings": [56, 524, 4], "enceladus": [66, 594, 4], "titan": [152, 620, 4], "uranus": [232, 690, 5], "neptune": [128, 782, 5], "triton": [70, 814, 5], "pluto": [222, 874, 6], "charon": [280, 896, 6], "arrokoth": [158, 956, 6], "voyager": [250, 1030, 7]}, "EDGE": [["earth", "iss", 1], ["earth", "moon", 1], ["iss", "moon", 1], ["earth", "venus", 4], ["venus", "mercury", 3], ["mercury", "sun", 3], ["earth", "mars", 4], ["mars", "phobos", 1], ["mars", "ceres", 4], ["ceres", "jupiter", 5], ["jupiter", "grs", 1], ["jupiter", "io", 1], ["io", "europa", 1], ["europa", "ganymede", 1], ["jupiter", "ganymede", 2], ["jupiter", "saturn", 6], ["saturn", "rings", 1], ["saturn", "enceladus", 1], ["rings", "enceladus", 1], ["enceladus", "titan", 1], ["saturn", "titan", 1.5], ["saturn", "uranus", 7], ["uranus", "neptune", 7], ["neptune", "triton", 1], ["neptune", "pluto", 8], ["pluto", "charon", 1], ["pluto", "arrokoth", 5], ["arrokoth", "voyager", 10]]}, {"name": "近邻恒星", "goal": "抵达 TRAPPIST-1", "start": "sol", "startName": "太阳系", "end": "trappiste", "unit": 330, "H": 720, "chl": [[1, 96], [2, 286], [3, 420], [4, 590]], "CH": [["抵达 TRAPPIST-1", "金唱片是一封没有收件人的信。新任务：把它送到 40 光年外的 TRAPPIST-1，那里有七颗地球大小的行星。从这里开始，距离按光年算，老周的消息要走上好几年才到。"], ["半人马座", "离太阳最近的恒星系，三颗恒星。消息单程四年多。"], ["太阳的邻居", "六到九光年之内的几颗恒星。有一颗跑得很快，有一颗已经烧完了。"], ["亮星", "二十五光年外，夜空里最显眼的两颗。消息单程二十五年。"], ["TRAPPIST-1", "四十光年。一颗很小的红色恒星，带着七颗行星。"]], "NODE": {"sol": [60, 56, 0], "oort": [128, 104, 0], "proxima": [214, 150, 1], "proximab": [272, 128, 1], "alphacen": [258, 214, 1], "barnard": [96, 236, 2], "sirius": [196, 336, 2], "siriusb": [256, 360, 2], "vega": [88, 452, 3], "fomalhaut": [262, 500, 3], "trappist": [168, 628, 4], "trappiste": [232, 662, 4]}, "EDGE": [["sol", "oort", 2], ["oort", "proxima", 4], ["proxima", "proximab", 1], ["proxima", "alphacen", 1], ["oort", "barnard", 6], ["alphacen", "barnard", 6], ["alphacen", "sirius", 9], ["barnard", "sirius", 8], ["sirius", "siriusb", 1], ["barnard", "vega", 20], ["sirius", "vega", 18], ["sirius", "fomalhaut", 18], ["vega", "trappist", 22], ["fomalhaut", "trappist", 18], ["trappist", "trappiste", 1]]}, {"name": "银河系", "goal": "还没有解锁", "locked": 1}];
+function tierOf(id){ for(var t=0;t<TIERS.length;t++) if(TIERS[t].NODE&&TIERS[t].NODE[id]) return t; return 0; }
+function tierOpen(t){ return t===0 || !!(TIERS[t].NODE && S.star.at.indexOf(TIERS[t-1].end)>=0); }
+function curTier(){ var t=0; while(t+1<TIERS.length && tierOpen(t+1)) t++; return t; }
+function tierStops(t){ return Object.keys(TIERS[t].NODE).filter(function(id){return id!==TIERS[t].start;}); }
+function nodeName(id){ var t=tierOf(id); return id===TIERS[t].start?TIERS[t].startName:stopById(id)[1]; }
+function starCur(t){ var T=TIERS[t], Z=S.star; for(var i=Z.at.length-1;i>=0;i--) if(T.NODE[Z.at[i]]) return Z.at[i]; return T.start; }
+function starKnown(t){ var k={}; k[TIERS[t].start]=1; S.star.at.forEach(function(id){ if(TIERS[t].NODE[id]) k[id]=1; }); return k; }
+function starReach(t){ if(t==null) t=curTier(); var k=starKnown(t), out=[]; TIERS[t].EDGE.forEach(function(e){ if(k[e[0]]&&!k[e[1]]&&out.indexOf(e[1])<0) out.push(e[1]); if(k[e[1]]&&!k[e[0]]&&out.indexOf(e[0])<0) out.push(e[0]); }); return out.sort(function(a,b){return starCostTo(a)-starCostTo(b);}); }
+function starDist(to){ // 只经过到过的地方，从这一层的当前位置到 to 的最短路
+  var t=tierOf(to), k=starKnown(t); k[to]=1; var d={}, q=[starCur(t)]; d[q[0]]=0;
+  for(var g=0;g<300&&q.length;g++){ q.sort(function(a,b){return d[a]-d[b];}); var u=q.shift(); if(u===to) return d[u];
+    TIERS[t].EDGE.forEach(function(e){ var v=e[0]===u?e[1]:e[1]===u?e[0]:null; if(!v||!k[v]) return; var nd=d[u]+e[2]; if(d[v]==null||nd<d[v]){ d[v]=nd; if(q.indexOf(v)<0) q.push(v); } }); }
   return d[to]==null?10:d[to];
 }
-function starCostTo(id){ return (id==='iss'&&!S.star.at.length)?100:Math.round(RUNIT*starDist(id)); }
+function starCostTo(id){ return (id==='iss'&&!S.star.at.length)?100:Math.round(TIERS[tierOf(id)].unit*starDist(id)); }
 function starCost(){ return S.star.target?starCostTo(S.star.target):0; }
-function chapOf(id){ return NODE[id]?NODE[id][2]:0; }
-function starSetTarget(id){ var Z=S.star; Z.target=id; Z.offer=null; if(!Z.chap) Z.chap={}; var c=chapOf(id); if(!Z.chap[c]){ Z.chap[c]=1; Z.pend.push({t:'chap',id:c}); } }
-function chapHtml(c){ return '<div class="scard chapc"><svg class="sky" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice"><g class="warp">'+starsSvg('ch'+c,60,300,200)+'</g></svg><div class="stag">'+(c===0?'任务':c===1?'支线':'进入')+'</div><h3>'+(c===0?'追上旅行者 1 号':CHAP[c][0])+'</h3><p>'+CHAP[c][1]+'</p></div>'; }
-function starMap(){
-  var Z=S.star, k=starKnown(), reach=starReach(), cur=starCur(), W=340, H=1080, h='<svg class="smap" viewBox="0 0 '+W+' '+H+'" width="100%">'+starsSvg('map',150,W,H);
-  [[1,30],[2,214],[3,340],[4,500],[5,668],[6,852],[7,1004]].forEach(function(q){ h+='<text x="'+(q[0]%2?330:10)+'" y="'+q[1]+'" text-anchor="'+(q[0]%2?'end':'start')+'" class="chl">'+CHAP[q[0]][0]+'</text>'; });
-  EDGE.forEach(function(e){ var a=NODE[e[0]], b=NODE[e[1]], done=k[e[0]]&&k[e[1]], open=(k[e[0]]||k[e[1]]);
+function chapKey(id){ var t=tierOf(id); return t+':'+TIERS[t].NODE[id][2]; }
+function chapName(id){ var t=tierOf(id); return TIERS[t].CH[TIERS[t].NODE[id][2]][0]; }
+function starSetTarget(id){ var Z=S.star; Z.target=id; Z.offer=null; var c=chapKey(id); if(!Z.chap[c]){ Z.chap[c]=1; Z.pend.push({t:'chap',id:c}); } }
+function chapHtml(key){
+  var tag,title,text;
+  if(key==='end'){ tag='未完待续'; title='银河系'; text='下一层的地图还在绘制。要去那里，需要一艘比消息更快的船。继续攒专注次数，船会先到。'; }
+  else{ var q=String(key).split(':'), t=+q[0], c=+q[1], T=TIERS[t]; tag=c===0?'任务 · '+T.name:(t===0&&c===1?'支线':'进入'); title=c===0?T.goal:T.CH[c][0]; text=T.CH[c][1]; }
+  return '<div class="scard chapc"><svg class="sky" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice"><g class="warp">'+starsSvg('ch'+key,60,300,200)+'</g></svg><div class="stag">'+tag+'</div><h3>'+title+'</h3><p>'+text+'</p></div>';
+}
+function starMap(t){
+  var Z=S.star, T=TIERS[t], k=starKnown(t), reach=starReach(t), cur=starCur(t), W=340, H=T.H, h='<svg class="smap" viewBox="0 0 '+W+' '+H+'" width="100%">'+starsSvg('map'+t,150,W,H);
+  T.chl.forEach(function(q,i){ h+='<text x="'+(i%2?10:330)+'" y="'+q[1]+'" text-anchor="'+(i%2?'start':'end')+'" class="chl">'+T.CH[q[0]][0]+'</text>'; });
+  T.EDGE.forEach(function(e){ var a=T.NODE[e[0]], b=T.NODE[e[1]], done=k[e[0]]&&k[e[1]], open=(k[e[0]]||k[e[1]]);
     h+='<line x1="'+a[0]+'" y1="'+a[1]+'" x2="'+b[0]+'" y2="'+b[1]+'" stroke="#fff1d6" stroke-width="'+(done?1.6:1)+'" stroke-opacity="'+(done?.8:open?.35:.12)+'"'+(done?'':' stroke-dasharray="2 5"')+' stroke-linecap="round"/>'; });
-  Object.keys(NODE).forEach(function(id){ var n=NODE[id], x=n[0], y=n[1], nm=id==='earth'?'地球':stopById(id)[1];
-    if(k[id]) h+='<g'+(id==='earth'?'':' data-a="sc:stop:'+id+'" style="cursor:pointer"')+'>'+orb(id,34,x-17,y-17)+'<text x="'+x+'" y="'+(y+29)+'" text-anchor="middle" class="nml">'+esc(nm)+'</text></g>';
+  Object.keys(T.NODE).forEach(function(id){ var n=T.NODE[id], x=n[0], y=n[1], nm=nodeName(id);
+    if(k[id]) h+='<g'+(id===T.start?'':' data-a="sc:stop:'+id+'" style="cursor:pointer"')+'>'+orb(id,34,x-17,y-17)+'<text x="'+x+'" y="'+(y+29)+'" text-anchor="middle" class="nml">'+esc(nm)+'</text></g>';
     else if(reach.indexOf(id)>=0){ var tg=Z.target===id; h+='<g data-a="sgo:'+id+'" style="cursor:pointer"><circle cx="'+x+'" cy="'+y+'" r="22" fill="transparent"/><circle cx="'+x+'" cy="'+y+'" r="13" fill="'+(tg?'rgba(255,179,138,.18)':'none')+'" stroke="#ffb38a" stroke-width="'+(tg?2:1.3)+'"'+(tg?' class="pulse"':' stroke-dasharray="3 4"')+'/><text x="'+x+'" y="'+(y+29)+'" text-anchor="middle" class="nml'+(tg?' tg':'')+'">'+esc(nm)+'</text><text x="'+x+'" y="'+(y+4)+'" text-anchor="middle" class="cst">'+starCostTo(id)+'</text></g>'; }
     else h+='<circle cx="'+x+'" cy="'+y+'" r="3" fill="#fff1d6" opacity=".25"/>';
   });
-  if(Z.target){ var a=NODE[cur], b=NODE[Z.target], cost=starCost(), t=Math.max(0.12,Math.min(0.88,Math.max(0,starTotal()-Z.spent)/cost)), sx=a[0]+(b[0]-a[0])*t, sy=a[1]+(b[1]-a[1])*t, ang=Math.atan2(b[1]-a[1],b[0]-a[0])*180/Math.PI;
-    h+='<g transform="translate('+sx.toFixed(1)+','+sy.toFixed(1)+') rotate('+ang.toFixed(1)+') scale(.3)">'+shipG(shipIdx())+'</g>'; }
+  if(Z.target && T.NODE[Z.target]){ var a=T.NODE[cur], b=T.NODE[Z.target], cost=starCost(), f=Math.max(0.14,Math.min(0.86,Math.max(0,starTotal()-Z.spent)/cost)), sx=a[0]+(b[0]-a[0])*f, sy=a[1]+(b[1]-a[1])*f, ang=Math.atan2(b[1]-a[1],b[0]-a[0])*180/Math.PI, st=shipState();
+    h+='<g transform="translate('+sx.toFixed(1)+','+sy.toFixed(1)+') rotate('+ang.toFixed(1)+') scale(.3)">'+shipG(st.i,st.m)+'</g>'; }
   return h+'</svg>';
 }
 
@@ -549,7 +571,7 @@ function starStab(date){
 function starBoost(date){ var y=addDays(date,-1); return S.gym.log.some(function(L){return L.date===date||L.date===y;})?1.3:1; }
 function starDrag(){ var d=today(), n=S.todos.filter(function(t){return t.due<d;}).length; return Math.max(0.7,1-0.1*n); }
 function starRaw(D){ var x=0; (D&&D.e||[]).forEach(function(e){ x+=e.b*e.m; }); return x; }
-function starToday(){ var d=today(), D=S.star.days[d], o={raw:starRaw(D),sp:SHIPS[shipIdx()][2],sv:1+0.02*S.star.cards.length,dr:starDrag()}; o.d=Math.round(o.raw*o.sp*o.sv*o.dr); return o; }
+function starToday(){ var d=today(), D=S.star.days[d], o={raw:starRaw(D),sp:shipState().sp,sv:1+0.02*S.star.cards.length,dr:starDrag()}; o.d=Math.round(o.raw*o.sp*o.sv*o.dr); return o; }
 function starTotal(){ var t=S.star.gift||0; Object.keys(S.star.days).forEach(function(k){ t+=S.star.days[k].d||0; }); return t; }
 function starRare(){
   var left=RARE.filter(function(x){return S.star.cards.indexOf(x[0])<0;});
@@ -569,6 +591,9 @@ function starSync(){
 }
 // ----- 星图绘制 -----
 var ORBS={
+ sol:{t:'star',col:'#ffd36b',r:14}, oort:{t:'cloud'}, proxima:{t:'star',col:'#ff7a5c',r:13}, proximab:{c:['#d9a48a','#5a2f2a'],sp:[[-6,4,12,7,'#3f1f1c',.4],[10,-8,7,4,'#f1cdb8',.5]],gl:'#ff7a5c',r:26},
+ alphacen:{t:'star',col:'#fff0b8',r:17,c2:'#ffb86b'}, barnard:{t:'star',col:'#ff6a4a',r:11}, sirius:{t:'star',col:'#cfe4ff',r:22}, siriusb:{t:'star',col:'#ffffff',r:6},
+ vega:{t:'star',col:'#dbe9ff',r:20}, fomalhaut:{t:'star',col:'#f4f1ff',r:18}, trappist:{t:'star',col:'#ff5a3c',r:10,pl:7}, trappiste:{c:['#a9dcd2','#24505c'],sp:[[-8,-4,14,8,'#3f7f6a',.55],[10,10,9,5,'#e9f7f2',.5]],cap:1,gl:'#ff7a5c',r:28},
  earth:{c:['#7fc4ff','#1b4fa8'],sp:[[-10,-6,13,9,'#5fae6a',.9],[12,10,10,7,'#4f9a5c',.9],[4,-20,9,4,'#fff',.7]],gl:'#6fb7ff'},
  iss:{t:'station'}, moon:{c:['#f1efe9','#7d7a74'],cr:1}, venus:{c:['#fff0c2','#b98a3e'],bd:[[-14,7,'#e0b469',.35],[4,9,'#c9974a',.3]],gl:'#ffe2a0'},
  mercury:{c:['#cfc4b6','#5e554c'],cr:1,r:24}, sun:{t:'sun'},
@@ -599,6 +624,12 @@ function orb(id,sz,x,y){
   var S0='<svg class="orb" width="'+sz+'" height="'+sz+'" viewBox="-50 -50 100 100"'+(x!=null?' x="'+x+'" y="'+y+'"':'')+'>';
   var G=function(c){ return '<radialGradient id="'+u+'g" cx=".34" cy=".28" r=".85"><stop offset="0" stop-color="'+c[0]+'"/><stop offset="1" stop-color="'+c[1]+'"/></radialGradient><radialGradient id="'+u+'s" cx=".3" cy=".25" r=".9"><stop offset=".5" stop-color="#05061c" stop-opacity="0"/><stop offset="1" stop-color="#05061c" stop-opacity=".8"/></radialGradient>'; };
   var L='stroke="#fff1d6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"';
+  if(t==='star'){ var sc=o.col||'#ffd36b', sr=o.r||20, sh='<defs><radialGradient id="'+u+'g"><stop offset="0" stop-color="'+sc+'" stop-opacity=".75"/><stop offset=".5" stop-color="'+sc+'" stop-opacity=".25"/><stop offset="1" stop-color="'+sc+'" stop-opacity="0"/></radialGradient><radialGradient id="'+u+'k" cx=".4" cy=".35"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="'+sc+'"/></radialGradient></defs>';
+    sh+='<circle r="'+Math.min(50,sr*2.3)+'" fill="url(#'+u+'g)"/><circle r="'+sr+'" fill="url(#'+u+'k)"/><path d="M0 -'+(sr+16)+'V'+(sr+16)+'M-'+(sr+16)+' 0H'+(sr+16)+'" stroke="#fff" stroke-width=".8" opacity=".45"/>';
+    if(o.c2) sh+='<circle cx="'+(sr+10)+'" cy="'+(sr*0.5)+'" r="'+(sr*0.7)+'" fill="'+o.c2+'"/><circle cx="'+(sr+8)+'" cy="'+(sr*0.5-2)+'" r="'+(sr*0.3)+'" fill="#fff" opacity=".5"/>';
+    if(o.pl) for(var pi=0;pi<o.pl;pi++) sh+='<circle cx="'+(sr+7+pi*5.2)+'" cy="'+(pi%2?3:-3)+'" r="'+(1.6+(pi%3)*0.5)+'" fill="'+(pi>=3&&pi<=5?'#9fd0c8':'#c9a48a')+'"/>';
+    return S0+sh+'</svg>'; }
+  if(t==='cloud'){ var ch=''; for(var ci=0;ci<70;ci++){ var ca=hash01('oo'+ci)*6.283, cr=26+hash01('or'+ci)*20; ch+='<circle cx="'+(Math.cos(ca)*cr).toFixed(1)+'" cy="'+(Math.sin(ca)*cr).toFixed(1)+'" r="'+(0.7+hash01('os'+ci)*1.3).toFixed(1)+'" fill="#cfe9ff" opacity="'+(0.35+hash01('op'+ci)*0.6).toFixed(2)+'"/>'; } return S0+'<circle r="36" fill="none" stroke="#cfe9ff" stroke-width="20" opacity=".08"/>'+ch+'<circle r="3.5" fill="#fff6cf"/></svg>'; }
   if(t==='sun') return S0+'<defs><radialGradient id="'+u+'g"><stop offset="0" stop-color="#fffbe6"/><stop offset=".45" stop-color="#ffd36b"/><stop offset=".62" stop-color="#ff9a3c" stop-opacity=".55"/><stop offset="1" stop-color="#ff7a2a" stop-opacity="0"/></radialGradient></defs><circle r="50" fill="url(#'+u+'g)"/><circle r="22" fill="#fff6cf"/></svg>';
   if(t==='comet') return S0+'<defs><linearGradient id="'+u+'g" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="'+o.c+'" stop-opacity=".9"/><stop offset="1" stop-color="'+o.c+'" stop-opacity="0"/></linearGradient><radialGradient id="'+u+'h"><stop offset="0" stop-color="#fff"/><stop offset=".4" stop-color="'+o.c+'" stop-opacity=".8"/><stop offset="1" stop-color="'+o.c+'" stop-opacity="0"/></radialGradient></defs><path d="M-30 22 L44 -40 L-18 34 Z" fill="url(#'+u+'g)"/><path d="M-28 18 L20 -46 L-22 30 Z" fill="url(#'+u+'g)" opacity=".5"/><circle cx="-24" cy="26" r="16" fill="url(#'+u+'h)"/><circle cx="-24" cy="26" r="5" fill="#fff"/></svg>';
   if(t==='rock'||t==='lobes'){
@@ -633,8 +664,8 @@ function orb(id,sz,x,y){
   if(o.ring) h+='<g clip-path="url(#'+u+'f)">'+rg.replace(/ CLIP/g,'')+'</g><defs><clipPath id="'+u+'f"><rect x="-60" y="2" width="120" height="60" transform="rotate('+(o.rv?78:-18)+')"/></clipPath></defs>';
   return h+'</svg>';
 }
-function shipG(i){ // 朝 +x，画在 ±55 的范围内
-  var u='s'+(orbN++), B='url(#'+u+'b)', P='url(#'+u+'p)', k=SHIPART[i]||'saturn', col={vostok:'#ffb36b',saturn:'#ff9d3c',shuttle:'#bfe3ff',nerva:'#ff5d4a',ds1:'#5fe6ff',dawn:'#5fe6ff',orion:'#ffd36b',daedalus:'#ff6fe0',starshot:'#ff5d6c',bussard:'#7fd6ff',anti:'#ffffff'}[k]||'#ffe08a';
+function shipG(i,mk){ // 朝 +x，画在 ±55 的范围内
+  var u='s'+(orbN++), B='url(#'+u+'b)', P='url(#'+u+'p)', k=SHIPART[i]||'saturn', col={warp:'#9fd0ff',krasnikov:'#b9a7ff',wormhole:'#7fd6ff',final:'#fff1d6',vostok:'#ffb36b',saturn:'#ff9d3c',shuttle:'#bfe3ff',nerva:'#ff5d4a',ds1:'#5fe6ff',dawn:'#5fe6ff',orion:'#ffd36b',daedalus:'#ff6fe0',starshot:'#ff5d6c',bussard:'#7fd6ff',anti:'#ffffff'}[k]||'#ffe08a';
   var d='<defs><linearGradient id="'+u+'b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".55" stop-color="#e3e4f2"/><stop offset="1" stop-color="#8f93b8"/></linearGradient>'
     +'<linearGradient id="'+u+'p" x1="1" y1="0" x2="0" y2="0"><stop offset="0" stop-color="'+col+'"/><stop offset="1" stop-color="'+col+'" stop-opacity="0"/></linearGradient>'
     +'<radialGradient id="'+u+'r" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#7d82ad"/></radialGradient>'
@@ -670,6 +701,17 @@ function shipG(i){ // 朝 +x，画在 ±55 的范围内
     +'<g fill="none" stroke="#7fd6ff" stroke-linecap="round"><path d="M20 -3 Q34 -8 56 -34" stroke-width="1.4" opacity=".9"/><path d="M20 3 Q34 8 56 34" stroke-width="1.4" opacity=".9"/><path d="M22 -2 Q38 -5 56 -20" stroke-width="1" opacity=".6"/><path d="M22 2 Q38 5 56 20" stroke-width="1" opacity=".6"/><path d="M24 -1 Q40 -2 56 -8" stroke-width=".8" opacity=".4"/><path d="M24 1 Q40 2 56 8" stroke-width=".8" opacity=".4"/></g>'
     +'<g fill="#c8f7ff">'+[[50,-22],[44,10],[52,4],[38,-9],[47,-12],[41,17]].map(function(q){return '<circle cx="'+q[0]+'" cy="'+q[1]+'" r="1.1"/>';}).join('')+'</g>'
     +'<polygon points="-23,-6 -16,-4 -16,4 -23,6" fill="#5b5f80"/><rect x="-16" y="-6.5" width="30" height="13" rx="3" fill="'+B+'"/><ellipse cx="-4" cy="0" rx="2.4" ry="11" fill="none" stroke="#7fd6ff" stroke-width="2"/><ellipse cx="6" cy="0" rx="2.4" ry="11" fill="none" stroke="#7fd6ff" stroke-width="2"/><path d="M14 -6.5 L22 0 L14 6.5 Z" fill="#d6d8ee"/>';
+  if(k==='warp') g='<ellipse cx="2" cy="0" rx="50" ry="26" fill="#9fd0ff" opacity=".07"/><g fill="none" stroke="#9fd0ff" stroke-linecap="round"><path d="M44 -24 Q54 0 44 24" stroke-width="1.6" opacity=".9"/><path d="M50 -16 Q56 0 50 16" stroke-width="1" opacity=".6"/><path d="M-36 -26 Q-56 0 -36 26" stroke-width="1" opacity=".5"/><path d="M-44 -18 Q-58 0 -44 18" stroke-width=".8" opacity=".35"/></g>'
+    +'<path d="M-30 0 L-20 -5 L26 -3 L40 0 L26 3 L-20 5 Z" fill="'+B+'"/><path d="M-20 -5 L-30 0 L-20 5 Z" fill="#8d93b8"/><circle cx="24" cy="0" r="1.6" fill="#1a1b4b"/>'
+    +'<ellipse cx="-8" cy="0" rx="5" ry="20" fill="none" stroke="#fff1d6" stroke-width="3.2"/><ellipse cx="12" cy="0" rx="4" ry="16" fill="none" stroke="#fff1d6" stroke-width="2.6"/><ellipse cx="-8" cy="0" rx="5" ry="20" fill="none" stroke="#9fd0ff" stroke-width="1" opacity=".9"/><ellipse cx="12" cy="0" rx="4" ry="16" fill="none" stroke="#9fd0ff" stroke-width="1" opacity=".9"/>';
+  if(k==='krasnikov') g='<path d="M-58 -5 L-6 -15 M-58 5 L-6 15" stroke="#b9a7ff" stroke-width="1.2" opacity=".8"/><polygon points="-58,-5 -6,-15 -6,15 -58,5" fill="#b9a7ff" opacity=".14"/>'
+    +'<g fill="none" stroke="#d9d2ff">'+[[-48,6.5],[-38,8.5],[-28,10.5],[-18,12.5],[-8,14.5]].map(function(q,j){return '<ellipse cx="'+q[0]+'" cy="0" rx="'+(1.4+j*0.3)+'" ry="'+q[1]+'" stroke-width="'+(0.8+j*0.15)+'" opacity="'+(0.35+j*0.13)+'"/>';}).join('')+'</g>'
+    +'<ellipse cx="-4" cy="0" rx="3.4" ry="17" fill="none" stroke="#fff" stroke-width="2"/><path d="M0 -6 L30 -4 L48 0 L30 4 L0 6 Z" fill="'+B+'"/><polygon points="6,-6 20,-5 8,-15" fill="#7c6cff"/><polygon points="6,6 20,5 8,15" fill="#5a4bd6"/><circle cx="34" cy="0" r="1.6" fill="#1a1b4b"/>';
+  if(k==='wormhole') g='<circle cx="12" cy="0" r="30" fill="#0c1030"/><circle cx="12" cy="0" r="30" fill="url(#'+u+'p)" opacity=".25"/>'
+    +'<g fill="#fff">'+[[2,-10,1],[18,-16,.8],[24,6,1.1],[6,12,.7],[14,-2,.9],[-4,2,.6],[20,16,.6]].map(function(q){return '<circle cx="'+q[0]+'" cy="'+q[1]+'" r="'+q[2]+'"/>';}).join('')+'</g>'
+    +'<g fill="none" stroke="#7fd6ff"><circle cx="12" cy="0" r="30" stroke-width="2.6"/><circle cx="12" cy="0" r="34" stroke-width="1" opacity=".5"/><circle cx="12" cy="0" r="24" stroke-width=".8" opacity=".5"/><circle cx="12" cy="0" r="17" stroke-width=".6" opacity=".35"/></g>'
+    +'<path d="M-52 -2 L-30 0 L-52 2 Z" fill="'+P+'"/><path d="M-34 -4 L-18 -3 L-8 0 L-18 3 L-34 4 Z" fill="'+B+'"/><polygon points="-34,-4 -28,-4 -36,-10" fill="#8d93b8"/><polygon points="-34,4 -28,4 -36,10" fill="#8d93b8"/>';
+  if(k==='final') g='<circle r="34" fill="url(#'+u+'p)" opacity=".18"/><g fill="none" stroke="#fff1d6" stroke-linecap="round"><circle r="26" stroke-width="2.4"/><circle r="26" stroke-width="7" opacity=".15"/><ellipse rx="40" ry="10" stroke-width="1.2" opacity=".7" transform="rotate(-24)"/><ellipse rx="40" ry="10" stroke-width="1.2" opacity=".5" transform="rotate(38)"/></g><circle r="5" fill="#fff"/><circle r="11" fill="#fff" opacity=".25"/><circle cx="37" cy="-16" r="2" fill="#e88f6c"/>';
   if(k==='nerva') g='<path d="M-36 -4 L-58 0 L-36 4 Z" fill="'+P+'"/><path d="M-36 -1.6 L-48 0 L-36 1.6 Z" fill="#fff"/>'
     +'<polygon points="-37,-7 -28,-3.5 -28,3.5 -37,7" fill="#5b5f80"/><rect x="-28" y="-5.5" width="11" height="11" rx="2" fill="#ff6b5e"/><rect x="-25" y="-5.5" width="1.6" height="11" fill="#7a211b"/><rect x="-21.5" y="-5.5" width="1.6" height="11" fill="#7a211b"/>'
     +'<polygon points="-15,-3 -2,-3 -5,-22 -13,-22" fill="#c4473e"/><polygon points="-15,3 -2,3 -5,22 -13,22" fill="#9b332c"/><path d="M-13.6 -8H-3.4M-13 -14H-4M-13.6 8H-3.4M-13 14H-4" stroke="#ffb3a8" stroke-width=".8"/>'
@@ -695,40 +737,49 @@ function shipG(i){ // 朝 +x，画在 ±55 的范围内
     +'<rect x="-27" y="-1.2" width="50" height="2.4" fill="#d6d8ee"/>'
     +'<path d="M17 -14V14" stroke="#fff1d6" stroke-width="1"/><ellipse cx="17" cy="0" rx="4.5" ry="14" fill="none" stroke="#fff1d6" stroke-width="3"/>'
     +'<path d="M23 -4.5 L52 0 L23 4.5 Z" fill="'+B+'"/><circle cx="30" cy="0" r="1.5" fill="#1a1b4b"/>';
-  return '<g>'+d+g+'</g>';
+  var rings=''; for(var mi=0;mi<(mk||0);mi++) rings+='<ellipse cx="'+(-46-mi*7)+'" cy="0" rx="2" ry="'+(8-mi*2.5)+'" fill="none" stroke="'+col+'" stroke-width="1.5" opacity="'+(0.9-mi*0.25)+'"/>';
+  return '<g>'+d+rings+g+'</g>';
 }
-function shipSvg(i,sz){ return '<svg class="orb" width="'+sz+'" height="'+sz+'" viewBox="-64 -64 128 128"><g transform="rotate(-22)">'+shipG(i)+'</g></svg>'; }
+function shipSvg(i,sz,mk){ return '<svg class="orb" width="'+sz+'" height="'+sz+'" viewBox="-64 -64 128 128"><g transform="rotate(-22)">'+shipG(i,mk)+'</g></svg>'; }
 function starsSvg(seed,n,w,hh){ var s=''; for(var i=0;i<n;i++){ var a=hash01(seed+'x'+i), b=hash01(seed+'y'+i), c=hash01(seed+'z'+i); s+='<circle'+(i%4===0?' class="tw" style="animation-delay:-'+(c*4).toFixed(1)+'s"':'')+' cx="'+(a*w).toFixed(1)+'" cy="'+(b*hh).toFixed(1)+'" r="'+(0.4+c*0.9).toFixed(2)+'" fill="#fff" opacity="'+(0.25+c*0.6).toFixed(2)+'"/>'; } return s; }
 function cardHtml(kind,id,tag){
-  var nm,fact,art;
-  if(kind==='ship'){ var x=SHIPS[+id]; nm=x[1]; fact=x[4]; art=shipSvg(+id,230); }
-  else{ var c=kind==='rare'?rareById(id):stopById(id); nm=c[1]; fact=c[3]; art=orb(id,170); }
-  return '<div class="scard"><svg class="sky" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice"><g class="warp">'+starsSvg(id+'k',46,300,200)+'</g></svg><div class="art">'+art+'</div>'+(tag?'<div class="stag">'+tag+'</div>':'')+'<h3>'+esc(nm)+'</h3><p>'+esc(fact)+'</p></div>';
+  var nm,fact,art,logs='';
+  if(kind==='ship'||kind==='mark'){ var x=SHIPS[+id], st=shipState(); nm=x[1]; fact=x[4]; art=shipSvg(+id,230,+id===st.i?st.m:2); }
+  else{ var c=kind==='rare'?rareById(id):stopById(id); nm=c[1]; fact=c[3]; art=orb(id,170);
+    if(kind==='stop' && LOGS[id]) logs='<div class="logs">'+LOGS[id].map(function(l){ return '<p><b style="color:'+WHO[l[0]][1]+'">'+WHO[l[0]][0]+'</b>'+esc(l[1])+'</p>'; }).join('')+'</div>'; }
+  return '<div class="scard"><svg class="sky" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice"><g class="warp">'+starsSvg(id+'k',46,300,200)+'</g></svg><div class="art">'+art+'</div>'+(tag?'<div class="stag">'+tag+'</div>':'')+'<h3>'+esc(nm)+'</h3><p>'+esc(fact)+'</p>'+logs+'</div>';
 }
 function spaceModal(html,cb){ modal(html,cb); var d=document.querySelector('#mask .dlg'); if(d) d.classList.add('space'); }
 function starCheck(){
   if(document.getElementById('mask')) return;
   var Z=S.star;
-  if(!Z.chap){ Z.chap={0:1}; Z.pend.unshift({t:'chap',id:0}); if(Z.target) Z.chap[chapOf(Z.target)]=1; Z.at.forEach(function(id){ Z.chap[chapOf(id)]=1; }); }
-  if(Z.pend.length){ var p=Z.pend[0];
-    if(p.t==='chap') spaceModal(chapHtml(p.id)+'<div class="row"><button class="btn glow" data-a="ok">'+(p.id===0?'出发':'继续')+'</button></div>', function(){ Z.pend.shift(); save(); render(); });
-    else spaceModal(cardHtml(p.t,p.id,p.t==='rare'?'打捞 · 航程 +2%':p.t==='ship'?'新飞船 · 速度 ×'+SHIPS[p.id][2]:(p.id==='voyager'?'任务完成':'到达'))+'<div class="row"><button class="btn glow" data-a="ok">收下</button></div>', function(){ Z.pend.shift(); save(); render(); });
+  if(!Z.chap){ Z.chap={'0:0':1}; Z.pend.unshift({t:'chap',id:'0:0'}); if(Z.target) Z.chap[chapKey(Z.target)]=1; Z.at.forEach(function(id){ Z.chap[chapKey(id)]=1; }); }
+  Object.keys(Z.chap).forEach(function(kk){ if(kk.indexOf(':')<0){ Z.chap['0:'+kk]=1; delete Z.chap[kk]; } });
+  Z.pend.forEach(function(p){ if(p.t==='chap' && String(p.id).indexOf(':')<0 && p.id!=='end') p.id='0:'+p.id; });
+  if(!Z.cast){ Z.cast=1; Z.pend.push({t:'cast'}); }
+  if(Z.pend.length){ var p=Z.pend[0], st0=shipState(), done=function(){ Z.pend.shift(); save(); render(); };
+    if(p.t==='chap') spaceModal(chapHtml(p.id)+'<div class="row"><button class="btn glow" data-a="ok">'+(String(p.id).slice(-2)===':0'?'出发':'继续')+'</button></div>', done);
+    else if(p.t==='cast') spaceModal('<div class="scard chapc"><svg class="sky" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice"><g class="warp">'+starsSvg('cast',60,300,200)+'</g></svg><div class="stag">船上和地面</div><h3>两位同事</h3><div class="logs" style="border:none;margin-top:0;padding-top:0"><p><b style="color:#7fd6ff">罗盘</b>船上的导航电脑。只相信数字。到站时它会报告。</p><p><b style="color:#ffb38a">老周</b>地面站的夜班工程师。离得越远，他的消息到得越晚。</p></div></div><div class="row"><button class="btn glow" data-a="ok">认识了</button></div>', done);
+    else if(p.t==='mark') spaceModal(cardHtml('mark',p.id,'改装 '+MK[st0.m]+' · 速度 ×'+st0.sp)+'<div class="row"><button class="btn glow" data-a="ok">收下</button></div>', done);
+    else spaceModal(cardHtml(p.t,p.id,p.t==='rare'?'打捞 · 航程 +2%':p.t==='ship'?'新飞船 · 速度 ×'+SHIPS[p.id][2]:(p.id===TIERS[tierOf(p.id)].end?'任务完成':'到达'))+'<div class="row"><button class="btn glow" data-a="ok">收下</button></div>', done);
     return; }
   if(Z.offer && Z.offer.length){ var opts=starReach(); if(!opts.length){ Z.offer=null; } else {
-    spaceModal('<div class="scard pickwrap"><svg class="sky" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice">'+starsSvg('pick'+Z.at.length,46,300,200)+'</svg><div class="stag">下一站</div><div class="plist">'+opts.map(function(id){ var c=stopById(id); return '<button data-a="go:'+id+'">'+orb(id,46)+'<span><b>'+esc(c[1])+'</b><small>'+CHAP[chapOf(id)][0]+'</small></span><em>'+starCostTo(id)+'</em></button>'; }).join('')+'</div></div>',
+    spaceModal('<div class="scard pickwrap"><svg class="sky" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice">'+starsSvg('pick'+Z.at.length,46,300,200)+'</svg><div class="stag">下一站</div><div class="plist">'+opts.map(function(id){ var c=stopById(id); return '<button data-a="go:'+id+'">'+orb(id,46)+'<span><b>'+esc(c[1])+'</b><small>'+chapName(id)+'</small></span><em>'+starCostTo(id)+'</em></button>'; }).join('')+'</div></div>',
       function(a){ var id=a.slice(3); if(stopById(id)){ starSetTarget(id); save(); render(); } });
     return; } }
-  var si=shipIdx(); if(Z.ship==null) Z.ship=si; if(si>Z.ship){ Z.ship=si; Z.pend.push({t:'ship',id:si}); save(); return starCheck(); }
+  var stx=shipState(); if(Z.shipLv==null) Z.shipLv=stx.lv; if(stx.lv>Z.shipLv){ Z.shipLv=stx.lv; Z.pend.push({t:stx.m===0?'ship':'mark',id:stx.i}); save(); return starCheck(); }
   if(Z.target && starTotal()-Z.spent>=starCost()){
-    Z.spent+=starCost(); Z.at.push(Z.target); Z.pend.push({t:'stop',id:Z.target}); hist('到达 '+stopById(Z.target)[1],'star');
-    Z.target=null; var nx=starReach(); if(nx.length===1) starSetTarget(nx[0]); else if(nx.length) Z.offer=nx;
+    var arr=Z.target, at0=tierOf(arr); Z.spent+=starCost(); Z.at.push(arr); Z.pend.push({t:'stop',id:arr}); hist('到达 '+stopById(arr)[1],'star');
+    Z.target=null;
+    if(arr===TIERS[at0].end){ var nt=TIERS[at0+1]; if(nt&&nt.NODE){ Z.chap[(at0+1)+':0']=1; Z.pend.push({t:'chap',id:(at0+1)+':0'}); } else Z.pend.push({t:'chap',id:'end'}); }
+    var nx=starReach(); if(nx.length===1) starSetTarget(nx[0]); else if(nx.length) Z.offer=nx;
     save(); return starCheck(); }
 }
 function thb(n){ return ' <small class="thb">▲'+n+'</small>'; }
 function sitThrust(){ var D=S.star.days[today()]; return (D&&D.e&&D.e.some(function(x){return x.k==='sit1';}))?10:(S.star.charge?40:20); }
 function starCard(){
-  var Z=S.star, T=starToday(), si=shipIdx(), sh=SHIPS[si], tg=Z.target?stopById(Z.target):null, cost=starCost(), prog=Math.max(0,starTotal()-Z.spent), t=tg?Math.min(1,prog/cost):1;
-  var from=Z.at.length?Z.at[Z.at.length-1]:'earth', fromN=Z.at.length?stopById(from)[1]:'地球';
+  var Z=S.star, T=starToday(), stt=shipState(), si=stt.i, sh=SHIPS[si], tg=Z.target?stopById(Z.target):null, cost=starCost(), prog=Math.max(0,starTotal()-Z.spent), t=tg?Math.min(1,prog/cost):1;
+  var ct=Z.target?tierOf(Z.target):curTier(), from=starCur(ct), fromN=nodeName(from);
   var f=function(x){ return (Math.round(x*100)/100).toString(); };
   var P0=[46,112],P1=[150,6],P2=[258,74], q=function(a,b,k){ return [a[0]+(b[0]-a[0])*k,a[1]+(b[1]-a[1])*k]; };
   var A=q(P0,P1,t), B=q(P1,P2,t), C=q(A,B,t), ang=Math.atan2(B[1]-A[1],B[0]-A[0])*180/Math.PI;
@@ -737,30 +788,34 @@ function starCard(){
     +'<path d="'+path+'" fill="none" stroke="#fff1d6" stroke-opacity=".28" stroke-width="1.2" stroke-dasharray="2 5" stroke-linecap="round"/>'
     +'<path class="trail" pathLength="1" d="M'+P0+' Q'+A.map(function(v){return v.toFixed(1);})+' '+C.map(function(v){return v.toFixed(1);})+'" fill="none" stroke="#fff1d6" stroke-width="1.6" stroke-linecap="round"/>'
     +'<g class="s-from">'+orb(from,44,24,90)+'</g>'+(tg?'<g class="s-to">'+orb(Z.target,128,214,10)+'</g>':'')
-    +(starAnim&&t>0.02?'<g><animateMotion dur="1.5s" begin="0s" fill="freeze" rotate="auto" calcMode="spline" keyTimes="0;1" keySplines="0.25 0.6 0.2 1" path="M'+P0+' Q'+A.map(function(v){return v.toFixed(1);})+' '+C.map(function(v){return v.toFixed(1);})+'"/><g transform="scale(.36)" class="s-ship">'+shipG(si)+'</g></g>'
-      :'<g transform="translate('+C[0].toFixed(1)+','+C[1].toFixed(1)+') rotate('+ang.toFixed(1)+') scale(.36)">'+shipG(si)+'</g>')+'</svg>';
+    +(starAnim&&t>0.02?'<g><animateMotion dur="1.5s" begin="0s" fill="freeze" rotate="auto" calcMode="spline" keyTimes="0;1" keySplines="0.25 0.6 0.2 1" path="M'+P0+' Q'+A.map(function(v){return v.toFixed(1);})+' '+C.map(function(v){return v.toFixed(1);})+'"/><g transform="scale(.36)" class="s-ship">'+shipG(si,stt.m)+'</g></g>'
+      :'<g transform="translate('+C[0].toFixed(1)+','+C[1].toFixed(1)+') rotate('+ang.toFixed(1)+') scale(.36)">'+shipG(si,stt.m)+'</g>')+'</svg>';
   return '<div class="card space star" data-a="push:star">'+sc
-    +'<div class="shead"><div><small>追上旅行者 1 号'+(tg?' · '+CHAP[chapOf(Z.target)][0]:'')+'</small><h2>'+(tg?esc(tg[1]):(Z.at.indexOf('voyager')>=0&&!starReach().length?'任务完成':'选择下一站'))+'</h2></div>'+(tg?'<div class="sprog"><b data-cu="'+Math.min(prog,cost)+'">'+Math.min(prog,cost)+'</b> / '+cost+'</div>':'')+'</div>'
+    +'<div class="shead"><div><small>'+TIERS[ct].goal+(tg?' · '+chapName(Z.target):'')+'</small><h2>'+(tg?esc(tg[1]):(!starReach().length?'未完待续':'选择下一站'))+'</h2></div>'+(tg?'<div class="sprog"><b data-cu="'+Math.min(prog,cost)+'">'+Math.min(prog,cost)+'</b> / '+cost+'</div>':'')+'</div>'
     +'<div class="seq"><span><b>'+T.raw+'</b>推力</span><em>×</em><span><b>'+f(T.sp)+'</b>速度</span><em>×</em><span'+(T.sv>1?'':' class="off"')+'><b>'+f(T.sv)+'</b>打捞</span>'
     +(T.dr<1?'<em>×</em><span class="drag"><b>'+f(T.dr)+'</b>阻力</span>':'')+'<em>=</em><span class="tot"><b data-cu="'+T.d+'">'+T.d+'</b>今日</span></div>'
     +(Z.charge?'<div class="chg">已充能 · 下次第一次坐下推力翻倍</div>':'')+'</div>';
 }
 function shipCard(){
-  var t=allTotal(), i=shipIdx(), sh=SHIPS[i], nx=SHIPS[i+1];
-  var h='<div class="jtop"><div><div class="jbig">'+t+'<small> 次</small></div><div class="cr">'+sh[1]+' · 速度 ×'+sh[2]+'</div></div><div class="shipbadge">'+shipSvg(i,64)+'</div></div>';
-  if(nx) h+='<div class="jlab"><span>'+nx[1]+' ×'+nx[2]+'</span><span>还差 <b>'+(nx[0]-t)+'</b> 次</span></div><div class="bar"><i style="width:'+((t-sh[0])/(nx[0]-sh[0])*100).toFixed(1)+'%"></i></div>';
+  var t=allTotal(), st=shipState(), sh=SHIPS[st.i];
+  var h='<div class="jtop"><div><div class="jbig">'+t+'<small> 次</small></div><div class="cr">'+sh[1]+' · 改装 '+MK[st.m]+' · 速度 ×'+st.sp+'</div></div><div class="shipbadge">'+shipSvg(st.i,64,st.m)+'</div></div>';
+  if(st.nextAt!=null) h+='<div class="jlab"><span>'+st.nextName+'</span><span>还差 <b>'+(st.nextAt-t)+'</b> 次</span></div><div class="bar"><i style="width:'+Math.max(2,(t-st.from)/(st.nextAt-st.from)*100).toFixed(1)+'%"></i></div>';
   return h;
 }
 function pageStar(){
-  var Z=S.star, si=shipIdx(), h=starCard().replace(' data-a="push:star"','');
-  h+='<div class="sect">飞船</div><div class="card space"><div class="fleetrow">';
-  SHIPS.forEach(function(x,i){ h+='<button style="--i:'+i+'" class="'+(i===si?'cur':i<si?'got':'')+'"'+(i<=si?' data-a="sc:ship:'+i+'"':'')+'>'+(i<=si?shipSvg(i,84):'<i></i>')+'<b>'+x[1]+'</b><small>×'+x[2]+(i>si?' · '+x[0]+' 次':'')+'</small></button>'; });
-  h+='</div></div><div class="sect">航线 · '+Z.at.length+' / '+STOPS.length+'</div><div class="card space mapc">'+starMap();
+  var Z=S.star, st=shipState(), si=st.i, h=starCard().replace(' data-a="push:star"','');
+  h+='<div class="sect">飞船 · '+(si+1)+' / '+SHIPS.length+'</div><div class="card space"><div class="fleetrow">';
+  SHIPS.forEach(function(x,i){ var hid=i>si+2||(i===SHIPS.length-1&&i>si);
+    h+='<button style="--i:'+i+'" class="'+(i===si?'cur':i<si?'got':'')+'"'+(i<=si?' data-a="sc:ship:'+i+'"':'')+'>'+(i<=si?shipSvg(i,84,i===si?st.m:2):'<i></i>')+'<b>'+(hid?'？？？':x[1])+'</b><small>'+(i===si?'改装 '+MK[st.m]+' · ×'+st.sp:i<si?'×'+x[2]:x[0]+' 次')+'</small></button>'; });
+  var ct=curTier(), vt=(seg.maptier!=null&&tierOpen(+seg.maptier))?+seg.maptier:ct, ids=tierStops(vt), got=ids.filter(function(id){return Z.at.indexOf(id)>=0;}).length;
+  h+='</div></div><div class="sect">航线 · '+TIERS[vt].name+' · '+got+' / '+ids.length+'</div>';
+  h+='<div class="tierbar">'+TIERS.map(function(T,i){ var op=tierOpen(i); return '<button class="'+(i===vt?'on':'')+(op?'':' lock')+'"'+(op?' data-a="seg:maptier:'+i+'"':'')+'>'+(op?T.name:'第 '+(i+1)+' 层')+'</button>'; }).join('')+'</div>';
+  h+='<div class="card space mapc">'+starMap(vt);
   h+='</div><div class="sect">打捞 · '+Z.cards.length+' / '+RARE.length+' · 航程 ×'+(Math.round((1+0.02*Z.cards.length)*100)/100)+'</div><div class="card space"><div class="sgrid">';
   var rl=Z.cards.map(rareById).filter(Boolean); for(var ri=0;ri<RARE.length;ri++){ var x=rl[ri]; h+='<button style="--i:'+ri+'" class="'+(x?'on':'')+'"'+(x?' data-a="sc:rare:'+x[0]+'"':'')+'>'+(x?orb(x[0],54)+'<b>'+esc(x[1])+'</b>':'<i></i>')+'</button>'; }
   return h+'</div></div>';
 }
-function starShow(kind,id){ spaceModal(cardHtml(kind,id,kind==='rare'?'打捞 · 航程 +2%':kind==='ship'?'速度 ×'+SHIPS[+id][2]:'')+'<div class="row"><button class="btn glow" data-a="close">关闭</button></div>'); }
+function starShow(kind,id){ spaceModal(cardHtml(kind,id,kind==='rare'?'打捞 · 航程 +2%':kind==='ship'?(+id===shipState().i?'改装 '+MK[shipState().m]+' · 速度 ×'+shipState().sp:'速度 ×'+SHIPS[+id][2]):'')+'<div class="row"><button class="btn glow" data-a="close">关闭</button></div>'); }
 
 // ---------- 提示音 ----------
 var actx=null;
@@ -1626,7 +1681,7 @@ function pageMore(){
   return h;
 }
 var RULES={
-  star:['星图','<p>今日航程 = 推力 × 速度 × 打捞（× 阻力）。航程攒够就到达下一站，解锁一张卡片。</p><p><b>航线</b>：任务是追上旅行者 1 号。每次只能飞往和已到过的地方相邻的天体，需要的航程按沿途距离算：卫星之间很近，行星之间很远，越往外越远。到站后选下一站，也可以在星图页的地图上点一个相邻的天体改道。内太阳系是一条支线，走不走都能完成任务。</p><p><b>推力</b>：当天第一次坐上计时座位 20（坐下就给）；每坐满一次 10；手动打勾一个定式 10；健身开始 20、完成 20；睡眠记录成功一次 15；待办按新建时选的抗拒程度给 10 / 25 / 50，点"做 5 分钟"先给三成，清掉给剩下的。每笔推力有 60% 的概率是 1 倍，30% 是 2 倍，10% 是 3 倍。自动打勾的定式不另给。</p><p><b>速度</b>：由累计专注次数决定飞船型号，永久有效。共 13 艘：0 东方一号 ×1 · 10 土星五号 ×1.1 · 25 航天飞机 ×1.2 · 45 NERVA 核热火箭 ×1.3 · 75 深空一号 ×1.4 · 115 黎明号 ×1.5 · 165 伊卡洛斯 ×1.6 · 225 光帆 2 号 ×1.8 · 300 猎户座 ×2 · 380 代达罗斯 ×2.3 · 470 突破摄星 ×2.6 · 570 巴萨德冲压发动机 ×3 · 680 反物质飞船 ×3.5。</p><p><b>打捞</b>：每张稀有卡让航程永久 +2%，12 张集齐是 ×1.24。清掉待办有机会得到一张，顺手 15%、有点烦 40%、很抗拒 80%。当天每日定式全勾、至少坐满一次、没有过期待办，必得一张。</p><p><b>充能</b>：睡眠记录成功后，下一次"第一次坐下"的推力翻倍。</p><p><b>阻力</b>：每件过期待办让当天航程少一成，最多少三成。只影响当天，已有的航程和卡片不会减少。</p>'],
+  star:['星图','<p>今日航程 = 推力 × 速度 × 打捞（× 阻力）。航程攒够就到达下一站，解锁一张卡片。</p><p><b>航线</b>：任务分层，范围逐层放大：第一层太阳系，追上旅行者 1 号；第二层近邻恒星，抵达 TRAPPIST-1；之后是银河系。越往外每一段路越长，飞船速度跟不上就会走很久。每次只能飞往和已到过的地方相邻的天体，需要的航程按沿途距离算：卫星之间很近，行星之间很远，越往外越远。到站后选下一站，也可以在星图页的地图上点一个相邻的天体改道。内太阳系是一条支线，走不走都能完成任务。</p><p><b>推力</b>：当天第一次坐上计时座位 20（坐下就给）；每坐满一次 10；手动打勾一个定式 10；健身开始 20、完成 20；睡眠记录成功一次 15；待办按新建时选的抗拒程度给 10 / 25 / 50，点"做 5 分钟"先给三成，清掉给剩下的。每笔推力有 60% 的概率是 1 倍，30% 是 2 倍，10% 是 3 倍。自动打勾的定式不另给。</p><p><b>速度</b>：由累计专注次数决定飞船型号，永久有效。共 17 艘，从东方一号到曲率飞船、虫洞飞船，最后一艘到了才知道。每艘船有三级改装（I、II、III），均匀分布在两艘船之间，每级速度涨一点。换船的专注次数：0 东方一号 · 10 土星五号 · 25 航天飞机 · 45 NERVA 核热火箭 · 75 深空一号 · 115 黎明号 · 165 伊卡洛斯 · 225 光帆 2 号 · 300 猎户座 · 400 代达罗斯 · 520 突破摄星 · 660 巴萨德冲压发动机 · 820 反物质飞船 · 1000 曲率飞船 · 1250 克拉斯尼科夫管 · 1550 虫洞飞船 · 1900 ？？？。</p><p><b>打捞</b>：每张稀有卡让航程永久 +2%，12 张集齐是 ×1.24。清掉待办有机会得到一张，顺手 15%、有点烦 40%、很抗拒 80%。当天每日定式全勾、至少坐满一次、没有过期待办，必得一张。</p><p><b>充能</b>：睡眠记录成功后，下一次"第一次坐下"的推力翻倍。</p><p><b>阻力</b>：每件过期待办让当天航程少一成，最多少三成。只影响当天，已有的航程和卡片不会减少。</p>'],
   todo:['待办清单','<p>每件待办都要写一个 5 分钟内能做完的第一步，并选一个近的期限：今天、本周内或下周内。</p><p>点"做 5 分钟"只承诺 5 分钟。到点后可以顺手做完，也可以停下并写好下一步。</p><p>过期的待办三选一：现在做 5 分钟、改期（改期次数会显示），或者决定不做并删掉。</p><p>可以把"清杂事"设成每周定式：哪天清掉一件待办，那天自动打勾。</p>'],
   tree:['定式树','<p>每周定式（比如每周 3 次健身房）按周一到周日结算：达到次数就算这周做到，没达到就用一次应急或删除。加入的那一周不满 7 天，不结算。计划日只用来提醒。</p><p>每个定式每月有固定的应急次数（默认 2 次，事先定死）。没做到时可以用掉一次应急：当天不打勾也不删除，连续天数照常保留。应急用完后再失败，才按堆栈删除。</p><p>每天最多把一个新定式加入树中：和已有定式相关就挂在它下面，是全新的领域就开新分支。</p><p>按堆栈来管理：某个定式有一次没做到，就把它和它的所有子节点一起删除。以后可以重新加入到树的末尾。</p><p>暂停日：搬家、出游等事先写好的情形，当天选中的定式暂停，不打勾也不算失败。</p><p>每天凌晨 4:00 才算新的一天，4 点前打的勾都算前一天。</p>'],
   seat:['神圣座位','<p>违规清零只清当前纪录 #N；累计次数只增不减，决定飞船型号。</p><p>坐在其他座位上没有约束；屁股一碰到神圣座位，就必须用最好的状态 100% 专注满一个小时。没有把握就不坐。</p><p>第一次成功记为 #1，之后每次成功加一个编号。一次失败（刷手机、只坐十分钟就走）就清零，从 #1 重新开始。</p>'],
@@ -1771,7 +1826,7 @@ document.addEventListener('click',function(ev){
     case 'calto': cal.month=arg[1]; render(); return;
     case 'day': return showDay(arg[1]);
     case 'sc': return starShow(arg[1],arg[2]);
-    case 'sgo': if(starReach().indexOf(arg[1])>=0 && S.star.target!==arg[1]){ starSetTarget(arg[1]); save(); render(); toast('改飞往 '+stopById(arg[1])[1]); } return;
+    case 'sgo': if(starReach(tierOf(arg[1])).indexOf(arg[1])>=0 && S.star.target!==arg[1]){ starSetTarget(arg[1]); save(); render(); toast('改飞往 '+stopById(arg[1])[1]); } return;
     case 't': return toggle(arg[1]);
     case 'hd': return habitMore(arg[1]);
     case 'tgym': nav.tab='gym'; nav.stack=[]; return gymStart(arg[1]);
