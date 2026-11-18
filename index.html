@@ -6,21 +6,21 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Orbit">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#f6f5f2" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#141414" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#0a0d24">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
 <title>Orbit</title>
 <style id="css">
-:root{--st:env(safe-area-inset-top);--hb:0px;--sb:max(env(safe-area-inset-bottom),20px);--bg:#f6f5f2;--card:#fff;--ink:#1d1d1f;--mute:#86868b;--line:#e5e4e0;--acc:#2f6f4f;--acc2:#e8f1ec;--bad:#b3261e;--bad2:#fbeaea;--warn:#8a5a00;--warn2:#fdf3e1;--h1:#d7eadf;--h2:#a9d2b9;--h3:#6fb08a;--h4:#2f6f4f;--seg:#e9e8e4}
-@media (prefers-color-scheme:dark){:root{--bg:#141414;--card:#1e1e1e;--ink:#f2f2f2;--mute:#9a9a9f;--line:#333;--acc:#6cc497;--acc2:#1f3328;--bad:#ff7b72;--bad2:#3a1f1e;--warn:#f0b54a;--warn2:#3a2e17;--h1:#1f3a2b;--h2:#2c5a40;--h3:#3f8a60;--h4:#6cc497;--seg:#2a2a2a}}
+:root{--st:env(safe-area-inset-top);--hb:0px;--sb:max(env(safe-area-inset-bottom),20px);--bg:#0a0d24;--card:rgba(24,27,72,.74);--solid:#15183f;--ink:#f6f2e6;--mute:#a4a1d0;--line:rgba(255,241,214,.13);--acc:#ffb38a;--acc2:rgba(255,179,138,.14);--bad:#ff7b72;--bad2:rgba(255,123,114,.16);--warn:#ffd08a;--warn2:rgba(240,181,74,.14);--h1:rgba(255,179,138,.18);--h2:rgba(255,179,138,.38);--h3:rgba(255,179,138,.64);--h4:#ffb38a;--g1:#1d3a2d;--g2:#2c5a40;--g3:#3f8a60;--g4:#6cc497;--seg:rgba(255,241,214,.08);color-scheme:dark}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 -apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",sans-serif}
+body{margin:0;background:radial-gradient(130% 70% at 85% -10%,#2c2266 0%,#141a48 38%,#0a0d24 78%) fixed,var(--bg);color:var(--ink);font:16px/1.5 -apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",sans-serif}
 #scroller{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 .wrap{max-width:560px;margin:0 auto;padding:calc(var(--st) + 14px) 16px calc(var(--sb) + 96px)}
-h1{font-size:28px;margin:0}
+h1{font-size:30px;margin:0;font-family:"Songti SC","STSong","Noto Serif CJK SC",serif;letter-spacing:.06em;color:#fff7e6}
+#sky{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
+#scroller{z-index:1}
 .hdr{display:flex;align-items:center;gap:8px;margin:4px 0 14px}
 .hdr+.sub{margin-top:-12px}
 .hdr h1{flex:1}
@@ -46,7 +46,7 @@ h1{font-size:28px;margin:0}
 .fail{flex:none;border:none;background:none;color:var(--mute);font-size:13px;padding:6px 4px;cursor:pointer}
 .empty{color:var(--mute);font-size:14px;padding:6px 0}
 button.btn{border:none;border-radius:12px;padding:12px 14px;font-size:15px;font-weight:600;cursor:pointer;width:100%}
-.btn.pri{background:var(--acc);color:#fff}
+.btn.pri{background:linear-gradient(135deg,#f09a74,#c9603f);color:#fff;box-shadow:0 4px 14px rgba(232,143,108,.28)}
 .btn.sec{background:var(--acc2);color:var(--acc)}
 .btn.danger{background:var(--bad);color:#fff}
 .btn.ghost{background:transparent;color:var(--mute);border:1px solid var(--line)}
@@ -62,7 +62,7 @@ input,select{width:100%;font-size:16px;padding:10px 12px;border-radius:10px;bord
 .rev:first-of-type{border-top:none}
 .rev span{flex:1}
 .rev button{border:none;border-radius:8px;padding:6px 10px;font-size:13px;font-weight:600;cursor:pointer}
-.ok{background:var(--acc);color:#fff}.no{background:var(--bad);color:#fff}
+.ok{background:linear-gradient(135deg,#f09a74,#c9603f);color:#fff}.no{background:var(--bad);color:#fff}
 .seg{display:flex;background:var(--seg);border-radius:10px;padding:2px;margin:6px 0 14px}
 .seg button{flex:1;border:none;background:none;padding:8px 4px;border-radius:8px;font-size:14px;color:var(--ink);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .seg button.on{background:var(--card);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.12)}
@@ -107,7 +107,7 @@ input,select{width:100%;font-size:16px;padding:10px 12px;border-radius:10px;bord
 .cal .wd{font-size:11px;color:var(--mute);text-align:center;padding-bottom:2px}
 .cal button{aspect-ratio:1;border:none;border-radius:8px;background:var(--bg);color:var(--ink);font-size:13px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;padding:0;line-height:1.15}
 .cal button small{font-size:10px;font-weight:600}
-.cal .lv1{background:var(--h1)}.cal .lv2{background:var(--h2)}.cal .lv3{background:var(--h3);color:#fff}.cal .lv4{background:var(--h4);color:#fff}
+.cal .lv1{background:var(--h1)}.cal .lv2{background:var(--h2)}.cal .lv3{background:var(--h3);color:#fff}.cal .lv4{background:var(--h4);color:#1a1b4b}
 .cal .mk{outline:1.5px dashed var(--mute);outline-offset:-3px}
 .tcal{padding:8px 10px}
 .tw{display:grid;grid-template-columns:repeat(7,1fr);row-gap:3px;padding:6px 0 8px;border-top:1px solid var(--line)}
@@ -127,7 +127,7 @@ input,select{width:100%;font-size:16px;padding:10px 12px;border-radius:10px;bord
 .ck input{width:20px;height:20px;flex:none}
 .chips{display:flex;flex-wrap:wrap;gap:6px;max-height:112px;overflow:auto}
 .chips button{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:6px 11px;font-size:14px;cursor:pointer}
-.chips button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.chips button.on{background:var(--acc);border-color:var(--acc);color:#1a1b4b}
 .mv{margin-left:auto;display:inline-flex;gap:14px;margin-right:14px}
 .mv .lk{font-size:16px;padding:0 4px}
 .mv.v{flex-direction:column;gap:2px;margin:0 0 0 10px}
@@ -359,7 +359,7 @@ a.btn.ghost{color:var(--acc);border:1px solid var(--line)}
 .okw{color:var(--acc)}.late{color:#d9682b}.plan{color:var(--acc)}
 .days{display:flex;gap:6px}
 .days button{flex:1;aspect-ratio:1;border-radius:50%;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:14px;cursor:pointer;padding:0}
-.days button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.days button.on{background:var(--acc);border-color:var(--acc);color:#1a1b4b}
 .wd7 i.rs{background:#f0b54a;border-color:#f0b54a}
 .wd7 i.pz{border-style:dotted;border-color:var(--mute)}
 .fire{font-size:12px;font-weight:600;color:#d9682b}
@@ -373,9 +373,35 @@ a.lk{color:var(--acc)}
 #toast.show{display:flex}
 #toast span{flex:1}
 #toast button{border:none;background:none;color:var(--h2);font-weight:700;font-size:14px;cursor:pointer}
+/* ---- 星际主题 ---- */
+.card,.list,.sum div{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.card{border-color:rgba(120,126,220,.28);box-shadow:0 8px 28px rgba(0,0,0,.25)}
+.dlg{background:var(--solid);border:1px solid rgba(120,126,220,.3)}
+.tabs{background:rgba(12,15,42,.86);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid rgba(120,126,220,.25)}
+.tabs button{color:#8c8ab8}
+.tabs button.act{color:#ffb38a}
+#toast{background:#1d2058;color:#f6f2e6;border:1px solid rgba(120,126,220,.4)}
+#toast button{color:#ffb38a}
+input,select,textarea{background:rgba(255,255,255,.06) !important;color:var(--ink) !important;border-color:var(--line) !important}
+input::placeholder{color:#7f7ca8}
+.subhdr h2,.dlg h3{font-family:"Songti SC","STSong","Noto Serif CJK SC",serif;letter-spacing:.05em}
+.subhdr .back{color:#ffb38a}
+.chk{border-color:rgba(255,241,214,.3)}
+.chk.on{background:linear-gradient(135deg,#f09a74,#c9603f);border-color:transparent}
+.btn.sec{background:var(--acc2);color:#ffc9a8}
+.btn.ghost{border-color:var(--line);color:var(--mute)}
+.iconbtn{background:var(--acc2);color:#ffc9a8}
+.pill{background:linear-gradient(135deg,#f09a74,#c9603f)}
+.late{color:#ff7b72}
+.seg button.on{background:rgba(255,241,214,.16);color:#fff7e6}
+.sect{color:#a4a1d0;letter-spacing:.08em}
+.banner.warn{border:1px solid rgba(240,181,74,.25)}
+.freq{background:var(--acc2);color:#ffc9a8}
+.timer{font-variant-numeric:tabular-nums;color:#fff7e6}
 </style>
 </head>
 <body>
+<svg id="sky" preserveAspectRatio="xMidYMid slice" viewBox="0 0 400 900"></svg>
 <div id="scroller"><div class="wrap" id="root"></div></div>
 <div class="saving" id="saving"></div>
 <script id="state" type="application/json">{"rev": 0, "nodes": [], "log": {}, "pauses": {}, "history": [], "exceptions": ["搬家", "出游"], "lastAdd": null, "seq": 0}</script>
@@ -1047,21 +1073,21 @@ function treeSvg(){
     var k=function(i){ return hash01(n.id+'l'+i); };
     var g='<g'+(pz?' opacity="0.4"':' data-a="t:'+n.id+'"')+' style="cursor:pointer">';
     if(on){
-      [[0,0,1],[-.62,.18,.66],[.62,.2,.66],[-.34,-.52,.68],[.38,-.5,.66],[0,.5,.6]].forEach(function(q,i){ g+='<circle cx="'+(x+q[0]*r).toFixed(1)+'" cy="'+(y+q[1]*r).toFixed(1)+'" r="'+(q[2]*r).toFixed(1)+'" fill="'+(i%3===0?'var(--h4)':i%3===1?'var(--h3)':'var(--acc)')+'"/>'; });
+      [[0,0,1],[-.62,.18,.66],[.62,.2,.66],[-.34,-.52,.68],[.38,-.5,.66],[0,.5,.6]].forEach(function(q,i){ g+='<circle cx="'+(x+q[0]*r).toFixed(1)+'" cy="'+(y+q[1]*r).toFixed(1)+'" r="'+(q[2]*r).toFixed(1)+'" fill="'+(i%3===0?'var(--g4)':i%3===1?'var(--g3)':'var(--g2)')+'"/>'; });
       g+='<circle cx="'+(x-r*0.32).toFixed(1)+'" cy="'+(y-r*0.42).toFixed(1)+'" r="'+(r*0.36).toFixed(1)+'" fill="#fff" opacity=".16"/>';
       for(var i=0;i<Math.min(5,Math.floor(st/3));i++){ var a=i*2.4+k(i)*1.2+0.6, rr=r*(0.62+k(i+9)*0.3); g+='<circle cx="'+(x+Math.cos(a)*rr).toFixed(1)+'" cy="'+(y+Math.sin(a)*rr).toFixed(1)+'" r="3.2" fill="#e88f6c" stroke="#fff1d6" stroke-width=".8"/>'; }
       g+='<path d="M'+(x-6)+' '+y+' l4.2 4.6 l8 -9.4" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>';
     }else{
-      [[0,0,1],[-.6,.2,.62],[.6,.2,.62],[-.32,-.5,.64],[.36,-.48,.62]].forEach(function(q){ g+='<circle cx="'+(x+q[0]*r).toFixed(1)+'" cy="'+(y+q[1]*r).toFixed(1)+'" r="'+(q[2]*r).toFixed(1)+'" fill="var(--h1)"/>'; });
-      g+='<circle cx="'+x+'" cy="'+y+'" r="'+(r*0.62).toFixed(1)+'" fill="none" stroke="var(--h3)" stroke-width="1.6" stroke-dasharray="3 4" opacity=".8"/>';
-      if(st) g+='<text x="'+x+'" y="'+(y+4.5)+'" text-anchor="middle" font-size="12" font-weight="700" fill="var(--h4)">'+st+'</text>';
+      [[0,0,1],[-.6,.2,.62],[.6,.2,.62],[-.32,-.5,.64],[.36,-.48,.62]].forEach(function(q){ g+='<circle cx="'+(x+q[0]*r).toFixed(1)+'" cy="'+(y+q[1]*r).toFixed(1)+'" r="'+(q[2]*r).toFixed(1)+'" fill="var(--g1)"/>'; });
+      g+='<circle cx="'+x+'" cy="'+y+'" r="'+(r*0.62).toFixed(1)+'" fill="none" stroke="var(--g3)" stroke-width="1.6" stroke-dasharray="3 4" opacity=".8"/>';
+      if(st) g+='<text x="'+x+'" y="'+(y+4.5)+'" text-anchor="middle" font-size="12" font-weight="700" fill="var(--g4)">'+st+'</text>';
     }
     fo+=g+'</g>';
     var lab=n.name.length>7?n.name.slice(0,7)+'…':n.name;
-    lb+='<text x="'+x+'" y="'+(y+r+17).toFixed(1)+'" text-anchor="middle" font-size="12" fill="var(--ink)" stroke="var(--card)" stroke-width="4" paint-order="stroke">'+esc(lab)+'</text>';
+    lb+='<text x="'+x+'" y="'+(y+r+17).toFixed(1)+'" text-anchor="middle" font-size="12" fill="var(--ink)" stroke="#12153a" stroke-width="4" paint-order="stroke">'+esc(lab)+'</text>';
   });
-  var grass=''; [[-70,0],[-46,3],[52,2],[78,-1],[-18,4],[24,4]].forEach(function(q){ var gx=FX+q[0], gy=H-17+q[1]; grass+='<path d="M'+gx+' '+gy+' q-2 -7 -5 -9 M'+gx+' '+gy+' q0 -8 1 -11 M'+gx+' '+gy+' q3 -6 6 -7" stroke="var(--h3)" stroke-width="1.4" stroke-linecap="round" fill="none"/>'; });
-  return '<svg class="tree" viewBox="0 0 '+W+' '+H+'" width="100%"><defs><linearGradient id="tbark" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8f6a45"/><stop offset=".45" stop-color="#a9825c"/><stop offset="1" stop-color="#6b4a2e"/></linearGradient><radialGradient id="tgnd" cx=".5" cy=".3" r=".7"><stop offset="0" stop-color="var(--h2)"/><stop offset="1" stop-color="var(--h1)"/></radialGradient></defs>'
+  var grass=''; [[-70,0],[-46,3],[52,2],[78,-1],[-18,4],[24,4]].forEach(function(q){ var gx=FX+q[0], gy=H-17+q[1]; grass+='<path d="M'+gx+' '+gy+' q-2 -7 -5 -9 M'+gx+' '+gy+' q0 -8 1 -11 M'+gx+' '+gy+' q3 -6 6 -7" stroke="var(--g3)" stroke-width="1.4" stroke-linecap="round" fill="none"/>'; });
+  return '<svg class="tree" viewBox="0 0 '+W+' '+H+'" width="100%"><defs><linearGradient id="tbark" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8f6a45"/><stop offset=".45" stop-color="#a9825c"/><stop offset="1" stop-color="#6b4a2e"/></linearGradient><radialGradient id="tgnd" cx=".5" cy=".3" r=".7"><stop offset="0" stop-color="var(--g2)"/><stop offset="1" stop-color="var(--g1)"/></radialGradient></defs>'
     +'<ellipse cx="160" cy="'+(H-13)+'" rx="124" ry="11" fill="url(#tgnd)"/>'+grass+br+trunk+fo+lb+'</svg>';
 }
 function weekDots(n){
@@ -1743,6 +1769,7 @@ function pageHistory(){
 
 // ---------- 路由 ----------
 var TITLES={review:'待确认',more:'设置与规则',star:'星图',backup:'备份与恢复',rsv:'应急次数',add:'添加定式',exc:'暂停日',seats:'神圣座位管理',pomoset:'休息时长',history:'历史记录'};
+try{ document.getElementById('sky').innerHTML=starsSvg('appsky',110,400,900); }catch(e){}
 var navAnim=null, TABORD=['habit','tree','focus','todo','gym','stats'];
 function countUp(){
   if(window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches) return;
