@@ -284,6 +284,23 @@ svg.tree g.pop{transform-box:fill-box;transform-origin:center;animation:chkPop .
 .picks button{animation:gridPop .5s cubic-bezier(.2,.9,.3,1.2) both}
 .picks button:nth-child(2){animation-delay:.12s}
 @media (prefers-reduced-motion:reduce){.page,.mask,.dlg,.chk.pop,svg.tree g.pop,#toast.show,.tw,.trail,.s-from,.s-to,.shead,.seq>*,.sgrid button,.fleetrow button,.warp,.scard .stag,.scard h3,.scard p,.dlg.space .row,.scard .art .orb,.picks button{animation:none !important}}
+.mapc{padding:6px 0 0}
+.smap{display:block}
+.smap .chl{font-family:"Songti SC","STSong","Noto Serif CJK SC",serif;font-size:13px;fill:#8b88bd;letter-spacing:.2em}
+.smap .nml{font-size:9.5px;fill:#d6d2f2}
+.smap .nml.tg{fill:#ffb38a;font-weight:700}
+.smap .cst{font-size:8px;fill:#ffb38a;font-weight:700}
+@keyframes ringPulse{0%,100%{stroke-opacity:1}50%{stroke-opacity:.35}}
+.smap .pulse{animation:ringPulse 1.8s ease-in-out infinite}
+.plist{position:relative;display:flex;flex-direction:column;gap:8px;margin-top:14px;max-height:46vh;overflow:auto}
+.plist button{display:flex;align-items:center;gap:12px;background:rgba(255,241,214,.06);border:1px solid rgba(255,241,214,.2);border-radius:14px;padding:8px 14px 8px 8px;color:#fff7e6;cursor:pointer;text-align:left;animation:gridPop .4s cubic-bezier(.2,.9,.3,1.2) both}
+.plist button:nth-child(2){animation-delay:.06s}.plist button:nth-child(3){animation-delay:.12s}.plist button:nth-child(4){animation-delay:.18s}.plist button:nth-child(n+5){animation-delay:.24s}
+.plist span{flex:1;display:flex;flex-direction:column}
+.plist b{font-family:"Songti SC","STSong","Noto Serif CJK SC",serif;font-size:18px;letter-spacing:.04em}
+.plist small{font-size:11px;color:#a9a6d6}
+.plist em{font-style:normal;font-weight:700;color:#ffb38a;font-variant-numeric:tabular-nums}
+.chapc{padding-top:44px}
+.chapc h3{font-size:30px}
 .jbig{font-size:40px;font-weight:800;line-height:1.1}
 .jbig small{font-size:15px;font-weight:600;color:var(--mute)}
 .jcur{font-size:46px;line-height:1}
@@ -485,7 +502,36 @@ function hash01(str){ var h=2166136261; for(var i=0;i<str.length;i++){ h^=str.ch
 function shipIdx(){ var t=allTotal(), k=0; SHIPS.forEach(function(x,i){ if(t>=x[0]) k=i; }); return k; }
 function stopById(id){ return STOPS.filter(function(x){return x[0]===id;})[0]; }
 function rareById(id){ return RARE.filter(function(x){return x[0]===id;})[0]; }
-function starCost(n){ return n===0?100:350+50*n; }
+var CHAP=[["近地", "1977 年，旅行者 1 号离开地球，至今仍在向外飞，是离我们最远的人造物体。任务：沿着探测器们走过的路，一站一站向外，直到追上它。每次只能飞往相邻的天体，路越远，要攒的航程越多。"], ["内太阳系", "向内的一条支线。帕克太阳探测器就是一次次借金星的引力收紧轨道，才贴近了太阳。这条路的尽头是太阳，看完要原路折返。"], ["火星与小行星带", "向外的第一步。黎明号曾在这里环绕谷神星。"], ["木星系", "1979 年，旅行者 1 号从这里飞过。木星身边有三颗大卫星可以顺路去看，卫星之间离得很近。"], ["土星系", "1980 年，旅行者 1 号从这里飞过。"], ["冰巨星", "旅行者 2 号是唯一到过海王星的探测器，它在 1989 年 8 月飞掠那里。从这里开始，每一段路都很长。"], ["柯伊伯带", "新视野号 2015 年飞掠冥王星，2019 年元旦飞掠阿罗科斯。"], ["星际空间", "最后一段。旅行者 1 号在 2012 年 8 月越过了太阳风的边界，进入星际空间。"]], NODE={"earth": [250, 150, 0], "iss": [302, 118, 0], "moon": [306, 186, 0], "venus": [186, 104, 1], "mercury": [118, 72, 1], "sun": [52, 42, 1], "mars": [196, 236, 2], "phobos": [254, 262, 2], "ceres": [126, 306, 2], "jupiter": [200, 396, 3], "grs": [136, 372, 3], "io": [258, 364, 3], "europa": [294, 416, 3], "ganymede": [250, 458, 3], "saturn": [118, 548, 4], "rings": [56, 524, 4], "enceladus": [66, 594, 4], "titan": [152, 620, 4], "uranus": [232, 690, 5], "neptune": [128, 782, 5], "triton": [70, 814, 5], "pluto": [222, 874, 6], "charon": [280, 896, 6], "arrokoth": [158, 956, 6], "voyager": [250, 1030, 7]}, EDGE=[["earth", "iss", 1], ["earth", "moon", 1], ["iss", "moon", 1], ["earth", "venus", 4], ["venus", "mercury", 3], ["mercury", "sun", 3], ["earth", "mars", 4], ["mars", "phobos", 1], ["mars", "ceres", 4], ["ceres", "jupiter", 5], ["jupiter", "grs", 1], ["jupiter", "io", 1], ["io", "europa", 1], ["europa", "ganymede", 1], ["jupiter", "ganymede", 2], ["jupiter", "saturn", 6], ["saturn", "rings", 1], ["saturn", "enceladus", 1], ["rings", "enceladus", 1], ["enceladus", "titan", 1], ["saturn", "titan", 1.5], ["saturn", "uranus", 7], ["uranus", "neptune", 7], ["neptune", "triton", 1], ["neptune", "pluto", 8], ["pluto", "charon", 1], ["pluto", "arrokoth", 5], ["arrokoth", "voyager", 10]], RUNIT=220;
+function starCur(){ var Z=S.star; return Z.at.length?Z.at[Z.at.length-1]:'earth'; }
+function starKnown(){ var k={earth:1}; S.star.at.forEach(function(id){k[id]=1;}); return k; }
+function starReach(){ var k=starKnown(), out=[]; EDGE.forEach(function(e){ if(k[e[0]]&&!k[e[1]]&&out.indexOf(e[1])<0) out.push(e[1]); if(k[e[1]]&&!k[e[0]]&&out.indexOf(e[0])<0) out.push(e[0]); }); return out.sort(function(a,b){return starCostTo(a)-starCostTo(b);}); }
+function starDist(to){ // 只经过到过的地方，从当前位置到 to 的最短路
+  var k=starKnown(); k[to]=1; var d={}, q=[starCur()]; d[q[0]]=0;
+  for(var g=0;g<200&&q.length;g++){ q.sort(function(a,b){return d[a]-d[b];}); var u=q.shift(); if(u===to) return d[u];
+    EDGE.forEach(function(e){ var v=e[0]===u?e[1]:e[1]===u?e[0]:null; if(!v||!k[v]) return; var nd=d[u]+e[2]; if(d[v]==null||nd<d[v]){ d[v]=nd; if(q.indexOf(v)<0) q.push(v); } }); }
+  return d[to]==null?10:d[to];
+}
+function starCostTo(id){ return (id==='iss'&&!S.star.at.length)?100:Math.round(RUNIT*starDist(id)); }
+function starCost(){ return S.star.target?starCostTo(S.star.target):0; }
+function chapOf(id){ return NODE[id]?NODE[id][2]:0; }
+function starSetTarget(id){ var Z=S.star; Z.target=id; Z.offer=null; if(!Z.chap) Z.chap={}; var c=chapOf(id); if(!Z.chap[c]){ Z.chap[c]=1; Z.pend.push({t:'chap',id:c}); } }
+function chapHtml(c){ return '<div class="scard chapc"><svg class="sky" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice"><g class="warp">'+starsSvg('ch'+c,60,300,200)+'</g></svg><div class="stag">'+(c===0?'任务':c===1?'支线':'进入')+'</div><h3>'+(c===0?'追上旅行者 1 号':CHAP[c][0])+'</h3><p>'+CHAP[c][1]+'</p></div>'; }
+function starMap(){
+  var Z=S.star, k=starKnown(), reach=starReach(), cur=starCur(), W=340, H=1080, h='<svg class="smap" viewBox="0 0 '+W+' '+H+'" width="100%">'+starsSvg('map',150,W,H);
+  [[1,30],[2,214],[3,340],[4,500],[5,668],[6,852],[7,1004]].forEach(function(q){ h+='<text x="'+(q[0]%2?330:10)+'" y="'+q[1]+'" text-anchor="'+(q[0]%2?'end':'start')+'" class="chl">'+CHAP[q[0]][0]+'</text>'; });
+  EDGE.forEach(function(e){ var a=NODE[e[0]], b=NODE[e[1]], done=k[e[0]]&&k[e[1]], open=(k[e[0]]||k[e[1]]);
+    h+='<line x1="'+a[0]+'" y1="'+a[1]+'" x2="'+b[0]+'" y2="'+b[1]+'" stroke="#fff1d6" stroke-width="'+(done?1.6:1)+'" stroke-opacity="'+(done?.8:open?.35:.12)+'"'+(done?'':' stroke-dasharray="2 5"')+' stroke-linecap="round"/>'; });
+  Object.keys(NODE).forEach(function(id){ var n=NODE[id], x=n[0], y=n[1], nm=id==='earth'?'地球':stopById(id)[1];
+    if(k[id]) h+='<g'+(id==='earth'?'':' data-a="sc:stop:'+id+'" style="cursor:pointer"')+'>'+orb(id,34,x-17,y-17)+'<text x="'+x+'" y="'+(y+29)+'" text-anchor="middle" class="nml">'+esc(nm)+'</text></g>';
+    else if(reach.indexOf(id)>=0){ var tg=Z.target===id; h+='<g data-a="sgo:'+id+'" style="cursor:pointer"><circle cx="'+x+'" cy="'+y+'" r="22" fill="transparent"/><circle cx="'+x+'" cy="'+y+'" r="13" fill="'+(tg?'rgba(255,179,138,.18)':'none')+'" stroke="#ffb38a" stroke-width="'+(tg?2:1.3)+'"'+(tg?' class="pulse"':' stroke-dasharray="3 4"')+'/><text x="'+x+'" y="'+(y+29)+'" text-anchor="middle" class="nml'+(tg?' tg':'')+'">'+esc(nm)+'</text><text x="'+x+'" y="'+(y+4)+'" text-anchor="middle" class="cst">'+starCostTo(id)+'</text></g>'; }
+    else h+='<circle cx="'+x+'" cy="'+y+'" r="3" fill="#fff1d6" opacity=".25"/>';
+  });
+  if(Z.target){ var a=NODE[cur], b=NODE[Z.target], cost=starCost(), t=Math.max(0.12,Math.min(0.88,Math.max(0,starTotal()-Z.spent)/cost)), sx=a[0]+(b[0]-a[0])*t, sy=a[1]+(b[1]-a[1])*t, ang=Math.atan2(b[1]-a[1],b[0]-a[0])*180/Math.PI;
+    h+='<g transform="translate('+sx.toFixed(1)+','+sy.toFixed(1)+') rotate('+ang.toFixed(1)+') scale(.3)">'+shipG(shipIdx())+'</g>'; }
+  return h+'</svg>';
+}
+
 function starGrant(k,b){
   var d=today(), D=S.star.days[d]=S.star.days[d]||{e:[]}; if(!D.e) D.e=[];
   if(D.e.some(function(x){return x.k===k;})) return;
@@ -663,23 +709,25 @@ function spaceModal(html,cb){ modal(html,cb); var d=document.querySelector('#mas
 function starCheck(){
   if(document.getElementById('mask')) return;
   var Z=S.star;
+  if(!Z.chap){ Z.chap={0:1}; Z.pend.unshift({t:'chap',id:0}); if(Z.target) Z.chap[chapOf(Z.target)]=1; Z.at.forEach(function(id){ Z.chap[chapOf(id)]=1; }); }
   if(Z.pend.length){ var p=Z.pend[0];
-    spaceModal(cardHtml(p.t,p.id,p.t==='rare'?'打捞 · 航程 +2%':p.t==='ship'?'新飞船 · 速度 ×'+SHIPS[p.id][2]:'到达')+'<div class="row"><button class="btn glow" data-a="ok">收下</button></div>', function(){ Z.pend.shift(); save(); render(); });
+    if(p.t==='chap') spaceModal(chapHtml(p.id)+'<div class="row"><button class="btn glow" data-a="ok">'+(p.id===0?'出发':'继续')+'</button></div>', function(){ Z.pend.shift(); save(); render(); });
+    else spaceModal(cardHtml(p.t,p.id,p.t==='rare'?'打捞 · 航程 +2%':p.t==='ship'?'新飞船 · 速度 ×'+SHIPS[p.id][2]:(p.id==='voyager'?'任务完成':'到达'))+'<div class="row"><button class="btn glow" data-a="ok">收下</button></div>', function(){ Z.pend.shift(); save(); render(); });
     return; }
-  if(Z.offer && Z.offer.length){
-    spaceModal('<div class="scard pickwrap"><svg class="sky" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice">'+starsSvg('pick'+Z.at.length,46,300,200)+'</svg><div class="stag">下一站</div><div class="picks">'+Z.offer.map(function(id,i){ var c=stopById(id); return '<button data-a="go'+i+'">'+orb(id,104)+'<b>'+esc(c[1])+'</b></button>'; }).join('')+'</div></div>',
-      function(a){ var i=+a.slice(2); if(Z.offer&&Z.offer[i]){ Z.target=Z.offer[i]; Z.offer=null; save(); render(); } });
-    return; }
+  if(Z.offer && Z.offer.length){ var opts=starReach(); if(!opts.length){ Z.offer=null; } else {
+    spaceModal('<div class="scard pickwrap"><svg class="sky" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice">'+starsSvg('pick'+Z.at.length,46,300,200)+'</svg><div class="stag">下一站</div><div class="plist">'+opts.map(function(id){ var c=stopById(id); return '<button data-a="go:'+id+'">'+orb(id,46)+'<span><b>'+esc(c[1])+'</b><small>'+CHAP[chapOf(id)][0]+'</small></span><em>'+starCostTo(id)+'</em></button>'; }).join('')+'</div></div>',
+      function(a){ var id=a.slice(3); if(stopById(id)){ starSetTarget(id); save(); render(); } });
+    return; } }
   var si=shipIdx(); if(Z.ship==null) Z.ship=si; if(si>Z.ship){ Z.ship=si; Z.pend.push({t:'ship',id:si}); save(); return starCheck(); }
-  if(Z.target && starTotal()-Z.spent>=starCost(Z.at.length)){
-    Z.spent+=starCost(Z.at.length); Z.at.push(Z.target); Z.pend.push({t:'stop',id:Z.target}); hist('到达 '+stopById(Z.target)[1],'star');
-    var left=STOPS.filter(function(x){return Z.at.indexOf(x[0])<0;}); Z.target=null; Z.offer=left.slice(0,2).map(function(x){return x[0];}); if(Z.offer.length===1){ Z.target=Z.offer[0]; Z.offer=null; }
+  if(Z.target && starTotal()-Z.spent>=starCost()){
+    Z.spent+=starCost(); Z.at.push(Z.target); Z.pend.push({t:'stop',id:Z.target}); hist('到达 '+stopById(Z.target)[1],'star');
+    Z.target=null; var nx=starReach(); if(nx.length===1) starSetTarget(nx[0]); else if(nx.length) Z.offer=nx;
     save(); return starCheck(); }
 }
 function thb(n){ return ' <small class="thb">▲'+n+'</small>'; }
 function sitThrust(){ var D=S.star.days[today()]; return (D&&D.e&&D.e.some(function(x){return x.k==='sit1';}))?10:(S.star.charge?40:20); }
 function starCard(){
-  var Z=S.star, T=starToday(), si=shipIdx(), sh=SHIPS[si], tg=Z.target?stopById(Z.target):null, cost=starCost(Z.at.length), prog=Math.max(0,starTotal()-Z.spent), t=tg?Math.min(1,prog/cost):1;
+  var Z=S.star, T=starToday(), si=shipIdx(), sh=SHIPS[si], tg=Z.target?stopById(Z.target):null, cost=starCost(), prog=Math.max(0,starTotal()-Z.spent), t=tg?Math.min(1,prog/cost):1;
   var from=Z.at.length?Z.at[Z.at.length-1]:'earth', fromN=Z.at.length?stopById(from)[1]:'地球';
   var f=function(x){ return (Math.round(x*100)/100).toString(); };
   var P0=[46,112],P1=[150,6],P2=[258,74], q=function(a,b,k){ return [a[0]+(b[0]-a[0])*k,a[1]+(b[1]-a[1])*k]; };
@@ -692,7 +740,7 @@ function starCard(){
     +(starAnim&&t>0.02?'<g><animateMotion dur="1.5s" begin="0s" fill="freeze" rotate="auto" calcMode="spline" keyTimes="0;1" keySplines="0.25 0.6 0.2 1" path="M'+P0+' Q'+A.map(function(v){return v.toFixed(1);})+' '+C.map(function(v){return v.toFixed(1);})+'"/><g transform="scale(.36)" class="s-ship">'+shipG(si)+'</g></g>'
       :'<g transform="translate('+C[0].toFixed(1)+','+C[1].toFixed(1)+') rotate('+ang.toFixed(1)+') scale(.36)">'+shipG(si)+'</g>')+'</svg>';
   return '<div class="card space star" data-a="push:star">'+sc
-    +'<div class="shead"><div><small>'+esc(fromN)+' 出发 · '+sh[1]+'</small><h2>'+(tg?esc(tg[1]):'航线走完')+'</h2></div>'+(tg?'<div class="sprog"><b data-cu="'+Math.min(prog,cost)+'">'+Math.min(prog,cost)+'</b> / '+cost+'</div>':'')+'</div>'
+    +'<div class="shead"><div><small>追上旅行者 1 号'+(tg?' · '+CHAP[chapOf(Z.target)][0]:'')+'</small><h2>'+(tg?esc(tg[1]):(Z.at.indexOf('voyager')>=0&&!starReach().length?'任务完成':'选择下一站'))+'</h2></div>'+(tg?'<div class="sprog"><b data-cu="'+Math.min(prog,cost)+'">'+Math.min(prog,cost)+'</b> / '+cost+'</div>':'')+'</div>'
     +'<div class="seq"><span><b>'+T.raw+'</b>推力</span><em>×</em><span><b>'+f(T.sp)+'</b>速度</span><em>×</em><span'+(T.sv>1?'':' class="off"')+'><b>'+f(T.sv)+'</b>打捞</span>'
     +(T.dr<1?'<em>×</em><span class="drag"><b>'+f(T.dr)+'</b>阻力</span>':'')+'<em>=</em><span class="tot"><b data-cu="'+T.d+'">'+T.d+'</b>今日</span></div>'
     +(Z.charge?'<div class="chg">已充能 · 下次第一次坐下推力翻倍</div>':'')+'</div>';
@@ -707,9 +755,8 @@ function pageStar(){
   var Z=S.star, si=shipIdx(), h=starCard().replace(' data-a="push:star"','');
   h+='<div class="sect">飞船</div><div class="card space"><div class="fleetrow">';
   SHIPS.forEach(function(x,i){ h+='<button style="--i:'+i+'" class="'+(i===si?'cur':i<si?'got':'')+'"'+(i<=si?' data-a="sc:ship:'+i+'"':'')+'>'+(i<=si?shipSvg(i,84):'<i></i>')+'<b>'+x[1]+'</b><small>×'+x[2]+(i>si?' · '+x[0]+' 次':'')+'</small></button>'; });
-  h+='</div></div><div class="sect">航线 · '+Z.at.length+' / '+STOPS.length+'</div><div class="card space"><div class="sgrid">';
-  STOPS.forEach(function(x,i){ var got=Z.at.indexOf(x[0])>=0, tg=Z.target===x[0]; h+='<button style="--i:'+i+'" class="'+(got?'on':tg?'tg':'')+'"'+(got?' data-a="sc:stop:'+x[0]+'"':'')+'>'+(got||tg?orb(x[0],54)+'<b>'+esc(x[1])+'</b>':'<i></i>')+'</button>'; });
-  h+='</div></div><div class="sect">打捞 · '+Z.cards.length+' / '+RARE.length+' · 航程 ×'+(Math.round((1+0.02*Z.cards.length)*100)/100)+'</div><div class="card space"><div class="sgrid">';
+  h+='</div></div><div class="sect">航线 · '+Z.at.length+' / '+STOPS.length+'</div><div class="card space mapc">'+starMap();
+  h+='</div><div class="sect">打捞 · '+Z.cards.length+' / '+RARE.length+' · 航程 ×'+(Math.round((1+0.02*Z.cards.length)*100)/100)+'</div><div class="card space"><div class="sgrid">';
   var rl=Z.cards.map(rareById).filter(Boolean); for(var ri=0;ri<RARE.length;ri++){ var x=rl[ri]; h+='<button style="--i:'+ri+'" class="'+(x?'on':'')+'"'+(x?' data-a="sc:rare:'+x[0]+'"':'')+'>'+(x?orb(x[0],54)+'<b>'+esc(x[1])+'</b>':'<i></i>')+'</button>'; }
   return h+'</div></div>';
 }
@@ -1579,7 +1626,7 @@ function pageMore(){
   return h;
 }
 var RULES={
-  star:['星图','<p>今日航程 = 推力 × 速度 × 打捞（× 阻力）。航程攒够就到达下一站，解锁一张卡片；每次到站从两个目的地里选一个。</p><p><b>推力</b>：当天第一次坐上计时座位 20（坐下就给）；每坐满一次 10；手动打勾一个定式 10；健身开始 20、完成 20；睡眠记录成功一次 15；待办按新建时选的抗拒程度给 10 / 25 / 50，点"做 5 分钟"先给三成，清掉给剩下的。每笔推力有 60% 的概率是 1 倍，30% 是 2 倍，10% 是 3 倍。自动打勾的定式不另给。</p><p><b>速度</b>：由累计专注次数决定飞船型号，永久有效。共 13 艘：0 东方一号 ×1 · 10 土星五号 ×1.1 · 25 航天飞机 ×1.2 · 45 NERVA 核热火箭 ×1.3 · 75 深空一号 ×1.4 · 115 黎明号 ×1.5 · 165 伊卡洛斯 ×1.6 · 225 光帆 2 号 ×1.8 · 300 猎户座 ×2 · 380 代达罗斯 ×2.3 · 470 突破摄星 ×2.6 · 570 巴萨德冲压发动机 ×3 · 680 反物质飞船 ×3.5。</p><p><b>打捞</b>：每张稀有卡让航程永久 +2%，12 张集齐是 ×1.24。清掉待办有机会得到一张，顺手 15%、有点烦 40%、很抗拒 80%。当天每日定式全勾、至少坐满一次、没有过期待办，必得一张。</p><p><b>充能</b>：睡眠记录成功后，下一次"第一次坐下"的推力翻倍。</p><p><b>阻力</b>：每件过期待办让当天航程少一成，最多少三成。只影响当天，已有的航程和卡片不会减少。</p>'],
+  star:['星图','<p>今日航程 = 推力 × 速度 × 打捞（× 阻力）。航程攒够就到达下一站，解锁一张卡片。</p><p><b>航线</b>：任务是追上旅行者 1 号。每次只能飞往和已到过的地方相邻的天体，需要的航程按沿途距离算：卫星之间很近，行星之间很远，越往外越远。到站后选下一站，也可以在星图页的地图上点一个相邻的天体改道。内太阳系是一条支线，走不走都能完成任务。</p><p><b>推力</b>：当天第一次坐上计时座位 20（坐下就给）；每坐满一次 10；手动打勾一个定式 10；健身开始 20、完成 20；睡眠记录成功一次 15；待办按新建时选的抗拒程度给 10 / 25 / 50，点"做 5 分钟"先给三成，清掉给剩下的。每笔推力有 60% 的概率是 1 倍，30% 是 2 倍，10% 是 3 倍。自动打勾的定式不另给。</p><p><b>速度</b>：由累计专注次数决定飞船型号，永久有效。共 13 艘：0 东方一号 ×1 · 10 土星五号 ×1.1 · 25 航天飞机 ×1.2 · 45 NERVA 核热火箭 ×1.3 · 75 深空一号 ×1.4 · 115 黎明号 ×1.5 · 165 伊卡洛斯 ×1.6 · 225 光帆 2 号 ×1.8 · 300 猎户座 ×2 · 380 代达罗斯 ×2.3 · 470 突破摄星 ×2.6 · 570 巴萨德冲压发动机 ×3 · 680 反物质飞船 ×3.5。</p><p><b>打捞</b>：每张稀有卡让航程永久 +2%，12 张集齐是 ×1.24。清掉待办有机会得到一张，顺手 15%、有点烦 40%、很抗拒 80%。当天每日定式全勾、至少坐满一次、没有过期待办，必得一张。</p><p><b>充能</b>：睡眠记录成功后，下一次"第一次坐下"的推力翻倍。</p><p><b>阻力</b>：每件过期待办让当天航程少一成，最多少三成。只影响当天，已有的航程和卡片不会减少。</p>'],
   todo:['待办清单','<p>每件待办都要写一个 5 分钟内能做完的第一步，并选一个近的期限：今天、本周内或下周内。</p><p>点"做 5 分钟"只承诺 5 分钟。到点后可以顺手做完，也可以停下并写好下一步。</p><p>过期的待办三选一：现在做 5 分钟、改期（改期次数会显示），或者决定不做并删掉。</p><p>可以把"清杂事"设成每周定式：哪天清掉一件待办，那天自动打勾。</p>'],
   tree:['定式树','<p>每周定式（比如每周 3 次健身房）按周一到周日结算：达到次数就算这周做到，没达到就用一次应急或删除。加入的那一周不满 7 天，不结算。计划日只用来提醒。</p><p>每个定式每月有固定的应急次数（默认 2 次，事先定死）。没做到时可以用掉一次应急：当天不打勾也不删除，连续天数照常保留。应急用完后再失败，才按堆栈删除。</p><p>每天最多把一个新定式加入树中：和已有定式相关就挂在它下面，是全新的领域就开新分支。</p><p>按堆栈来管理：某个定式有一次没做到，就把它和它的所有子节点一起删除。以后可以重新加入到树的末尾。</p><p>暂停日：搬家、出游等事先写好的情形，当天选中的定式暂停，不打勾也不算失败。</p><p>每天凌晨 4:00 才算新的一天，4 点前打的勾都算前一天。</p>'],
   seat:['神圣座位','<p>违规清零只清当前纪录 #N；累计次数只增不减，决定飞船型号。</p><p>坐在其他座位上没有约束；屁股一碰到神圣座位，就必须用最好的状态 100% 专注满一个小时。没有把握就不坐。</p><p>第一次成功记为 #1，之后每次成功加一个编号。一次失败（刷手机、只坐十分钟就走）就清零，从 #1 重新开始。</p>'],
@@ -1724,6 +1771,7 @@ document.addEventListener('click',function(ev){
     case 'calto': cal.month=arg[1]; render(); return;
     case 'day': return showDay(arg[1]);
     case 'sc': return starShow(arg[1],arg[2]);
+    case 'sgo': if(starReach().indexOf(arg[1])>=0 && S.star.target!==arg[1]){ starSetTarget(arg[1]); save(); render(); toast('改飞往 '+stopById(arg[1])[1]); } return;
     case 't': return toggle(arg[1]);
     case 'hd': return habitMore(arg[1]);
     case 'tgym': nav.tab='gym'; nav.stack=[]; return gymStart(arg[1]);
