@@ -1517,7 +1517,7 @@ function ringSvg(frac){
   return '<svg width="210" height="210" viewBox="0 0 210 210"><circle cx="105" cy="105" r="'+r+'" fill="none" stroke="var(--line)" stroke-width="10"/>'
     +'<circle id="pring" cx="105" cy="105" r="'+r+'" fill="none" stroke="var(--acc)" stroke-width="10" stroke-linecap="round" stroke-dasharray="'+c.toFixed(1)+'" stroke-dashoffset="'+(c*(1-frac)).toFixed(1)+'"/></svg>';
 }
-function allTotal(){ var t=0; S.seats.forEach(function(x){ t+=seatTotal(x.id); }); return t; }
+function allTotal(){ var t=0; Object.keys(S.statBase||{}).forEach(function(k){ t+=S.statBase[k]||0; }); S.seatLog.forEach(function(l){ t+=l.n; }); return t; }
 function journeyCard(){
   if(!S.seats.length) return '';
   var tot=allTotal(), base=Math.floor(tot/10)*10, filled=tot-base, n10=base+10, n100=(Math.floor(tot/100)+1)*100, b100=n100-100;
@@ -1582,6 +1582,7 @@ function pageSeat(id){
   h+='<div class="sect">已判定允许的行为</div><div class="card">'+(st.exceptions.length?st.exceptions.map(function(e){return '<div class="drow"><span style="flex:1">'+esc(e.text)+'</span><span class="cr">'+esc(e.date)+'</span></div>';}).join(''):'<div class="empty">没有已允许的行为</div>')+'</div>';
   h+='<div class="sect">设置</div><div class="card"><label style="margin-top:0">名字</label><input id="sen" value="'+esc(st.name)+'"><label>每次专注分钟数（0 = 不计时）</label><input id="sem" inputmode="numeric" value="'+st.timerMin+'">'
     +'<div style="height:12px"></div><button class="btn sec" data-a="seatsave:'+st.id+'">保存</button></div>';
+  h+='<div style="height:10px"></div><button class="btn danger" data-a="seatdel:'+st.id+'">删除这个座位</button>';
   return h;
 }
 
@@ -1923,6 +1924,9 @@ document.addEventListener('click',function(ev){
     case 'apgo': return apptGo();
     case 'qclr': return clearQuarter();
     case 'addseat': return addSeat();
+    case 'seatdel': return (function(){ var sid=arg[1], st=seatById(sid); if(!st) return;
+      modal('<h3>删除「'+esc(st.name)+'」</h3><p>纪录 #'+st.count+' 清零，无法恢复。</p><div class="row"><button class="btn ghost" data-a="close">取消</button><button class="btn danger" data-a="ok">删除</button></div>',
+        function(a2){ if(a2==='ok'){ S.seats=S.seats.filter(function(x){return x.id!==sid;}); if(S.active&&S.active.seat===sid) S.active=null; if(S.appt.seat===sid){ S.appt.pending=null; S.appt.seat=null; } hist('删除座位：'+st.name); save(); nav.stack.pop(); render(); } }); })();
     case 'seatsave':
       var st=seatById(arg[1]), nn=document.getElementById('sen').value.trim(), mm=parseInt(document.getElementById('sem').value,10);
       if(nn) st.name=nn; if(!isNaN(mm)&&mm>=0) st.timerMin=mm; save(); nav.stack.pop(); render(); return;
