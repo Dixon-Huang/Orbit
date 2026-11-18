@@ -502,7 +502,7 @@ function starStab(date){
 function starBoost(date){ var y=addDays(date,-1); return S.gym.log.some(function(L){return L.date===date||L.date===y;})?1.3:1; }
 function starDrag(){ var d=today(), n=S.todos.filter(function(t){return t.due<d;}).length; return Math.max(0.7,1-0.1*n); }
 function starRaw(D){ var x=0; (D&&D.e||[]).forEach(function(e){ x+=e.b*e.m; }); return x; }
-function starToday(){ var d=today(), D=S.star.days[d], o={raw:starRaw(D),sp:SHIPS[shipIdx()][2],st:starStab(d),bo:starBoost(d),dr:starDrag()}; o.d=Math.round(o.raw*o.sp*o.st*o.bo*o.dr); return o; }
+function starToday(){ var d=today(), D=S.star.days[d], o={raw:starRaw(D),sp:SHIPS[shipIdx()][2],sv:1+0.02*S.star.cards.length,dr:starDrag()}; o.d=Math.round(o.raw*o.sp*o.sv*o.dr); return o; }
 function starTotal(){ var t=S.star.gift||0; Object.keys(S.star.days).forEach(function(k){ t+=S.star.days[k].d||0; }); return t; }
 function starRare(){
   var left=RARE.filter(function(x){return S.star.cards.indexOf(x[0])<0;});
@@ -637,7 +637,7 @@ function starCheck(){
   if(document.getElementById('mask')) return;
   var Z=S.star;
   if(Z.pend.length){ var p=Z.pend[0];
-    spaceModal(cardHtml(p.t,p.id,p.t==='rare'?'打捞':p.t==='ship'?'新飞船 · 速度 ×'+SHIPS[p.id][2]:'到达')+'<div class="row"><button class="btn glow" data-a="ok">收下</button></div>', function(){ Z.pend.shift(); save(); render(); });
+    spaceModal(cardHtml(p.t,p.id,p.t==='rare'?'打捞 · 航程 +2%':p.t==='ship'?'新飞船 · 速度 ×'+SHIPS[p.id][2]:'到达')+'<div class="row"><button class="btn glow" data-a="ok">收下</button></div>', function(){ Z.pend.shift(); save(); render(); });
     return; }
   if(Z.offer && Z.offer.length){
     spaceModal('<div class="scard pickwrap"><svg class="sky" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice">'+starsSvg('pick'+Z.at.length,46,300,200)+'</svg><div class="stag">下一站</div><div class="picks">'+Z.offer.map(function(id,i){ var c=stopById(id); return '<button data-a="go'+i+'">'+orb(id,104)+'<b>'+esc(c[1])+'</b></button>'; }).join('')+'</div></div>',
@@ -666,7 +666,7 @@ function starCard(){
       :'<g transform="translate('+C[0].toFixed(1)+','+C[1].toFixed(1)+') rotate('+ang.toFixed(1)+') scale(.36)">'+shipG(si)+'</g>')+'</svg>';
   return '<div class="card space star" data-a="push:star">'+sc
     +'<div class="shead"><div><small>'+esc(fromN)+' 出发 · '+sh[1]+'</small><h2>'+(tg?esc(tg[1]):'航线走完')+'</h2></div>'+(tg?'<div class="sprog"><b data-cu="'+Math.min(prog,cost)+'">'+Math.min(prog,cost)+'</b> / '+cost+'</div>':'')+'</div>'
-    +'<div class="seq"><span><b>'+T.raw+'</b>推力</span><em>×</em><span><b>'+f(T.sp)+'</b>速度</span><em>×</em><span><b>'+f(T.st)+'</b>稳定</span><em>×</em><span'+(T.bo>1?'':' class="off"')+'><b>'+f(T.bo)+'</b>助推</span>'
+    +'<div class="seq"><span><b>'+T.raw+'</b>推力</span><em>×</em><span><b>'+f(T.sp)+'</b>速度</span><em>×</em><span'+(T.sv>1?'':' class="off"')+'><b>'+f(T.sv)+'</b>打捞</span>'
     +(T.dr<1?'<em>×</em><span class="drag"><b>'+f(T.dr)+'</b>阻力</span>':'')+'<em>=</em><span class="tot"><b data-cu="'+T.d+'">'+T.d+'</b>今日</span></div>'
     +(Z.charge?'<div class="chg">已充能 · 下次第一次坐下推力翻倍</div>':'')+'</div>';
 }
@@ -682,7 +682,7 @@ function pageStar(){
   SHIPS.forEach(function(x,i){ h+='<button style="--i:'+i+'" class="'+(i===si?'cur':i<si?'got':'')+'"'+(i<=si?' data-a="sc:ship:'+i+'"':'')+'>'+(i<=si?shipSvg(i,84):'<i></i>')+'<b>'+x[1]+'</b><small>×'+x[2]+(i>si?' · '+x[0]+' 次':'')+'</small></button>'; });
   h+='</div></div><div class="sect">航线 · '+Z.at.length+' / '+STOPS.length+'</div><div class="card space"><div class="sgrid">';
   STOPS.forEach(function(x,i){ var got=Z.at.indexOf(x[0])>=0, tg=Z.target===x[0]; h+='<button style="--i:'+i+'" class="'+(got?'on':tg?'tg':'')+'"'+(got?' data-a="sc:stop:'+x[0]+'"':'')+'>'+(got||tg?orb(x[0],54)+'<b>'+esc(x[1])+'</b>':'<i></i>')+'</button>'; });
-  h+='</div></div><div class="sect">打捞 · '+Z.cards.length+' / '+RARE.length+'</div><div class="card space"><div class="sgrid">';
+  h+='</div></div><div class="sect">打捞 · '+Z.cards.length+' / '+RARE.length+' · 航程 ×'+(Math.round((1+0.02*Z.cards.length)*100)/100)+'</div><div class="card space"><div class="sgrid">';
   RARE.forEach(function(x,i){ var got=Z.cards.indexOf(x[0])>=0; h+='<button style="--i:'+i+'" class="'+(got?'on':'')+'"'+(got?' data-a="sc:rare:'+x[0]+'"':'')+'>'+(got?orb(x[0],54)+'<b>'+esc(x[1])+'</b>':'<i></i>')+'</button>'; });
   return h+'</div></div>';
 }
@@ -1026,7 +1026,7 @@ function backupDue(){ var lb=S.lastBackup?daysBetween(S.lastBackup,today()):null
 function pageHabit(){
   var d=today(), pc=pendingCount();
   var h='<div class="hdr"><h1>今天</h1><button class="iconbtn gear'+(backupDue()?' dot':'')+'" data-a="push:more"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="6.8"/><path d="M12 2.6v2.6M12 18.8v2.6M2.6 12h2.6M18.8 12h2.6M5.4 5.4l1.8 1.8M16.8 16.8l1.8 1.8M5.4 18.6l1.8-1.8M16.8 7.2l1.8-1.8"/></svg></button></div>'
-    +'<div class="sub">'+d+(S.nodes.some(function(n){return !isWeekly(n);})?' · 稳定 ×'+(Math.round(starStab(d)*100)/100):'')+'</div>';
+    +'<div class="sub">'+d+'</div>';
   if(pc) h+='<button class="banner warn linkb" data-a="push:review"><span>'+pc+' 项待确认</span><span>›</span></button>';
   if(S.pauses[d]) h+='<div class="banner pause">今天暂停：'+esc(S.pauses[d])+' · <a href="#" data-a="unpause" style="color:inherit">撤销</a></div>';
   var rows=todayRows();
@@ -1326,7 +1326,6 @@ function pageGym(){
   if(!last) st='还没有记录，从'+nx.name+'开始';
   else{ var df=daysBetween(last.date,d); st = df===0?'今天已经练过（'+last.name+'）': df===1?'昨天练了'+last.name+'，今天休息': '今天该练了'+(df>2?' · 已经隔了 '+df+' 天':''); }
   var sd=gymDay(sel);
-  if(starBoost(d)>1) h=h.replace('<h1>健身</h1></div>','<h1>健身</h1></div><div class="sub">助推 ×1.3 · 到'+(G.log.some(function(L){return L.date===d;})?'明天':'今天')+'</div>');
   h+='<div class="card"><h2>'+st+'</h2>'
     +'<button class="btn pri" data-a="gstart:'+sel+'"'+(sd.ex.length?'':' disabled')+'>开始 '+esc(sd.name)+thb(40)+'</button></div>';
   h+=segHtml('gym',G.days.map(function(x){return [x.id,x.name.replace(/日$/,'')];})).replace('<button class="" data-a="seg:gym:'+sel+'"','<button class="on" data-a="seg:gym:'+sel+'"');
@@ -1553,7 +1552,7 @@ function pageMore(){
   return h;
 }
 var RULES={
-  star:['星图','<p>今日航程 = 推力 × 速度 × 稳定 × 助推（× 阻力）。航程攒够就到达下一站，解锁一张卡片；每次到站从两个目的地里选一个。</p><p><b>推力</b>：当天第一次坐上计时座位 20（坐下就给）；每坐满一次 10；手动打勾一个定式 10；健身开始 20、完成 20；睡眠记录成功一次 15；待办按新建时选的抗拒程度给 10 / 25 / 50，点"做 5 分钟"先给三成，清掉给剩下的。每笔推力有 60% 的概率是 1 倍，30% 是 2 倍，10% 是 3 倍。自动打勾的定式不另给。</p><p><b>速度</b>：由累计专注次数决定飞船型号，永久有效。0 化学火箭 ×1 · 50 核热火箭 ×1.3 · 150 离子推进 ×1.6 · 300 太阳帆 ×2 · 600 聚变推进 ×2.6 · 1200 反物质推进 ×3.5。</p><p><b>稳定</b>：今天每日定式的完成比例，从 ×1 到 ×1.5。暂停的定式不计入。</p><p><b>助推</b>：健身当天和第二天 ×1.3。</p><p><b>充能</b>：睡眠记录成功后，下一次"第一次坐下"的推力翻倍。</p><p><b>阻力</b>：每件过期待办让当天航程少一成，最多少三成。只影响当天，已有的航程和卡片不会减少。</p><p><b>打捞</b>：清掉待办有机会得到一张稀有卡，顺手 15%、有点烦 40%、很抗拒 80%。当天每日定式全勾、至少坐满一次、没有过期待办，必得一张。</p>'],
+  star:['星图','<p>今日航程 = 推力 × 速度 × 打捞（× 阻力）。航程攒够就到达下一站，解锁一张卡片；每次到站从两个目的地里选一个。</p><p><b>推力</b>：当天第一次坐上计时座位 20（坐下就给）；每坐满一次 10；手动打勾一个定式 10；健身开始 20、完成 20；睡眠记录成功一次 15；待办按新建时选的抗拒程度给 10 / 25 / 50，点"做 5 分钟"先给三成，清掉给剩下的。每笔推力有 60% 的概率是 1 倍，30% 是 2 倍，10% 是 3 倍。自动打勾的定式不另给。</p><p><b>速度</b>：由累计专注次数决定飞船型号，永久有效。0 化学火箭 ×1 · 50 核热火箭 ×1.3 · 150 离子推进 ×1.6 · 300 太阳帆 ×2 · 600 聚变推进 ×2.6 · 1200 反物质推进 ×3.5。</p><p><b>打捞</b>：每张稀有卡让航程永久 +2%，12 张集齐是 ×1.24。清掉待办有机会得到一张，顺手 15%、有点烦 40%、很抗拒 80%。当天每日定式全勾、至少坐满一次、没有过期待办，必得一张。</p><p><b>充能</b>：睡眠记录成功后，下一次"第一次坐下"的推力翻倍。</p><p><b>阻力</b>：每件过期待办让当天航程少一成，最多少三成。只影响当天，已有的航程和卡片不会减少。</p>'],
   todo:['待办清单','<p>每件待办都要写一个 5 分钟内能做完的第一步，并选一个近的期限：今天、本周内或下周内。</p><p>点"做 5 分钟"只承诺 5 分钟。到点后可以顺手做完，也可以停下并写好下一步。</p><p>过期的待办三选一：现在做 5 分钟、改期（改期次数会显示），或者决定不做并删掉。</p><p>可以把"清杂事"设成每周定式：哪天清掉一件待办，那天自动打勾。</p>'],
   tree:['定式树','<p>每周定式（比如每周 3 次健身房）按周一到周日结算：达到次数就算这周做到，没达到就用一次应急或删除。加入的那一周不满 7 天，不结算。计划日只用来提醒。</p><p>每个定式每月有固定的应急次数（默认 2 次，事先定死）。没做到时可以用掉一次应急：当天不打勾也不删除，连续天数照常保留。应急用完后再失败，才按堆栈删除。</p><p>每天最多把一个新定式加入树中：和已有定式相关就挂在它下面，是全新的领域就开新分支。</p><p>按堆栈来管理：某个定式有一次没做到，就把它和它的所有子节点一起删除。以后可以重新加入到树的末尾。</p><p>暂停日：搬家、出游等事先写好的情形，当天选中的定式暂停，不打勾也不算失败。</p><p>每天凌晨 4:00 才算新的一天，4 点前打的勾都算前一天。</p>'],
   seat:['神圣座位','<p>违规清零只清当前纪录 #N；累计次数只增不减，决定飞船型号。</p><p>坐在其他座位上没有约束；屁股一碰到神圣座位，就必须用最好的状态 100% 专注满一个小时。没有把握就不坐。</p><p>第一次成功记为 #1，之后每次成功加一个编号。一次失败（刷手机、只坐十分钟就走）就清零，从 #1 重新开始。</p>'],
