@@ -373,6 +373,8 @@ a.lk{color:var(--acc)}
 #toast.show{display:flex}
 #toast span{flex:1}
 #toast button{border:none;background:none;color:var(--h2);font-weight:700;font-size:14px;cursor:pointer}
+.tflow{animation:tflow 1.6s linear infinite}@keyframes tflow{to{stroke-dashoffset:-18}}
+@media (prefers-reduced-motion:reduce){.tflow{animation:none}}
 /* ---- 星际主题 ---- */
 .card,.list,.sum div{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
 .card{border-color:rgba(120,126,220,.28);box-shadow:0 8px 28px rgba(0,0,0,.25)}
@@ -1061,34 +1063,38 @@ function treeSvg(){
   function X(x){ return nL===1?160:50+x*(220/(nL-1)); }
   function Y(dp){ return H-158-dp*78; }
   var br='', fo='', lb='';
-  // 树干：下粗上细，带根
-  var trunk='<path d="M'+(FX-13)+' '+(H-20)+' C'+(FX-9)+' '+(H-40)+','+(FX-6)+' '+(FY+10)+','+(FX-5)+' '+FY+' L'+(FX+5)+' '+FY+' C'+(FX+6)+' '+(FY+10)+','+(FX+9)+' '+(H-40)+','+(FX+13)+' '+(H-20)+' Z" fill="url(#tbark)"/>'
-    +'<path d="M'+(FX-12)+' '+(H-22)+' q-10 4 -20 3 M'+(FX+12)+' '+(H-22)+' q10 4 20 3" stroke="#7a5636" stroke-width="4" stroke-linecap="round" fill="none"/>'
-    +'<path d="M'+(FX-3)+' '+(H-26)+' C'+(FX-2)+' '+(H-42)+','+(FX-1)+' '+(FY+12)+','+(FX-1)+' '+(FY+2)+'" stroke="#c9a37a" stroke-width="2.4" stroke-linecap="round" fill="none" opacity=".7"/>';
+  function star4(x,y,R,f,o){ var q=R*0.24, pts=[[0,-R],[q,-q],[R,0],[q,q],[0,R],[-q,q],[-R,0],[-q,-q]].map(function(v){return (x+v[0]).toFixed(1)+','+(y+v[1]).toFixed(1);}).join(' '); return '<polygon points="'+pts+'" fill="'+f+'"'+(o?' opacity="'+o+'"':'')+'/>'; }
+  // 主干：一束从小行星上升起的光
+  var trunk='<path d="M'+(FX-12)+' '+(H-30)+' C'+(FX-8)+' '+(H-46)+','+(FX-5)+' '+(FY+10)+','+(FX-4)+' '+FY+' L'+(FX+4)+' '+FY+' C'+(FX+5)+' '+(FY+10)+','+(FX+8)+' '+(H-46)+','+(FX+12)+' '+(H-30)+' Z" fill="url(#tbark)"/>'
+    +'<path d="M'+FX+' '+(H-32)+' L'+FX+' '+(FY+2)+'" stroke="#fff1d6" stroke-width="1.6" stroke-linecap="round" opacity=".75"/>';
   S.nodes.forEach(function(n){
-    var p=pos[n.id], x=X(p.x), y=Y(p.d), par=n.parentId&&pos[n.parentId], px=par?X(par.x):FX, py=par?Y(par.d):FY, w=Math.max(3.5,9-p.d*2.2);
-    var c1y=py-(py-y)*0.5, c2y=y+(py-y)*0.62, path='M'+px+' '+py+' C'+px+' '+c1y.toFixed(1)+','+x+' '+c2y.toFixed(1)+','+x+' '+y;
-    br+='<path d="'+path+'" fill="none" stroke="#7a5636" stroke-width="'+w+'" stroke-linecap="round"/><path d="'+path+'" fill="none" stroke="#c9a37a" stroke-width="'+(w*0.32).toFixed(1)+'" stroke-linecap="round" opacity=".65" transform="translate(-1,-.6)"/>';
+    var p=pos[n.id], x=X(p.x), y=Y(p.d), par=n.parentId&&pos[n.parentId], px=par?X(par.x):FX, py=par?Y(par.d):FY, w=Math.max(2.6,7-p.d*1.8);
     var on=doneToday(n), pz=paused(d,n.id), st=streak(n)*(isWeekly(n)?3:1), r=19+Math.min(st,10)*0.9;
+    var c1y=py-(py-y)*0.5, c2y=y+(py-y)*0.62, path='M'+px+' '+py+' C'+px+' '+c1y.toFixed(1)+','+x+' '+c2y.toFixed(1)+','+x+' '+y;
+    br+='<path d="'+path+'" fill="none" stroke="#8f7be8" stroke-width="'+(w+5)+'" stroke-linecap="round" opacity=".13"/><path d="'+path+'" fill="none" stroke="'+(on?'#a996ff':'#5d55b8')+'" stroke-width="'+w+'" stroke-linecap="round"/><path d="'+path+'" fill="none" stroke="#fff1d6" stroke-width="'+(w*0.22).toFixed(1)+'" stroke-linecap="round" opacity="'+(on?'.8':'.35')+'"'+(on?' stroke-dasharray="2 7" class="tflow"':'')+'/>';
     var k=function(i){ return hash01(n.id+'l'+i); };
     var g='<g'+(pz?' opacity="0.4"':' data-a="t:'+n.id+'"')+' style="cursor:pointer">';
     if(on){
-      [[0,0,1],[-.62,.18,.66],[.62,.2,.66],[-.34,-.52,.68],[.38,-.5,.66],[0,.5,.6]].forEach(function(q,i){ g+='<circle cx="'+(x+q[0]*r).toFixed(1)+'" cy="'+(y+q[1]*r).toFixed(1)+'" r="'+(q[2]*r).toFixed(1)+'" fill="'+(i%3===0?'var(--g4)':i%3===1?'var(--g3)':'var(--g2)')+'"/>'; });
-      g+='<circle cx="'+(x-r*0.32).toFixed(1)+'" cy="'+(y-r*0.42).toFixed(1)+'" r="'+(r*0.36).toFixed(1)+'" fill="#fff" opacity=".16"/>';
-      for(var i=0;i<Math.min(5,Math.floor(st/3));i++){ var a=i*2.4+k(i)*1.2+0.6, rr=r*(0.62+k(i+9)*0.3); g+='<circle cx="'+(x+Math.cos(a)*rr).toFixed(1)+'" cy="'+(y+Math.sin(a)*rr).toFixed(1)+'" r="3.2" fill="#e88f6c" stroke="#fff1d6" stroke-width=".8"/>'; }
-      g+='<path d="M'+(x-6)+' '+y+' l4.2 4.6 l8 -9.4" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>';
+      g+='<circle cx="'+x+'" cy="'+y+'" r="'+(r*1.55).toFixed(1)+'" fill="url(#tglow)"/>';
+      [[-.5,.15,.7,'#8f7be8'],[.5,.2,.68,'#e88f6c'],[-.1,-.42,.66,'#c86fa6'],[.15,.42,.6,'#6f8fe8']].forEach(function(q){ g+='<circle cx="'+(x+q[0]*r).toFixed(1)+'" cy="'+(y+q[1]*r).toFixed(1)+'" r="'+(q[2]*r).toFixed(1)+'" fill="'+q[3]+'" opacity=".34"/>'; });
+      var m=Math.min(5,Math.floor(st/3));
+      if(m) g+='<ellipse cx="'+x+'" cy="'+y+'" rx="'+(r*1.08).toFixed(1)+'" ry="'+(r*0.42).toFixed(1)+'" fill="none" stroke="#fff1d6" stroke-width=".7" opacity=".45" transform="rotate(-18 '+x+' '+y+')"/>';
+      for(var i=0;i<m;i++){ var a=i*2.4+k(i)*1.2+0.6, ex=Math.cos(a)*r*1.08, ey=Math.sin(a)*r*0.42, c=Math.cos(-0.314), s2=Math.sin(-0.314); g+='<circle cx="'+(x+ex*c-ey*s2).toFixed(1)+'" cy="'+(y+ex*s2+ey*c).toFixed(1)+'" r="2.8" fill="'+(i%2?'#9fd0ff':'#ffb38a')+'" stroke="#fff1d6" stroke-width=".7"/>'; }
+      g+=star4(x,y,r*0.86,'#ffb38a','.55')+star4(x,y,r*0.6,'#fff1d6')+'<circle cx="'+x+'" cy="'+y+'" r="'+(r*0.2).toFixed(1)+'" fill="#fff"/>';
     }else{
-      [[0,0,1],[-.6,.2,.62],[.6,.2,.62],[-.32,-.5,.64],[.36,-.48,.62]].forEach(function(q){ g+='<circle cx="'+(x+q[0]*r).toFixed(1)+'" cy="'+(y+q[1]*r).toFixed(1)+'" r="'+(q[2]*r).toFixed(1)+'" fill="var(--g1)"/>'; });
-      g+='<circle cx="'+x+'" cy="'+y+'" r="'+(r*0.62).toFixed(1)+'" fill="none" stroke="var(--g3)" stroke-width="1.6" stroke-dasharray="3 4" opacity=".8"/>';
-      if(st) g+='<text x="'+x+'" y="'+(y+4.5)+'" text-anchor="middle" font-size="12" font-weight="700" fill="var(--g4)">'+st+'</text>';
+      [[0,0,.95],[-.55,.18,.6],[.55,.2,.6],[-.2,-.45,.6]].forEach(function(q){ g+='<circle cx="'+(x+q[0]*r).toFixed(1)+'" cy="'+(y+q[1]*r).toFixed(1)+'" r="'+(q[2]*r).toFixed(1)+'" fill="#2a2d75" opacity=".55"/>'; });
+      g+='<circle cx="'+x+'" cy="'+y+'" r="'+(r*0.62).toFixed(1)+'" fill="none" stroke="#a996ff" stroke-width="1.5" stroke-dasharray="3 4" opacity=".8"/>';
+      if(st) g+='<text x="'+x+'" y="'+(y+4.5)+'" text-anchor="middle" font-size="12" font-weight="700" fill="#d9d1ff">'+st+'</text>';
+      else g+=star4(x,y,r*0.26,'#a996ff','.7');
     }
     fo+=g+'</g>';
     var lab=n.name.length>7?n.name.slice(0,7)+'…':n.name;
     lb+='<text x="'+x+'" y="'+(y+r+17).toFixed(1)+'" text-anchor="middle" font-size="12" fill="var(--ink)" stroke="#12153a" stroke-width="4" paint-order="stroke">'+esc(lab)+'</text>';
   });
-  var grass=''; [[-70,0],[-46,3],[52,2],[78,-1],[-18,4],[24,4]].forEach(function(q){ var gx=FX+q[0], gy=H-17+q[1]; grass+='<path d="M'+gx+' '+gy+' q-2 -7 -5 -9 M'+gx+' '+gy+' q0 -8 1 -11 M'+gx+' '+gy+' q3 -6 6 -7" stroke="var(--g3)" stroke-width="1.4" stroke-linecap="round" fill="none"/>'; });
-  return '<svg class="tree" viewBox="0 0 '+W+' '+H+'" width="100%"><defs><linearGradient id="tbark" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8f6a45"/><stop offset=".45" stop-color="#a9825c"/><stop offset="1" stop-color="#6b4a2e"/></linearGradient><radialGradient id="tgnd" cx=".5" cy=".3" r=".7"><stop offset="0" stop-color="var(--g2)"/><stop offset="1" stop-color="var(--g1)"/></radialGradient></defs>'
-    +'<ellipse cx="160" cy="'+(H-13)+'" rx="124" ry="11" fill="url(#tgnd)"/>'+grass+br+trunk+fo+lb+'</svg>';
+  var GY=H+84, GR=118, rock='<circle cx="160" cy="'+GY+'" r="'+(GR+7)+'" fill="#8f7be8" opacity=".12"/><circle cx="160" cy="'+GY+'" r="'+GR+'" fill="url(#tgnd)"/>';
+  [[-58,-98,9],[-18,-108,5],[40,-104,8],[74,-88,5],[8,-96,4]].forEach(function(q){ rock+='<ellipse cx="'+(160+q[0])+'" cy="'+(GY+q[1])+'" rx="'+q[2]+'" ry="'+(q[2]*0.42).toFixed(1)+'" fill="#1a1c52" opacity=".55"/>'; });
+  return '<svg class="tree" viewBox="0 0 '+W+' '+H+'" width="100%"><defs><linearGradient id="tbark" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#3f3a9a"/><stop offset="1" stop-color="#a996ff"/></linearGradient><radialGradient id="tgnd" cx=".4" cy=".08" r=".6"><stop offset="0" stop-color="#8a86c9"/><stop offset=".5" stop-color="#4a4a94"/><stop offset="1" stop-color="#23245e"/></radialGradient><radialGradient id="tglow"><stop offset="0" stop-color="#ffb38a" stop-opacity=".5"/><stop offset=".55" stop-color="#c86fa6" stop-opacity=".16"/><stop offset="1" stop-color="#8f7be8" stop-opacity="0"/></radialGradient></defs>'
+    +rock+br+trunk+fo+lb+'</svg>';
 }
 function weekDots(n){
   var d=today(), h='<span class="wd7">';
