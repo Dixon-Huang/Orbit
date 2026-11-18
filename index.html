@@ -418,8 +418,7 @@ var DAY_START_HOUR = 4; // 每天凌晨 4 点才算进入新的一天
 
 // ---------- 数据补全 ----------
 if(!S.seats){
-  S.seats=[{id:'forest',name:'Forest番茄钟',count:0,timerMin:60,exceptions:[]},
-           {id:'sleep',name:'SleepTown睡眠记录',count:0,timerMin:0,exceptions:[]}];
+  S.seats=[];
   S.statBase={}; S.seatLog=[];
   S.appt={count:0,exceptions:[],pending:null};
   S.active=null; S.exClear=null; S.lastTag='';
@@ -1560,7 +1559,7 @@ function apptCard(){
   return '<div class="card"><div class="banner warn" style="margin-bottom:10px">预约超时：14 分 30 秒内没有即时启动。</div><button class="btn danger" data-a="v:appt">按下必为例处理</button></div>';
 }
 function pageFocus(){
-  var h='<div class="hdr"><h1>专注</h1></div>';
+  var h='<div class="hdr"><h1>专注</h1><button class="iconbtn" data-a="addseat">＋ 座位</button></div>';
   h+=apptCard()+activeCard();
   h+='<div class="card">';
   S.seats.forEach(function(st){
