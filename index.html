@@ -239,6 +239,51 @@ input,select{width:100%;font-size:16px;padding:10px 12px;border-radius:10px;bord
 .fleetrow .cur b{font-weight:700}
 .fleetrow .cur small{color:#ffb38a}
 .shipbadge{width:64px;height:64px;border-radius:50%;background:radial-gradient(circle at 70% 20%,#3a2a78,#0c1030);flex:none}
+/* ---- 动画 ---- */
+@keyframes pgRight{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
+@keyframes pgLeft{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:none}}
+@keyframes pgPush{from{opacity:0;transform:translateX(42px)}to{opacity:1;transform:none}}
+@keyframes pgBack{from{opacity:0;transform:translateX(-42px)}to{opacity:1;transform:none}}
+@keyframes pgFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.page.in-right{animation:pgRight .26s cubic-bezier(.2,.8,.2,1) both}
+.page.in-left{animation:pgLeft .26s cubic-bezier(.2,.8,.2,1) both}
+.page.in-push{animation:pgPush .3s cubic-bezier(.2,.8,.2,1) both}
+.page.in-back{animation:pgBack .3s cubic-bezier(.2,.8,.2,1) both}
+.page.in-fade{animation:pgFade .22s ease-out both}
+@keyframes maskIn{from{background:rgba(0,0,0,0)}to{background:rgba(0,0,0,.4)}}
+@keyframes dlgIn{from{transform:translateY(46px);opacity:0}to{transform:none;opacity:1}}
+.mask{animation:maskIn .22s ease-out both}
+.dlg{animation:dlgIn .3s cubic-bezier(.2,.9,.2,1) both}
+@keyframes chkPop{0%{transform:scale(.6)}55%{transform:scale(1.18)}100%{transform:scale(1)}}
+.chk.pop{animation:chkPop .38s cubic-bezier(.3,1.4,.4,1)}
+svg.tree g.pop{transform-box:fill-box;transform-origin:center;animation:chkPop .5s cubic-bezier(.3,1.4,.4,1)}
+@keyframes toastIn{from{transform:translateY(16px);opacity:0}to{transform:none;opacity:1}}
+#toast.show{animation:toastIn .25s cubic-bezier(.2,.9,.2,1)}
+@keyframes twinkle{0%,100%{opacity:.9}50%{opacity:.15}}
+.tw{animation:twinkle 3.6s ease-in-out infinite}
+@keyframes trailDraw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+.star-in .trail{stroke-dasharray:1;animation:trailDraw 1.5s cubic-bezier(.25,.6,.2,1) both}
+@keyframes orbIn{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+.star-in .s-from,.star-in .s-to{transform-box:fill-box;transform-origin:center;animation:orbIn .7s cubic-bezier(.2,.8,.2,1) both}
+.star-in .s-to{animation-delay:.12s}
+@keyframes riseIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.star-in .shead{animation:riseIn .5s .35s ease-out both}
+.star-in .seq>*{animation:riseIn .4s ease-out both}
+.star-in .seq>*:nth-child(1){animation-delay:.5s}.star-in .seq>*:nth-child(3){animation-delay:.58s}.star-in .seq>*:nth-child(5){animation-delay:.66s}.star-in .seq>*:nth-child(7){animation-delay:.74s}.star-in .seq>*:nth-child(9){animation-delay:.82s}.star-in .seq>*:nth-child(11){animation-delay:.9s}
+.star-in .seq>em{animation-delay:.7s}
+@keyframes gridPop{from{opacity:0;transform:scale(.5) translateY(8px)}to{opacity:1;transform:none}}
+.star-in .sgrid button,.star-in .fleetrow button{animation:gridPop .42s cubic-bezier(.2,.9,.3,1.2) both;animation-delay:calc(.25s + var(--i)*28ms)}
+@keyframes warp{from{transform:scale(3.2);opacity:0}60%{opacity:1}to{transform:none;opacity:1}}
+.scard .warp{transform-origin:150px 80px;animation:warp 1s cubic-bezier(.1,.7,.2,1) both}
+.scard .stag{animation:riseIn .45s .45s ease-out both}
+.scard h3{animation:riseIn .5s .55s ease-out both}
+.scard p{animation:riseIn .5s .7s ease-out both}
+.dlg.space .row{animation:riseIn .45s .9s ease-out both}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.scard .art .orb{animation:floaty 5s 1s ease-in-out infinite}
+.picks button{animation:gridPop .5s cubic-bezier(.2,.9,.3,1.2) both}
+.picks button:nth-child(2){animation-delay:.12s}
+@media (prefers-reduced-motion:reduce){.page,.mask,.dlg,.chk.pop,svg.tree g.pop,#toast.show,.tw,.trail,.s-from,.s-to,.shead,.seq>*,.sgrid button,.fleetrow button,.warp,.scard .stag,.scard h3,.scard p,.dlg.space .row,.scard .art .orb,.picks button{animation:none !important}}
 .jbig{font-size:40px;font-weight:800;line-height:1.1}
 .jbig small{font-size:15px;font-weight:600;color:var(--mute)}
 .jcur{font-size:46px;line-height:1}
@@ -580,12 +625,12 @@ function shipG(i){ // 朝 +x，画在 ±55 的范围内
   return '<g>'+d+g+'</g>';
 }
 function shipSvg(i,sz){ return '<svg class="orb" width="'+sz+'" height="'+sz+'" viewBox="-64 -64 128 128"><g transform="rotate(-22)">'+shipG(i)+'</g></svg>'; }
-function starsSvg(seed,n,w,hh){ var s=''; for(var i=0;i<n;i++){ var a=hash01(seed+'x'+i), b=hash01(seed+'y'+i), c=hash01(seed+'z'+i); s+='<circle cx="'+(a*w).toFixed(1)+'" cy="'+(b*hh).toFixed(1)+'" r="'+(0.4+c*0.9).toFixed(2)+'" fill="#fff" opacity="'+(0.25+c*0.6).toFixed(2)+'"/>'; } return s; }
+function starsSvg(seed,n,w,hh){ var s=''; for(var i=0;i<n;i++){ var a=hash01(seed+'x'+i), b=hash01(seed+'y'+i), c=hash01(seed+'z'+i); s+='<circle'+(i%4===0?' class="tw" style="animation-delay:-'+(c*4).toFixed(1)+'s"':'')+' cx="'+(a*w).toFixed(1)+'" cy="'+(b*hh).toFixed(1)+'" r="'+(0.4+c*0.9).toFixed(2)+'" fill="#fff" opacity="'+(0.25+c*0.6).toFixed(2)+'"/>'; } return s; }
 function cardHtml(kind,id,tag){
   var nm,fact,art;
   if(kind==='ship'){ var x=SHIPS[+id]; nm=x[1]; fact=x[4]; art=shipSvg(+id,230); }
   else{ var c=kind==='rare'?rareById(id):stopById(id); nm=c[1]; fact=c[3]; art=orb(id,170); }
-  return '<div class="scard"><svg class="sky" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice">'+starsSvg(id+'k',46,300,200)+'</svg><div class="art">'+art+'</div>'+(tag?'<div class="stag">'+tag+'</div>':'')+'<h3>'+esc(nm)+'</h3><p>'+esc(fact)+'</p></div>';
+  return '<div class="scard"><svg class="sky" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice"><g class="warp">'+starsSvg(id+'k',46,300,200)+'</g></svg><div class="art">'+art+'</div>'+(tag?'<div class="stag">'+tag+'</div>':'')+'<h3>'+esc(nm)+'</h3><p>'+esc(fact)+'</p></div>';
 }
 function spaceModal(html,cb){ modal(html,cb); var d=document.querySelector('#mask .dlg'); if(d) d.classList.add('space'); }
 function starCheck(){
@@ -615,13 +660,14 @@ function starCard(){
   var path='M'+P0+' Q'+P1+' '+P2;
   var sc='<svg class="scene" viewBox="0 0 340 150" preserveAspectRatio="xMidYMid slice">'+starsSvg('home'+Z.at.length,54,340,150)
     +'<path d="'+path+'" fill="none" stroke="#fff1d6" stroke-opacity=".28" stroke-width="1.2" stroke-dasharray="2 5" stroke-linecap="round"/>'
-    +'<path d="M'+P0+' Q'+A.map(function(v){return v.toFixed(1);})+' '+C.map(function(v){return v.toFixed(1);})+'" fill="none" stroke="#fff1d6" stroke-width="1.6" stroke-linecap="round"/>'
-    +orb(from,44,24,90)+(tg?orb(Z.target,128,214,10):'')
-    +'<g transform="translate('+C[0].toFixed(1)+','+C[1].toFixed(1)+') rotate('+ang.toFixed(1)+') scale(.36)">'+shipG(si)+'</g></svg>';
+    +'<path class="trail" pathLength="1" d="M'+P0+' Q'+A.map(function(v){return v.toFixed(1);})+' '+C.map(function(v){return v.toFixed(1);})+'" fill="none" stroke="#fff1d6" stroke-width="1.6" stroke-linecap="round"/>'
+    +'<g class="s-from">'+orb(from,44,24,90)+'</g>'+(tg?'<g class="s-to">'+orb(Z.target,128,214,10)+'</g>':'')
+    +(starAnim&&t>0.02?'<g><animateMotion dur="1.5s" begin="0s" fill="freeze" rotate="auto" calcMode="spline" keyTimes="0;1" keySplines="0.25 0.6 0.2 1" path="M'+P0+' Q'+A.map(function(v){return v.toFixed(1);})+' '+C.map(function(v){return v.toFixed(1);})+'"/><g transform="scale(.36)" class="s-ship">'+shipG(si)+'</g></g>'
+      :'<g transform="translate('+C[0].toFixed(1)+','+C[1].toFixed(1)+') rotate('+ang.toFixed(1)+') scale(.36)">'+shipG(si)+'</g>')+'</svg>';
   return '<div class="card space star" data-a="push:star">'+sc
-    +'<div class="shead"><div><small>'+esc(fromN)+' 出发 · '+sh[1]+'</small><h2>'+(tg?esc(tg[1]):'航线走完')+'</h2></div>'+(tg?'<div class="sprog"><b>'+Math.min(prog,cost)+'</b> / '+cost+'</div>':'')+'</div>'
+    +'<div class="shead"><div><small>'+esc(fromN)+' 出发 · '+sh[1]+'</small><h2>'+(tg?esc(tg[1]):'航线走完')+'</h2></div>'+(tg?'<div class="sprog"><b data-cu="'+Math.min(prog,cost)+'">'+Math.min(prog,cost)+'</b> / '+cost+'</div>':'')+'</div>'
     +'<div class="seq"><span><b>'+T.raw+'</b>推力</span><em>×</em><span><b>'+f(T.sp)+'</b>速度</span><em>×</em><span><b>'+f(T.st)+'</b>稳定</span><em>×</em><span'+(T.bo>1?'':' class="off"')+'><b>'+f(T.bo)+'</b>助推</span>'
-    +(T.dr<1?'<em>×</em><span class="drag"><b>'+f(T.dr)+'</b>阻力</span>':'')+'<em>=</em><span class="tot"><b>'+T.d+'</b>今日</span></div>'
+    +(T.dr<1?'<em>×</em><span class="drag"><b>'+f(T.dr)+'</b>阻力</span>':'')+'<em>=</em><span class="tot"><b data-cu="'+T.d+'">'+T.d+'</b>今日</span></div>'
     +(Z.charge?'<div class="chg">已充能 · 下次第一次坐下推力翻倍</div>':'')+'</div>';
 }
 function shipCard(){
@@ -633,11 +679,11 @@ function shipCard(){
 function pageStar(){
   var Z=S.star, si=shipIdx(), h=starCard().replace(' data-a="push:star"','');
   h+='<div class="sect">飞船</div><div class="card space"><div class="fleetrow">';
-  SHIPS.forEach(function(x,i){ h+='<button class="'+(i===si?'cur':i<si?'got':'')+'"'+(i<=si?' data-a="sc:ship:'+i+'"':'')+'>'+(i<=si?shipSvg(i,84):'<i></i>')+'<b>'+x[1]+'</b><small>×'+x[2]+(i>si?' · '+x[0]+' 次':'')+'</small></button>'; });
+  SHIPS.forEach(function(x,i){ h+='<button style="--i:'+i+'" class="'+(i===si?'cur':i<si?'got':'')+'"'+(i<=si?' data-a="sc:ship:'+i+'"':'')+'>'+(i<=si?shipSvg(i,84):'<i></i>')+'<b>'+x[1]+'</b><small>×'+x[2]+(i>si?' · '+x[0]+' 次':'')+'</small></button>'; });
   h+='</div></div><div class="sect">航线 · '+Z.at.length+' / '+STOPS.length+'</div><div class="card space"><div class="sgrid">';
-  STOPS.forEach(function(x){ var got=Z.at.indexOf(x[0])>=0, tg=Z.target===x[0]; h+='<button class="'+(got?'on':tg?'tg':'')+'"'+(got?' data-a="sc:stop:'+x[0]+'"':'')+'>'+(got||tg?orb(x[0],54)+'<b>'+esc(x[1])+'</b>':'<i></i>')+'</button>'; });
+  STOPS.forEach(function(x,i){ var got=Z.at.indexOf(x[0])>=0, tg=Z.target===x[0]; h+='<button style="--i:'+i+'" class="'+(got?'on':tg?'tg':'')+'"'+(got?' data-a="sc:stop:'+x[0]+'"':'')+'>'+(got||tg?orb(x[0],54)+'<b>'+esc(x[1])+'</b>':'<i></i>')+'</button>'; });
   h+='</div></div><div class="sect">打捞 · '+Z.cards.length+' / '+RARE.length+'</div><div class="card space"><div class="sgrid">';
-  RARE.forEach(function(x){ var got=Z.cards.indexOf(x[0])>=0; h+='<button class="'+(got?'on':'')+'"'+(got?' data-a="sc:rare:'+x[0]+'"':'')+'>'+(got?orb(x[0],54)+'<b>'+esc(x[1])+'</b>':'<i></i>')+'</button>'; });
+  RARE.forEach(function(x,i){ var got=Z.cards.indexOf(x[0])>=0; h+='<button style="--i:'+i+'" class="'+(got?'on':'')+'"'+(got?' data-a="sc:rare:'+x[0]+'"':'')+'>'+(got?orb(x[0],54)+'<b>'+esc(x[1])+'</b>':'<i></i>')+'</button>'; });
   return h+'</div></div>';
 }
 function starShow(kind,id){ spaceModal(cardHtml(kind,id)+'<div class="row"><button class="btn glow" data-a="close">关闭</button></div>'); }
@@ -654,6 +700,7 @@ function toggle(id){
   var nd=byId(id), auto=nd&&(nd.autoStart||nd.autoTodo||nd.autoGym);
   if(S.log[d][id]===1||S.log[d][id]===true){ delete S.log[d][id]; starRetract('h:'+id); } else { S.log[d][id]=1; if(!auto) starGrant('h:'+id,10); }
   save(); render(); starFlush();
+  Array.prototype.forEach.call(document.querySelectorAll('[data-a="t:'+id+'"]'),function(el){ if(el.classList.contains('on')||el.tagName==='g') el.classList.add('pop'); });
 }
 function askFail(id, date, wk){
   var ids = subtree(id), n = byId(id), dt=date||today(), left=reserveLeft(id,dt);
@@ -1568,8 +1615,16 @@ function pageHistory(){
 
 // ---------- 路由 ----------
 var TITLES={review:'待确认',more:'设置与规则',star:'星图',backup:'备份与恢复',rsv:'应急次数',add:'添加定式',exc:'暂停日',seats:'神圣座位管理',pomoset:'休息时长',history:'历史记录'};
+var navAnim=null, TABORD=['habit','tree','focus','todo','gym','stats'];
+function countUp(){
+  if(window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  Array.prototype.forEach.call(document.querySelectorAll('.star-in [data-cu]'),function(el){ var to=+el.getAttribute('data-cu'), t0=null; if(!to) return; el.textContent='0';
+    function step(ts){ if(t0==null) t0=ts; var k=Math.min(1,(ts-t0-500)/900); if(k<0){ requestAnimationFrame(step); return; } el.textContent=Math.round(to*(1-Math.pow(1-k,3))); if(k<1) requestAnimationFrame(step); }
+    requestAnimationFrame(step); });
+}
+var starAnim=false;
 function render(){
-  keepNav();
+  keepNav(); starAnim=!!navAnim && navAnim!=='fade';
   var R=document.getElementById('root'), h='';
   var pg=nav.stack.length?nav.stack[nav.stack.length-1]:null;
   if(pg){
@@ -1595,6 +1650,8 @@ function render(){
     if(nav.tab==='todo') h+=pageTodo();
     if(nav.tab==='gym') h+=pageGym();
   }
+  var onStar=(pg&&pg.page==='star')||(!pg&&nav.tab==='stats');
+  h='<div class="page'+(navAnim?' in-'+navAnim:'')+(starAnim&&onStar?' star-in':'')+'">'+h+'</div>'; var didAnim=starAnim&&onStar; navAnim=null;
   // 进行中的计时：不在对应页面时显示悬浮提示
   var pillTxt=null;
   if(S.active && !(nav.tab==='focus'&&!pg)){ var st=seatById(S.active.seat); pillTxt='● '+st.name.replace('番茄钟','')+' <span id="pillt">'+mmss(st.timerMin*60000-(Date.now()-S.active.start))+'</span>'; }
@@ -1604,6 +1661,7 @@ function render(){
   h+='<div class="tabs">'+[['habit','<circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/>','今天'],['tree','<path d="M12 21v-9"/><path d="M12 12c0-4-2.6-6.5-7-6.5 0 4.4 2.6 6.5 7 6.5z"/><path d="M12 15c0-3.4 2.3-5.5 7-5.5 0 3.6-2.6 5.5-7 5.5z"/>','习惯'],['focus','<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3" fill="currentColor"/>','专注'],['todo','<path d="M4 6.5l1.5 1.5L8 5.5M4 12.5l1.5 1.5L8 11.5M4 18.5l1.5 1.5L8 17.5M11.5 7h8.5M11.5 13h8.5M11.5 19h8.5"/>','待办'],['gym','<path d="M3.5 9.5v5M6.5 7v10M17.5 7v10M20.5 9.5v5M6.5 12h11"/>','健身'],['stats','<circle cx="12" cy="12" r="3.2"/><ellipse cx="12" cy="12" rx="9.6" ry="4.2" transform="rotate(-28 12 12)"/><circle cx="19.6" cy="7.4" r="1.3" fill="currentColor"/>','星图']].map(function(t){
     return '<button data-a="tab:'+t[0]+'" class="'+(nav.tab===t[0]?'act':'')+'"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+t[1]+'</svg>'+t[2]+'</button>'; }).join('')+'</div>';
   R.innerHTML=h;
+  if(didAnim) countUp();
   starCheck();
 }
 
@@ -1630,10 +1688,10 @@ document.addEventListener('click',function(ev){
   if(t.closest('#mask')){ var cb=modalCb, vals={}; Array.prototype.forEach.call(document.querySelectorAll('#mask input,#mask select'),function(i){vals[i.id]=i.type==='checkbox'?i.checked:i.value;}); closeModal(); if(a!=='close' && cb) cb(a,vals); return; }
   var arg=a.split(':');
   switch(arg[0]){
-    case 'tab': nav.tab=arg[1]; nav.stack=[]; render(); toTop(); return;
-    case 'push': nav.stack.push({page:arg[1],arg:arg[2]}); render(); toTop(); return;
-    case 'back': nav.stack.pop(); render(); toTop(); return;
-    case 'seg': seg[arg[1]]=arg[2]; if(arg[1]==='stats') cal.month=cal.month; render(); return;
+    case 'tab': if(nav.tab!==arg[1]||nav.stack.length) navAnim=nav.stack.length?'back':(TABORD.indexOf(arg[1])>=TABORD.indexOf(nav.tab)?'right':'left'); nav.tab=arg[1]; nav.stack=[]; render(); toTop(); return;
+    case 'push': navAnim='push'; nav.stack.push({page:arg[1],arg:arg[2]}); render(); toTop(); return;
+    case 'back': navAnim='back'; nav.stack.pop(); render(); toTop(); return;
+    case 'seg': navAnim='fade'; seg[arg[1]]=arg[2]; if(arg[1]==='stats') cal.month=cal.month; render(); return;
     case 'pill': nav.tab='focus'; nav.stack=[]; render(); toTop(); return;
     case 'calm': cal.month=monthAdd(cal.month,+arg[1]); render(); return;
     case 'caly': cal.month=monthAdd(cal.month,12*(+arg[1])); render(); return;
