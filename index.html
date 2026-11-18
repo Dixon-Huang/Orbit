@@ -406,7 +406,7 @@ input::placeholder{color:#7f7ca8}
 <svg id="sky" preserveAspectRatio="xMidYMid slice" viewBox="0 0 400 900"></svg>
 <div id="scroller"><div class="wrap" id="root"></div></div>
 <div class="saving" id="saving"></div>
-<script id="state" type="application/json">{"rev": 0, "nodes": [], "log": {}, "pauses": {}, "history": [], "exceptions": ["搬家", "出游"], "lastAdd": null, "seq": 0}</script>
+<script id="state" type="application/json">{"rev": 0, "nodes": [], "log": {}, "pauses": {}, "history": [], "exceptions": [], "lastAdd": null, "seq": 0}</script>
 <script id="app">
 (function(){
 var S = JSON.parse(document.getElementById('state').textContent);
@@ -1052,7 +1052,6 @@ function monthAdd(ym,k){ var y=+ym.slice(0,4), m=+ym.slice(5)-1+k; y+=Math.floor
 // ---------- 页面：习惯 ----------
 function treeSvg(){
   var d=today();
-  if(!S.nodes.length) return '<div class="empty">树是空的</div>';
   var pos={}, leafI=0, maxD=0;
   function lay(pid,depth){ var xs=[]; kids(pid).forEach(function(n){ var cx=lay(n.id,depth+1), x;
     if(cx.length){ x=cx.reduce(function(a,b){return a+b;},0)/cx.length; } else x=leafI++;
@@ -1166,7 +1165,7 @@ function todoSorted(){ return S.todos.slice().sort(function(a,b){return a.due<b.
 function pageTree(){
   var d=today(), h='<div class="hdr"><h1>习惯</h1><button class="iconbtn" data-a="push:add">＋ 定式</button></div>';
   if(S.pauses[d]) h+='<div class="banner pause">今天暂停：'+esc(S.pauses[d])+' · <a href="#" data-a="unpause" style="color:inherit">撤销</a></div>';
-  if(!S.nodes.length) return h+'<div class="card"><div class="empty">树是空的</div></div>';
+  if(!S.nodes.length) return h+'<div class="card">'+treeSvg()+'</div>';
   h+=habitHero()+'<div class="card">';
   (function walk(pid,depth){ kids(pid).forEach(function(n){
     var on=done(d,n.id), st=streak(n), wk=isWeekly(n), pz=paused(d,n.id), auto=n.autoStart||n.autoTodo||n.autoGym;
@@ -1307,13 +1306,7 @@ function pageTodo(){
 
 // ---------- 健身 ----------
 if(!S.gym){
-  var GX=function(a){ return a.map(function(x){ return {n:x[0],s:x[1],lo:x[2],hi:x[3],w:x[4]==null?null:x[4]}; }); };
-  S.gym={next:0,log:[],run:null,days:[
-    {id:'push',name:'推日',ex:GX([['杠铃卧推',4,5,8,null],['上斜推胸',3,6,8,null],['哑铃推肩',2,6,8,null],['哑铃侧平举',3,8,12,null],['器械夹胸',2,8,12,null],['三头下压',3,6,10,null],['器械卷腹',2,6,10,null]])},
-    {id:'pull',name:'拉日',ex:GX([['中等对握高位下拉',4,6,8,null],['胸托 T 杠划船',4,6,8,null],['窄握坐姿划船',2,8,10,null],['反向飞鸟',3,8,12,null],['二头弯举',3,6,10,null],['器械卷腹',2,6,10,null]])},
-    {id:'leg',name:'腿日',ex:GX([['哈克深蹲',3,6,8,null],['45°双腿腿举',3,6,8,null],['腿弯举',4,6,10,null],['坐姿腿伸展',2,8,10,null],['外展机',2,8,12,null],['提踵',2,8,12,null],['哑铃侧平举',2,8,12,null],['器械卷腹',2,6,10,null]])},
-    {id:'upper',name:'上肢强化日',ex:GX([['上斜器械推胸',2,6,8,null],['中等对握高位下拉',3,6,8,null],['直臂下压',2,8,12,null],['侧平举',4,8,12,null],['二头弯举',2,6,10,null],['器械卷腹',2,6,10,null]])}
-  ]};
+  S.gym={next:0,log:[],run:null,days:[]};
 }
 var GRPS=['胸','背','肩','手臂','腿','核心','其他'];
 function grpGuess(n){
@@ -1465,7 +1458,7 @@ function gymExForm(dayId,i){
     });
 }
 function pageGym(){
-  var G=S.gym, d=today(), h='<div class="hdr"><h1>健身</h1></div>';
+  var G=S.gym, d=today(), h='<div class="hdr"><h1>健身</h1>'+(G.run?'':'<button class="iconbtn" data-a="gdnew">＋ 训练日</button>')+'</div>';
   if(G.run){
     var r=G.run, dy=gymDay(r.day), filled=0, total=0;
     r.items.forEach(function(it){ total+=it.s; it.reps.forEach(function(x){ if(x!=null&&x!=='') filled++; }); });
@@ -1482,6 +1475,7 @@ function pageGym(){
     h+='<div style="height:6px"></div><button class="btn sec" data-a="gadd">＋ 加一个动作</button><div style="height:10px"></div><button class="btn pri" data-a="gfin">完成训练</button><div style="height:8px"></div><button class="btn ghost" data-a="gab">放弃这次</button></div>';
     return h;
   }
+  if(!G.days.length) return h+'<div class="card"><div class="empty">还没有训练日</div></div>';
   var last=G.log[G.log.length-1], st, sel=(seg.gym&&gymDay(seg.gym))?seg.gym:G.days[G.next%G.days.length].id, nx=G.days[G.next%G.days.length];
   if(!last) st='还没有记录，从'+nx.name+'开始';
   else{ var df=daysBetween(last.date,d); st = df===0?'今天已经练过（'+last.name+'）': df===1?'昨天练了'+last.name+'，今天休息': '今天该练了'+(df>2?' · 已经隔了 '+df+' 天':''); }
@@ -1493,7 +1487,7 @@ function pageGym(){
   sd.ex.forEach(function(e,i){ var l=gymLast(e.n);
     h+='<div class="gex pl"><div style="flex:1;min-width:0;cursor:pointer" data-a="gex:'+sel+':'+i+'"><div class="nm">'+esc(e.n)+'</div><div class="cr">'+e.s+' 组 × '+e.lo+'–'+e.hi+' 次</div>'+(l?'<div class="cr">上次 '+l.reps.join(', ')+'</div>':'')+'</div><span class="pw" data-a="gex:'+sel+':'+i+'">'+wtxt(e.w)+'</span><button class="spk" data-a="gpr:'+sel+':'+i+'">'+(function(){ var hh=gymHist(e.n).slice(-8), v=hh.every(function(x){return x.w!=null;})?hh.map(function(x){return x.w;}):hh.map(function(x){return x.tr;}); return spark(v,56,24)||'<span class="cr">曲线</span>'; })()+'</button><span class="mv v"><button class="lk" data-a="pmv:'+sel+':'+i+':-1"'+(i===0?' disabled':'')+'>↑</button><button class="lk" data-a="pmv:'+sel+':'+i+':1"'+(i===sd.ex.length-1?' disabled':'')+'>↓</button></span></div>'; });
   if(!sd.ex.length) h+='<div class="empty">这一天还没有动作。</div>';
-  h+='<div style="height:10px"></div><button class="btn sec" data-a="gex:'+sel+':-1">＋ 动作</button></div>';
+  h+='<div style="height:10px"></div><button class="btn sec" data-a="gex:'+sel+':-1">＋ 动作</button><div class="slinks"><button class="lk" data-a="gdren:'+sel+'">改名</button><button class="lk" data-a="gddel:'+sel+'">删除这个训练日</button></div></div>';
   var ll=G.log[G.log.length-1];
   if(ll) h+='<div class="card"><h2>上一次 · '+ll.date.slice(5)+' '+esc(ll.name)+'</h2><div class="sum" style="margin:0"><div><b>'+(ll.min||'—')+'</b><span>分钟</span></div><div><b>'+(ll.sets||ll.items.reduce(function(a,x){return a+x.reps.length;},0))+'</b><span>组</span></div><div><b>'+(kcalOf(ll)?kcalOf(ll)[0]+'–'+kcalOf(ll)[1]:'—')+'</b><span>千卡</span></div></div></div>';
   h+=gymVolCard(sel);
@@ -1713,13 +1707,13 @@ function pageMore(){
   return h;
 }
 var RULES={
-  star:['星图','<p>今日航程 = 推力 × 速度 × 打捞（× 阻力）。航程攒够就到达下一站，解锁一张卡片。</p><p><b>航线</b>：任务分层，范围逐层放大：第一层太阳系，追上旅行者 1 号；第二层近邻恒星，抵达 TRAPPIST-1；之后是银河系。越往外每一段路越长，飞船速度跟不上就会走很久。每次只能飞往和已到过的地方相邻的天体，需要的航程按沿途距离算：卫星之间很近，行星之间很远，越往外越远。到站后选下一站，也可以在星图页的地图上点一个相邻的天体改道。内太阳系是一条支线，走不走都能完成任务。</p><p><b>推力</b>：当天第一次坐上计时座位 20（坐下就给）；每坐满一次 10；手动打勾一个定式 10；健身开始 20、完成 20；睡眠记录成功一次 15；待办按新建时选的抗拒程度给 10 / 25 / 50，点"做 5 分钟"先给三成，清掉给剩下的。每笔推力有 60% 的概率是 1 倍，30% 是 2 倍，10% 是 3 倍。自动打勾的定式不另给。</p><p><b>速度</b>：由累计专注次数决定飞船型号，永久有效。共 17 艘，从东方一号到曲率飞船、虫洞飞船，最后一艘到了才知道。每艘船有三级改装（I、II、III），均匀分布在两艘船之间，每级速度涨一点。换船的专注次数：0 东方一号 · 10 土星五号 · 25 航天飞机 · 45 NERVA 核热火箭 · 75 深空一号 · 115 黎明号 · 165 伊卡洛斯 · 225 光帆 2 号 · 300 猎户座 · 400 代达罗斯 · 520 突破摄星 · 660 巴萨德冲压发动机 · 820 反物质飞船 · 1000 曲率飞船 · 1250 克拉斯尼科夫管 · 1550 虫洞飞船 · 1900 ？？？。</p><p><b>打捞</b>：每张稀有卡让航程永久 +2%，12 张集齐是 ×1.24。清掉待办有机会得到一张，顺手 15%、有点烦 40%、很抗拒 80%。当天每日定式全勾、至少坐满一次、没有过期待办，必得一张。</p><p><b>充能</b>：睡眠记录成功后，下一次"第一次坐下"的推力翻倍。</p><p><b>阻力</b>：每件过期待办让当天航程少一成，最多少三成。只影响当天，已有的航程和卡片不会减少。</p>'],
-  todo:['待办清单','<p>每件待办都要写一个 5 分钟内能做完的第一步，并选一个近的期限：今天、本周内或下周内。</p><p>点"做 5 分钟"只承诺 5 分钟。到点后可以顺手做完，也可以停下并写好下一步。</p><p>过期的待办三选一：现在做 5 分钟、改期（改期次数会显示），或者决定不做并删掉。</p><p>可以把"清杂事"设成每周定式：哪天清掉一件待办，那天自动打勾。</p>'],
-  tree:['定式树','<p>每周定式（比如每周 3 次健身房）按周一到周日结算：达到次数就算这周做到，没达到就用一次应急或删除。加入的那一周不满 7 天，不结算。计划日只用来提醒。</p><p>每个定式每月有固定的应急次数（默认 2 次，事先定死）。没做到时可以用掉一次应急：当天不打勾也不删除，连续天数照常保留。应急用完后再失败，才按堆栈删除。</p><p>每天最多把一个新定式加入树中：和已有定式相关就挂在它下面，是全新的领域就开新分支。</p><p>按堆栈来管理：某个定式有一次没做到，就把它和它的所有子节点一起删除。以后可以重新加入到树的末尾。</p><p>暂停日：搬家、出游等事先写好的情形，当天选中的定式暂停，不打勾也不算失败。</p><p>每天凌晨 4:00 才算新的一天，4 点前打的勾都算前一天。</p>'],
-  seat:['神圣座位','<p>违规清零只清当前纪录 #N；累计次数只增不减，决定飞船型号。</p><p>坐在其他座位上没有约束；屁股一碰到神圣座位，就必须用最好的状态 100% 专注满一个小时。没有把握就不坐。</p><p>第一次成功记为 #1，之后每次成功加一个编号。一次失败（刷手机、只坐十分钟就走）就清零，从 #1 重新开始。</p>'],
-  xb:['下必为例','<p>遇到疑似违规，只能二选一：</p><p>1. 判定规则被完全破坏，链条断裂，清空全部纪录，下次从 #1 重新开始。</p><p>2. 判定这个行为允许，但以后遇到同样情况也必须一律允许，在这条链接下来的整个生命周期里，它对该行为彻底失去约束力。</p><p>3. 每一季度（1.1，4.1，7.1，11.1）可以清空一次已允许的行为。</p>'],
-  appt:['线性时延','<p>在座位的"坐下"旁边点"预约"，对应打一次响指。触发后 14 分 30 秒内必须执行即时启动信号（预留缓冲，以防真的用完 15 分钟）。</p><p>即时启动信号是打三次响指，触发后必须根据现有条件尽快开始任务。</p><p>超时同样按下必为例处理：要么清空预约链纪录，要么判定允许。</p>'],
-  pomo:['专注计时与休息','<p>Forest 计时就是番茄钟：坐上神圣座位开始计时，默认 60 分钟，满了自动记一次。</p><p>每完成一次可以短休息，每完成几次后长休息。休息时长在"更多 › 休息时长"里改。</p>']
+  star:['星图','<p>你做的每件事都会变成推力，把飞船往外推。航程攒够就到下一站，翻开一张卡片。</p><p><b>今日航程</b> = 推力 × 速度 × 打捞 × 阻力。</p><p><b>推力</b>：越难开始的事给得越多。当天第一次坐下 20，每坐满一次 10，手动勾一个定式 10，健身开始和完成各 20，不计时的座位成功一次 15，待办按抗拒程度给 10 / 25 / 50（点"做 5 分钟"先给三成）。每笔推力有三成机会变 2 倍，一成机会变 3 倍。</p><p><b>速度</b>：看累计专注次数。坐得越多，飞船越新越快，一共 17 艘，换了就不会退回去。</p><p><b>打捞</b>：每张稀有卡让航程永久 +2%。清掉待办有机会捞到，越抗拒的事机会越大（15% / 40% / 80%）。当天每日定式全勾、至少坐满一次、没有过期待办，必得一张。</p><p><b>充能</b>：不计时的座位成功一次后，下一次"第一次坐下"的推力翻倍。</p><p><b>阻力</b>：每件过期待办让当天航程少一成，最多三成。已经攒下的航程和卡片不会倒扣。</p><p><b>航线</b>：只能飞往和到过的地方相邻的天体，越往外路越长。一层走完，开下一层。</p>'],
+  tree:['定式树','<p>定式是一件小到很难失败、到点就做的事。一天最多加一个：和已有的相关就挂在它下面，全新的领域就开一根新枝。</p><p>有一次没做到，这个定式连同挂在它下面的一起删掉，以后可以从末尾重新加。所以只加有把握的。</p><p><b>应急</b>：每个定式每月有固定几次（默认 2 次）。没做到时用掉一次，连续天数保留；用完再失败才删。</p><p><b>每周定式</b>：周一到周日做够次数就算做到。加入的那一周不结算。</p><p><b>暂停日</b>：事先写好的特殊情形，比如出远门。当天暂停，不算失败。</p><p>凌晨 4:00 才算新的一天。</p>'],
+  seat:['神圣座位','<p>选一个位置当作神圣座位。坐在别处随意；一坐上它，就用最好的状态专注到计时结束。没把握就别坐。</p><p>每成功一次，纪录 #N 加一。中途刷手机、提前离开，纪录清零，从 #1 重来。</p><p>清零只清当前纪录。累计次数只增不减，飞船不会倒退。</p>'],
+  xb:['下必为例','<p>拿不准算不算违规时，只有两条路：</p><p>1. 算违规，纪录清零，从 #1 重来。</p><p>2. 算允许，但以后同样的情况一律允许。</p><p>没有"就这一次"。每个季度可以清空一次已允许的行为。</p>'],
+  appt:['线性时延','<p>不想马上开始时，先点"预约"。14 分 30 秒内必须点"即时启动"并坐下，这段时间用来收拾桌子、倒水、做准备。</p><p>超时没启动，按下必为例处理。</p>'],
+  pomo:['专注计时与休息','<p>坐上计时的座位就开始倒计时，满了自动记一次。</p><p>每完成一次短休息，每完成几次长休息。时长在"休息时长"里改。</p>'],
+  todo:['待办清单','<p>杂事拖着，多半是不知道从哪下手。所以每件待办都要写一个 5 分钟内能做完的第一步，再定一个近的期限。</p><p>点"做 5 分钟"只承诺 5 分钟。到点可以顺手做完，也可以停下，写好下一步。</p><p>过期了三选一：现在做 5 分钟、改期（改过几次会显示），或者承认不做并删掉。</p>']
 };
 function pageRule(k){
   var h='<div class="card rules">'+RULES[k][1]+'</div>';
@@ -1887,6 +1881,12 @@ document.addEventListener('click',function(ev){
     case 'gmv': return gymMove(+arg[1],+arg[2]);
     case 'pmv': return planMove(arg[1],+arg[2],+arg[3]);
     case 'gdel': return gymDel(+arg[1]);
+    case 'gdnew': return modal('<h3>新训练日</h3><label>名字</label><input id="gn" placeholder="例如：腿日"><div class="row"><button class="btn ghost" data-a="close">取消</button><button class="btn pri" data-a="ok">添加</button></div>',
+      function(a2,v){ var nm=(v.gn||'').trim(); if(a2==='ok' && nm){ var id='g'+Date.now().toString(36); S.gym.days.push({id:id,name:nm,ex:[]}); seg.gym=id; save(); render(); } });
+    case 'gdren': return (function(){ var dy=gymDay(arg[1]); if(!dy) return; modal('<h3>改名</h3><input id="gn" value="'+esc(dy.name)+'"><div class="row"><button class="btn ghost" data-a="close">取消</button><button class="btn pri" data-a="ok">保存</button></div>',
+      function(a2,v){ var nm=(v.gn||'').trim(); if(a2==='ok' && nm){ dy.name=nm; save(); render(); } }); })();
+    case 'gddel': return (function(){ var dy=gymDay(arg[1]); if(!dy) return; modal('<h3>删除「'+esc(dy.name)+'」</h3><p>这一天的动作安排一起删除，无法恢复。训练记录保留。</p><div class="row"><button class="btn ghost" data-a="close">取消</button><button class="btn danger" data-a="ok">删除</button></div>',
+      function(a2){ if(a2==='ok'){ S.gym.days=S.gym.days.filter(function(x){return x.id!==dy.id;}); S.gym.next=0; seg.gym=null; save(); render(); } }); })();
     case 'gadd': return gymRunAdd();
     case 'bkfile':
       try{ var blob=new Blob([backupText()],{type:'application/json'}), fn='orbit-'+today()+'.json', file=new File([blob],fn,{type:'application/json'});
