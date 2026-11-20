@@ -1189,12 +1189,13 @@ function pageTree(){
   if(S.nodes.some(function(n){return !paused(d,n.id);})) h+='<button class="btn ghost" data-a="pause">今天暂停</button>';
   return h;
 }
-function backupDue(){ var lb=S.lastBackup?daysBetween(S.lastBackup,today()):null; return S.history.length>5 && (lb==null||lb>=14); }
+function backupDue(){ var lb=S.lastBackup?daysBetween(S.lastBackup,today()):null; return S.history.length>5 && (lb==null||lb>=7); }
 function pageHabit(){
   var d=today(), pc=pendingCount();
   var h='<div class="hdr"><h1>今天</h1><button class="iconbtn gear'+(backupDue()?' dot':'')+'" data-a="push:more"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="6.8"/><path d="M12 2.6v2.6M12 18.8v2.6M2.6 12h2.6M18.8 12h2.6M5.4 5.4l1.8 1.8M16.8 16.8l1.8 1.8M5.4 18.6l1.8-1.8M16.8 7.2l1.8-1.8"/></svg></button></div>'
     +'<div class="sub">'+d+'</div>';
   if(pc) h+='<button class="banner warn linkb" data-a="push:review"><span>'+pc+' 项待确认</span><span>›</span></button>';
+  if(backupDue()){ var lbd=S.lastBackup?daysBetween(S.lastBackup,today()):null; h+='<button class="banner warn linkb" data-a="push:backup"><span>'+(lbd==null?'还没有备份':lbd+' 天没备份')+'</span><span>›</span></button>'; }
   if(S.pauses[d]) h+='<div class="banner pause">今天暂停：'+esc(S.pauses[d])+' · <a href="#" data-a="unpause" style="color:inherit">撤销</a></div>';
   var rows=todayRows();
   h+=rows||'<div class="card"><div class="empty">今天没有要做的</div></div>';
