@@ -581,6 +581,7 @@ function starMap(t){
   return h+'</svg>';
 }
 
+var GYM1=30, GYM2=50; // 健身推力：开始、完成
 function starGrant(k,b){
   var d=today(), D=S.star.days[d]=S.star.days[d]||{e:[]}; if(!D.e) D.e=[];
   if(D.e.some(function(x){return x.k===k;})) return;
@@ -1123,13 +1124,13 @@ function todayRows(){
       var on=done(d,n.id), pz=paused(d,n.id), wk=isWeekly(n), meta=pz?'暂停：'+esc(pauseReason(d,n.id)):(n.criterion?esc(n.criterion):'');
       if(wk && !pz) meta=(meta?meta+' · ':'')+'本周 '+weekCount(n,wkStart(d))+'/'+n.perWeek;
       if(n.autoStart && seatAct) g.focus+=trow(tchk(on||pz?null:seatAct[0],sitThrust(),on),tbody('hd:'+n.id,esc(n.name),meta),on||pz?'':tbtn(seatAct[0],seatAct[1],seatAct[2]),pz);
-      else if(n.autoGym) g.gym+=trow(tchk(on||pz||!gymAct?null:gymAct[0],40,on),tbody('hd:'+n.id,esc(n.name),(gnx&&!on?esc(gnx.name)+(meta?' · ':''):'')+meta),on||pz||!gymAct?'':tbtn(gymAct[0],gymAct[1],gymAct[2]),pz);
+      else if(n.autoGym) g.gym+=trow(tchk(on||pz||!gymAct?null:gymAct[0],GYM1+GYM2,on),tbody('hd:'+n.id,esc(n.name),(gnx&&!on?esc(gnx.name)+(meta?' · ':''):'')+meta),on||pz||!gymAct?'':tbtn(gymAct[0],gymAct[1],gymAct[2]),pz);
       else g.habit+=trow(tchk(pz?null:'t:'+n.id,10,on),tbody('hd:'+n.id,esc(n.name),meta),'',pz);
     }
     walk(n.id);
   }); })(null);
   if(seat && !S.nodes.some(function(n){return n.autoStart;})) g.focus+=trow(tchk(seatAct[0],sitThrust(),false),tbody('tab:focus',esc(seat.name),'#'+seat.count),tbtn(seatAct[0],seatAct[1],seatAct[2]));
-  if(gymAct && !S.nodes.some(function(n){return n.autoGym;})) g.gym+=trow(tchk(gymAct[0],40,false),tbody('tab:gym','健身',gnx?esc(gnx.name):''),tbtn(gymAct[0],gymAct[1],gymAct[2]));
+  if(gymAct && !S.nodes.some(function(n){return n.autoGym;})) g.gym+=trow(tchk(gymAct[0],GYM1+GYM2,false),tbody('tab:gym','健身',gnx?esc(gnx.name):''),tbtn(gymAct[0],gymAct[1],gymAct[2]));
   var tl=todoSorted(), pick=tl.filter(function(t){return t.due<=d;}); tl.forEach(function(t){ if(pick.length<3 && pick.indexOf(t)<0) pick.push(t); });
   pick.forEach(function(t){ var od=daysBetween(t.due,d), base=TDR[t.dr||0], left=t.sg?base-Math.round(base*0.3):base;
     var due= od>0?'<b class="late">过期 '+od+' 天</b>': od===0?'<b class="plan">今天</b>':md(t.due);
@@ -1386,7 +1387,7 @@ function wtxt(w){ return w==null||w===''?'—':w+' kg'; }
 function gymStart(id){
   var dy=gymDay(id); if(!dy||!dy.ex.length) return;
   S.gym.run={day:id,start:Date.now(),items:dy.ex.map(function(e){ var l=gymLast(e.n); return {n:e.n,s:e.s,lo:e.lo,hi:e.hi,w:(l&&l.w!=null)?l.w:e.w,reps:new Array(e.s).fill(null)}; })};
-  starGrant('g1:'+S.gym.run.start,20); saveLocal(); render(); toTop(); starFlush();
+  starGrant('g1:'+S.gym.run.start,GYM1); saveLocal(); render(); toTop(); starFlush();
 }
 function gymFinish(){
   var r=S.gym.run; if(!r) return;
@@ -1400,7 +1401,7 @@ function gymFinish(){
   if(dy){ r.items.forEach(function(it){ var e=dy.ex.filter(function(x){return x.n===it.n;})[0]; if(e){ if(it.w!=null) e.w=it.w; e.s=it.s; } }); }
   var idx=S.gym.days.indexOf(dy); S.gym.next=(idx+1)%S.gym.days.length; S.gym.run=null; seg.gym=null;
   S.nodes.forEach(function(n){ if(n.autoGym && !done(td,n.id)){ S.log[td]=S.log[td]||{}; S.log[td][n.id]=1; } });
-  hist('健身：'+(dy?dy.name:'')+' · '+items.length+' 个动作 '+sets+' 组','gym'); starGrant('g2:'+r.start,20); save(); render(); toTop();
+  hist('健身：'+(dy?dy.name:'')+' · '+items.length+' 个动作 '+sets+' 组','gym'); starGrant('g2:'+r.start,GYM2); save(); render(); toTop();
   var h='<h3>练完了 · '+esc(dy?dy.name:'')+' 💪</h3><div class="sum" style="margin-bottom:10px"><div><b>'+min+'</b><span>分钟'+(capped?'（按上限算）':'')+'</span></div><div><b>'+sets+'</b><span>组</span></div><div><b>'+Math.round(tv)+'</b><span>训练量 kg</span></div></div>'
     +(starBuf?'<p>'+starBuf+'</p>':'')+'<p>估算消耗：'+(kc?'<b style="color:var(--ink)">'+kc[0]+'–'+kc[1]+' 千卡</b>':'填体重后显示')+'</p>';
   items.forEach(function(it,i){ var p=cmp[i], t;
@@ -1492,7 +1493,7 @@ function pageGym(){
   else{ var df=daysBetween(last.date,d); st = df===0?'今天已经练过（'+last.name+'）': df===1?'昨天练了'+last.name+'，今天休息': '今天该练了'+(df>2?' · 已经隔了 '+df+' 天':''); }
   var sd=gymDay(sel);
   h+='<div class="card"><h2>'+st+'</h2>'
-    +'<button class="btn pri" data-a="gstart:'+sel+'"'+(sd.ex.length?'':' disabled')+'>开始 '+esc(sd.name)+thb(40)+'</button></div>';
+    +'<button class="btn pri" data-a="gstart:'+sel+'"'+(sd.ex.length?'':' disabled')+'>开始 '+esc(sd.name)+thb(GYM1+GYM2)+'</button></div>';
   h+=segHtml('gym',G.days.map(function(x){return [x.id,x.name.replace(/日$/,'')];})).replace('<button class="" data-a="seg:gym:'+sel+'"','<button class="on" data-a="seg:gym:'+sel+'"');
   h+='<div class="card">';
   sd.ex.forEach(function(e,i){ var l=gymLast(e.n);
@@ -1718,7 +1719,7 @@ function pageMore(){
   return h;
 }
 var RULES={
-  star:['星图','<p>你做的每件事都会变成推力，把飞船往外推。航程攒够就到下一站，翻开一张卡片。</p><p><b>今日航程</b> = 推力 × 速度 × 打捞 × 阻力。</p><p><b>推力</b>：越难开始的事给得越多。当天第一次坐下 20，每坐满一次 10，手动勾一个定式 10，健身开始和完成各 20，不计时的座位成功一次 15，待办按抗拒程度给 10 / 25 / 50（点"做 5 分钟"先给三成）。每笔推力有三成机会变 2 倍，一成机会变 3 倍。</p><p><b>速度</b>：看累计专注次数。坐得越多，飞船越新越快，一共 17 艘，换了就不会退回去。</p><p><b>打捞</b>：每张稀有卡让航程永久 +2%。清掉待办有机会捞到，越抗拒的事机会越大（15% / 40% / 80%）。当天每日定式全勾、至少坐满一次、没有过期待办，必得一张。</p><p><b>充能</b>：不计时的座位成功一次后，下一次"第一次坐下"的推力翻倍。</p><p><b>阻力</b>：每件过期待办让当天航程少一成，最多三成。已经攒下的航程和卡片不会倒扣。</p><p><b>航线</b>：只能飞往和到过的地方相邻的天体，越往外路越长。一层走完，开下一层。</p>'],
+  star:['星图','<p>你做的每件事都会变成推力，把飞船往外推。航程攒够就到下一站，翻开一张卡片。</p><p><b>今日航程</b> = 推力 × 速度 × 打捞 × 阻力。</p><p><b>推力</b>：越难开始的事给得越多。当天第一次坐下 20，每坐满一次 10，手动勾一个定式 10，健身开始 30、完成 50，不计时的座位成功一次 15，待办按抗拒程度给 10 / 25 / 50（点"做 5 分钟"先给三成）。每笔推力有三成机会变 2 倍，一成机会变 3 倍。</p><p><b>速度</b>：看累计专注次数。坐得越多，飞船越新越快，一共 17 艘，换了就不会退回去。</p><p><b>打捞</b>：每张稀有卡让航程永久 +2%。清掉待办有机会捞到，越抗拒的事机会越大（15% / 40% / 80%）。当天每日定式全勾、至少坐满一次、没有过期待办，必得一张。</p><p><b>充能</b>：不计时的座位成功一次后，下一次"第一次坐下"的推力翻倍。</p><p><b>阻力</b>：每件过期待办让当天航程少一成，最多三成。已经攒下的航程和卡片不会倒扣。</p><p><b>航线</b>：只能飞往和到过的地方相邻的天体，越往外路越长。一层走完，开下一层。</p>'],
   tree:['定式树','<p>定式是一件小到很难失败、到点就做的事。一天最多加一个：和已有的相关就挂在它下面，全新的领域就开一根新枝。</p><p>有一次没做到，这个定式连同挂在它下面的一起删掉，以后可以从末尾重新加。所以只加有把握的。</p><p><b>应急</b>：每个定式每月有固定几次（默认 2 次）。没做到时用掉一次，连续天数保留；用完再失败才删。</p><p><b>每周定式</b>：周一到周日做够次数就算做到。加入的那一周不结算。</p><p><b>暂停日</b>：事先写好的特殊情形，比如出远门。当天暂停，不算失败。</p><p><b>树上的样子</b>：节点越大，连续得越久（10 天封顶）。每累计做到 30 次，多一颗绕着它转的小行星，断了连续也不会少。</p><p>凌晨 4:00 才算新的一天。</p>'],
   seat:['神圣座位','<p>选一个位置当作神圣座位。坐在别处随意；一坐上它，就用最好的状态专注到计时结束。没把握就别坐。</p><p>每成功一次，纪录 #N 加一。中途刷手机、提前离开，纪录清零，从 #1 重来。</p><p>清零只清当前纪录。累计次数只增不减，飞船不会倒退。</p>'],
   xb:['下必为例','<p>拿不准算不算违规时，只有两条路：</p><p>1. 算违规，纪录清零，从 #1 重来。</p><p>2. 算允许，但以后同样的情况一律允许。</p><p>没有"就这一次"。每个季度可以清空一次已允许的行为。</p>'],
