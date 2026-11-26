@@ -473,7 +473,9 @@ function kids(pid){ return S.nodes.filter(function(n){return n.parentId===pid;})
 function subtree(id){ var out=[id]; kids(id).forEach(function(k){ out=out.concat(subtree(k.id)); }); return out; }
 function done(date,id){ var v=S.log[date]&&S.log[date][id]; return v===1||v===true; }
 function totalDone(id){ var t=0; Object.keys(S.log).forEach(function(d){ var v=S.log[d][id]; if(v===1||v===true) t++; }); return t; }
-function paused(date,id){ return !!(S.pauses[date] || (S.pexc && S.pexc[date] && S.pexc[date][id])); }
+function pauseSet(date,id){ return !!(S.pauses[date] || (S.pexc && S.pexc[date] && S.pexc[date][id])); }
+// 暂停的那天如果还是做到了，按正常完成算；没做到才按暂停算
+function paused(date,id){ return pauseSet(date,id) && !done(date,id); }
 function pauseReason(date,id){ return S.pauses[date] || (S.pexc && S.pexc[date] && S.pexc[date][id]) || ''; }
 function anyPause(date){ return !!(S.pauses[date] || (S.pexc && S.pexc[date] && Object.keys(S.pexc[date]).length)); }
 function reserved(date,id){ return !!(S.log[date] && S.log[date][id]==='r'); }
@@ -861,7 +863,7 @@ function beep(){ try{ if(!actx) return; [0,0.35,0.7].forEach(function(t){ var o=
 
 // ---------- 定式树操作 ----------
 function toggle(id){
-  var d=today(); if(paused(d,id)) return;
+  var d=today();
   S.log[d]=S.log[d]||{};
   var nd=byId(id), auto=nd&&(nd.autoStart||nd.autoTodo||nd.autoGym);
   if(S.log[d][id]===1||S.log[d][id]===true){ delete S.log[d][id]; starRetract('h:'+id); } else { S.log[d][id]=1; if(!auto) starGrant('h:'+id,10); }
@@ -908,13 +910,13 @@ function markPast(date,id){ S.log[date]=S.log[date]||{}; S.log[date][id]=1; save
 function pauseToday(){
   var d=today(), opts=S.exceptions.map(function(e,i){ return '<button data-a="sel:'+i+'">'+esc(e)+'</button>'; }).join('');
   if(!S.exceptions.length){ modal('<h3>今天暂停？</h3><p>还没有写暂停日情形。</p><button class="btn ghost" data-a="close">好</button>'); return; }
-  var list=S.nodes.map(function(n){ var p=paused(d,n.id); return '<label class="ck"><input type="checkbox" id="px_'+n.id+'"'+(p?' disabled checked':' checked')+'> '+esc(n.name)+(p?' <span class="cr">（已暂停）</span>':'')+'</label>'; }).join('');
+  var list=S.nodes.map(function(n){ var p=pauseSet(d,n.id); return '<label class="ck"><input type="checkbox" id="px_'+n.id+'"'+(p?' disabled checked':' checked')+'> '+esc(n.name)+(p?' <span class="cr">（已暂停）</span>':'')+'</label>'; }).join('');
   modal('<h3>今天暂停？</h3><div class="chips" style="margin-bottom:6px">'+opts+'</div><input type="hidden" id="tdue" value="">'
     +'<div style="height:8px"></div>'+list+'<div class="row"><button class="btn ghost" data-a="close">取消</button><button class="btn pri" data-a="ok">确定</button></div>',
     function(a,v){
       if(a!=='ok') return;
       if(v.tdue===''){ toast('先选一种情形'); return pauseToday(); }
-      var e=S.exceptions[+v.tdue], ids=S.nodes.filter(function(n){ return v['px_'+n.id]===true && !paused(d,n.id); }).map(function(n){return n.id;});
+      var e=S.exceptions[+v.tdue], ids=S.nodes.filter(function(n){ return v['px_'+n.id]===true && !pauseSet(d,n.id); }).map(function(n){return n.id;});
       if(!ids.length) return;
       S.pexc=S.pexc||{}; S.pexc[d]=S.pexc[d]||{}; ids.forEach(function(id){ S.pexc[d][id]=e; });
       hist('暂停（'+e+'）：'+ids.map(function(id){return byId(id).name;}).join('、'),'pause'); save(); render();
@@ -1081,7 +1083,7 @@ function treeSvg(){
     var c1y=py-(py-y)*0.5, c2y=y+(py-y)*0.62, path='M'+px+' '+py+' C'+px+' '+c1y.toFixed(1)+','+x+' '+c2y.toFixed(1)+','+x+' '+y;
     br+='<path d="'+path+'" fill="none" stroke="#8f7be8" stroke-width="'+(w+5)+'" stroke-linecap="round" opacity=".13"/><path d="'+path+'" fill="none" stroke="'+(on?'#a996ff':'#5d55b8')+'" stroke-width="'+w+'" stroke-linecap="round"/><path d="'+path+'" fill="none" stroke="#fff1d6" stroke-width="'+(w*0.22).toFixed(1)+'" stroke-linecap="round" opacity="'+(on?'.8':'.35')+'"'+(on?' stroke-dasharray="2 7" class="tflow"':'')+'/>';
     var k=function(i){ return hash01(n.id+'l'+i); };
-    var g='<g'+(pz?' opacity="0.4"':' data-a="t:'+n.id+'"')+' style="cursor:pointer">';
+    var g='<g'+(pz?' opacity="0.4"':'')+' data-a="t:'+n.id+'" style="cursor:pointer">';
     if(on){
       g+='<circle cx="'+x+'" cy="'+y+'" r="'+(r*1.55).toFixed(1)+'" fill="url(#tglow)"/>';
       [[-.5,.15,.7,'#8f7be8'],[.5,.2,.68,'#e88f6c'],[-.1,-.42,.66,'#c86fa6'],[.15,.42,.6,'#6f8fe8']].forEach(function(q){ g+='<circle cx="'+(x+q[0]*r).toFixed(1)+'" cy="'+(y+q[1]*r).toFixed(1)+'" r="'+(q[2]*r).toFixed(1)+'" fill="'+q[3]+'" opacity=".34"/>'; });
@@ -1123,9 +1125,9 @@ function todayRows(){
     if(!n.autoTodo){
       var on=done(d,n.id), pz=paused(d,n.id), wk=isWeekly(n), meta=pz?'暂停：'+esc(pauseReason(d,n.id)):(n.criterion?esc(n.criterion):'');
       if(wk && !pz) meta=(meta?meta+' · ':'')+'本周 '+weekCount(n,wkStart(d))+'/'+n.perWeek;
-      if(n.autoStart && seatAct) g.focus+=trow(tchk(on||pz?null:seatAct[0],sitThrust(),on),tbody('hd:'+n.id,esc(n.name),meta),on||pz?'':tbtn(seatAct[0],seatAct[1],seatAct[2]),pz);
-      else if(n.autoGym) g.gym+=trow(tchk(on||pz||!gymAct?null:gymAct[0],GYM1+GYM2,on),tbody('hd:'+n.id,esc(n.name),(gnx&&!on?esc(gnx.name)+(meta?' · ':''):'')+meta),on||pz||!gymAct?'':tbtn(gymAct[0],gymAct[1],gymAct[2]),pz);
-      else g.habit+=trow(tchk(pz?null:'t:'+n.id,10,on),tbody('hd:'+n.id,esc(n.name),meta),'',pz);
+      if(n.autoStart && seatAct) g.focus+=trow(tchk(on?null:seatAct[0],sitThrust(),on),tbody('hd:'+n.id,esc(n.name),meta),on?'':tbtn(seatAct[0],seatAct[1],seatAct[2]),pz);
+      else if(n.autoGym) g.gym+=trow(tchk(on||!gymAct?null:gymAct[0],GYM1+GYM2,on),tbody('hd:'+n.id,esc(n.name),(gnx&&!on?esc(gnx.name)+(meta?' · ':''):'')+meta),on||!gymAct?'':tbtn(gymAct[0],gymAct[1],gymAct[2]),pz);
+      else g.habit+=trow(tchk('t:'+n.id,10,on),tbody('hd:'+n.id,esc(n.name),meta),'',pz);
     }
     walk(n.id);
   }); })(null);
@@ -1184,7 +1186,7 @@ function pageTree(){
     var meta= pz?'<b class="plan">今天暂停：'+esc(pauseReason(d,n.id))+'</b>'
       : wk? weekLine(n,1)+' 本周 '+weekCount(n,wkStart(d))+'/'+n.perWeek+' · 连续 '+weekStreak(n)+' 周 · 应急 '+reserveLeft(n.id)+'/'+S.reserve.perMonth
       : weekDots(n)+' 连续 '+st+' 天 · 应急 '+reserveLeft(n.id)+'/'+S.reserve.perMonth+(reserved(d,n.id)?' · 今天已用':'');
-    h+='<div class="node" style="padding-left:'+(depth*22)+'px"><button class="chk'+(on?' on':'')+'" data-a="t:'+n.id+'"'+(pz?' disabled':'')+'>'+(on?'✓':'')+'</button>'
+    h+='<div class="node" style="padding-left:'+(depth*22)+'px"><button class="chk'+(on?' on':'')+'" data-a="t:'+n.id+'">'+(on?'✓':'')+'</button>'
       +'<div class="nb" data-a="hd:'+n.id+'"><div class="nm">'+(depth?'<span class="branch">└</span>':'')+esc(n.name)+badge+'</div>'+(n.criterion?'<div class="cr">'+esc(n.criterion)+'</div>':'')+'<div class="meta">'+meta+'</div></div></div>';
     walk(n.id,depth+1);
   }); })(null,0);
@@ -1720,7 +1722,7 @@ function pageMore(){
 }
 var RULES={
   star:['星图','<p>你做的每件事都会变成推力，把飞船往外推。航程攒够就到下一站，翻开一张卡片。</p><p><b>今日航程</b> = 推力 × 速度 × 打捞 × 阻力。</p><p><b>推力</b>：越难开始的事给得越多。当天第一次坐下 20，每坐满一次 10，手动勾一个定式 10，健身开始 30、完成 50，不计时的座位成功一次 15，待办按抗拒程度给 10 / 25 / 50（点"做 5 分钟"先给三成）。每笔推力有三成机会变 2 倍，一成机会变 3 倍。</p><p><b>速度</b>：看累计专注次数。坐得越多，飞船越新越快，一共 17 艘，换了就不会退回去。</p><p><b>打捞</b>：每张稀有卡让航程永久 +2%。清掉待办有机会捞到，越抗拒的事机会越大（15% / 40% / 80%）。当天每日定式全勾、至少坐满一次、没有过期待办，必得一张。</p><p><b>充能</b>：不计时的座位成功一次后，下一次"第一次坐下"的推力翻倍。</p><p><b>阻力</b>：每件过期待办让当天航程少一成，最多三成。已经攒下的航程和卡片不会倒扣。</p><p><b>航线</b>：只能飞往和到过的地方相邻的天体，越往外路越长。一层走完，开下一层。</p>'],
-  tree:['定式树','<p>定式是一件小到很难失败、到点就做的事。一天最多加一个：和已有的相关就挂在它下面，全新的领域就开一根新枝。</p><p>有一次没做到，这个定式连同挂在它下面的一起删掉，以后可以从末尾重新加。所以只加有把握的。</p><p><b>应急</b>：每个定式每月有固定几次（默认 2 次）。没做到时用掉一次，连续天数保留；用完再失败才删。</p><p><b>每周定式</b>：周一到周日做够次数就算做到。加入的那一周不结算。</p><p><b>暂停日</b>：事先写好的特殊情形，比如出远门。当天暂停，不算失败。</p><p><b>树上的样子</b>：节点越大，连续得越久（10 天封顶）。每累计做到 30 次，多一颗绕着它转的小行星，断了连续也不会少。</p><p>凌晨 4:00 才算新的一天。</p>'],
+  tree:['定式树','<p>定式是一件小到很难失败、到点就做的事。一天最多加一个：和已有的相关就挂在它下面，全新的领域就开一根新枝。</p><p>有一次没做到，这个定式连同挂在它下面的一起删掉，以后可以从末尾重新加。所以只加有把握的。</p><p><b>应急</b>：每个定式每月有固定几次（默认 2 次）。没做到时用掉一次，连续天数保留；用完再失败才删。</p><p><b>每周定式</b>：周一到周日做够次数就算做到。加入的那一周不结算。</p><p><b>暂停日</b>：事先写好的特殊情形，比如出远门。当天暂停，不算失败；如果还是做到了，照常打勾，按正常完成算。</p><p><b>树上的样子</b>：节点越大，连续得越久（10 天封顶）。每累计做到 30 次，多一颗绕着它转的小行星，断了连续也不会少。</p><p>凌晨 4:00 才算新的一天。</p>'],
   seat:['神圣座位','<p>选一个位置当作神圣座位。坐在别处随意；一坐上它，就用最好的状态专注到计时结束。没把握就别坐。</p><p>每成功一次，纪录 #N 加一。中途刷手机、提前离开，纪录清零，从 #1 重来。</p><p>清零只清当前纪录。累计次数只增不减，飞船不会倒退。</p>'],
   xb:['下必为例','<p>拿不准算不算违规时，只有两条路：</p><p>1. 算违规，纪录清零，从 #1 重来。</p><p>2. 算允许，但以后同样的情况一律允许。</p><p>没有"就这一次"。每个季度可以清空一次已允许的行为。</p>'],
   appt:['线性时延','<p>不想马上开始时，先点"预约"。14 分 30 秒内必须点"即时启动"并坐下，这段时间用来收拾桌子、倒水、做准备。</p><p>超时没启动，按下必为例处理。</p>'],
