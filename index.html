@@ -260,7 +260,7 @@ svg.tree g.pop{transform-box:fill-box;transform-origin:center;animation:chkPop .
 @keyframes toastIn{from{transform:translateY(16px);opacity:0}to{transform:none;opacity:1}}
 #toast.show{animation:toastIn .25s cubic-bezier(.2,.9,.2,1)}
 @keyframes twinkle{0%,100%{opacity:.9}50%{opacity:.15}}
-.tw{animation:twinkle 3.6s ease-in-out infinite}
+circle.tw{animation:twinkle 3.6s ease-in-out infinite}
 @keyframes trailDraw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
 .star-in .trail{stroke-dasharray:1;animation:trailDraw 1.5s cubic-bezier(.25,.6,.2,1) both}
 @keyframes orbIn{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
@@ -283,7 +283,7 @@ svg.tree g.pop{transform-box:fill-box;transform-origin:center;animation:chkPop .
 .scard .art .orb{animation:floaty 5s 1s ease-in-out infinite}
 .picks button{animation:gridPop .5s cubic-bezier(.2,.9,.3,1.2) both}
 .picks button:nth-child(2){animation-delay:.12s}
-@media (prefers-reduced-motion:reduce){.page,.mask,.dlg,.chk.pop,svg.tree g.pop,#toast.show,.tw,.trail,.s-from,.s-to,.shead,.seq>*,.sgrid button,.fleetrow button,.warp,.scard .stag,.scard h3,.scard p,.dlg.space .row,.scard .art .orb,.picks button{animation:none !important}}
+@media (prefers-reduced-motion:reduce){.page,.mask,.dlg,.chk.pop,svg.tree g.pop,#toast.show,circle.tw,.trail,.s-from,.s-to,.shead,.seq>*,.sgrid button,.fleetrow button,.warp,.scard .stag,.scard h3,.scard p,.dlg.space .row,.scard .art .orb,.picks button{animation:none !important}}
 .mapc{padding:6px 0 0}
 .smap{display:block}
 .smap .chl{font-family:"Songti SC","STSong","Noto Serif CJK SC",serif;font-size:13px;fill:#8b88bd;letter-spacing:.2em}
